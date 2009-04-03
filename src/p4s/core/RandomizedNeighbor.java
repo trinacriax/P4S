@@ -27,11 +27,6 @@ private static final int DEFAULT_INITIAL_CAPACITY = 10;
  */
 private static final String PAR_INITCAP = "capacity";
 
-private static final String PAR_MINDELAY = "mindelay";
-private static final String PAR_MAXDELAY = "maxdelay";
-private static final String PAR_MU = "mudelay";
-private static final String PAR_DEV = "devdelay";
-private static final String PAR_DELAY = "delay";
 // --------------------------------------------------------------------------
 // Fields
 // --------------------------------------------------------------------------
@@ -41,11 +36,6 @@ protected Node[] neighbors;
 
 /** Actual number of neighbors in the array */
 protected int len;
-private final long min;
-private final long max;
-private final double mu;
-private final double dev;
-
 // --------------------------------------------------------------------------
 // Initialization
 // --------------------------------------------------------------------------
@@ -55,10 +45,7 @@ public RandomizedNeighbor(String s)
 	neighbors = new Node[Configuration.getInt(s + "." + PAR_INITCAP,
 			DEFAULT_INITIAL_CAPACITY)];
 	len = 0;
-    min = Configuration.getLong(prefix + "." + PAR_MINDELAY,0);
-	max = Configuration.getLong(prefix + "." + PAR_MAXDELAY,0);
-    mu = Configuration.getDouble(prefix + "." + PAR_MU,0);
-	dev = Configuration.getDouble(prefix + "." + PAR_DEV,0);
+
 }
 
 //--------------------------------------------------------------------------

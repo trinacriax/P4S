@@ -3,8 +3,8 @@ package p4s.core;
 import bandwidth.BandwidthAwareProtocol;
 import peersim.config.FastConfig;
 import peersim.core.*;
+import java.util.ArrayList;
 import p4s.util.*;
-import p4s.transport.*;
 
 /**
  * This class is a useful and common data structure
@@ -67,6 +67,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     private static int lastsrc = 0;
     /**Total neightbor knowledge*/
     private int nk;
+    /**It Traces nodes contacted*/
+    private ArrayList pushnodes;
+    private ArrayList pullnodes;
 
     public AlternateDataStructure(String prefix) {
         super();
@@ -108,6 +111,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         clh.time_in_pull = new Long("0");
         clh.switchtime = new Long("0");
         clh.nk = new Integer("0");
+        clh.pullnodes = null;
+        clh.pullnodes = null;
         return clh;
     }
 
@@ -143,6 +148,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.success_download = 0;
         this.success_upload = 0;
         this.nk = 0;
+        this.pushnodes = null;
+        this.pullnodes = null;
     }
 
 
@@ -153,6 +160,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * */
     public void Initialize(int items) {
         this.resetAll();
+        this.pullnodes = new ArrayList();
+        this.pushnodes = new ArrayList();
         this.chunk_list = new long[items];
         for (int i = 0; i < items; i++) {
             this.chunk_list[i] = Message.NOT_OWNED;
@@ -994,15 +1003,19 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     /**
      * Restituisce un vicino del nodo @node
      * */
-    public Node getRNDNeighbor(Node node, int pid) {
-        if(this.nk == 0){
-            RandomizedNeighbor rndnet = (RandomizedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
-            Node candidate;
-            candidate = rndnet.getRNDNeighbor();
-            if (this.getDebug() >= 6) {
-                System.out.println("\tNodo " + node.getID() + " seleziona vicino " + candidate.getID());
+    public Node getNeighbor(Node node, int pid) {
+        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
+        if(net.getCurrent() == null)
+            net.setCurrent(node);
+        if (this.getDebug() >= 10) {
+                System.out.println("\tNodo " + node.getID() + "\n\t" + net);
             }
-            return candidate;
+        if(this.nk == 0){            
+            NeighborElement candidate;
+            candidate = net.getDelayNeighbor();
+            if (this.getDebug() >= 10)
+                System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate);
+            return candidate.getNeighbor();
         }
         else if(nk == 1){
             if(this.cycle == Message.PUSH_CYCLE)

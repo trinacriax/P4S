@@ -295,6 +295,9 @@ public class RandomRLC extends ExtendedRandom {
 
     }
 
+//    public long trunc_exp(double mean, long length) {
+//        return this.trunc_exp(mean, length, this.nextLong());
+//    }
 
     /*
      **  Function  : int trunc_exp(double mean,long length,long *seed)
@@ -303,16 +306,34 @@ public class RandomRLC extends ExtendedRandom {
      **  Remarks   : mean and length are expressed in bytes.
      **              The value of '*seed' is changed.
      */
-    public int trunc_exp(double mean, long length, long seed) {
+    public long trunc_exp(double mean, long length, long seed) {
+        double len, prob;
+        //seed = rnd32(seed);
+//        seed = rnd64(seed);
+//        System.out.println("S "+seed);
+        prob = (RATIO.multiply(new BigDecimal(seed))).doubleValue();
+//        System.out.println("P "+prob);
+        /* len =  - 8*mean*(log(*seed)-21.4875626); */
+        len = -prob*mean * Math.log(prob);
+//        System.out.println("L "+len);
+        len = (len > length ) ? length : len/prob;
+//        System.out.println("L2 "+len);
+        return ((long) len == 0 ? 1 : (long)len);
+    }
+
+        public long trunc_exp(double mean, long length) {
         double len, prob;
 
         //seed = rnd32(seed);
-        seed = rnd64(seed);
-        prob = (RATIO.multiply(new BigDecimal(seed))).doubleValue();
+//        System.out.println("S "+seed);
+        prob = (RATIO.multiply(new BigDecimal(this.nextLong()))).doubleValue();
+//        System.out.println("P "+prob);
         /* len =  - 8*mean*(log(*seed)-21.4875626); */
-        len = -8 * mean * Math.log(prob);
-        len = (len > length * 8.) ? length : len / 8.;
-        return ((int) len == 0 ? 1 : (int) len);
+        len = -1*mean * Math.log(prob);
+//        System.out.println("L "+len);
+        len = (len > length ) ? length : len;
+//        System.out.println("L2 "+len);
+        return ((long) len == 0 ? 1 : (long)len);
     }
 
     /** Box muller transform

@@ -36,7 +36,7 @@ public class AlternateInitializer implements Control {
     private final int neigh;
     private final long chunk_size;    
     private final int debug;
-    private int bandiwdthp;
+    private int bandwidthp;
     private final int push_retry;
     private final int pull_retry;
     private final long switchtime;
@@ -62,7 +62,7 @@ public class AlternateInitializer implements Control {
         push_window = Configuration.getInt(prefix + "." + PAR_PUSH_WINDOW, 1);
         pull_window = Configuration.getInt(prefix + "." + PAR_PULL_WINDOW, 1);
         debug = Configuration.getInt(prefix + "." + PAR_DEBUG);
-        bandiwdthp = Configuration.getPid(prefix + "." + PAR_BANDWIDTH);        
+        bandwidthp = Configuration.getPid(prefix + "." + PAR_BANDWIDTH);
     }
 
     // ------------------------------------------------------------------------
@@ -82,7 +82,7 @@ public class AlternateInitializer implements Control {
             prot.setPushRetry(push_retry);
             prot.setPullRetry(pull_retry);
             prot.setSwitchTime(switchtime);
-            prot.setBandwidth(bandiwdthp);
+            prot.setBandwidth(bandwidthp);
             prot.setPushWindow(push_window);
             prot.setPullWindow(pull_window);
             prot.setNeighborKnowledge(neigh);
@@ -90,6 +90,8 @@ public class AlternateInitializer implements Control {
         }
         AlternateDataSkeleton prot = (AlternateDataSkeleton) source.getProtocol(pid);
         prot.setCycle(Message.PUSH_CYCLE);
+        DelayedNeighbor dn = (DelayedNeighbor)source.getProtocol(FastConfig.getLinkable(pid));
+        dn.populate();
         EDSimulator.add(1, new P4SMessage(null, source, Message.SWITCH_PUSH, 0L), source, pid);
         System.err.println("finished");
         return false;
