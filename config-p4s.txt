@@ -1,20 +1,20 @@
 ### Simulation seed
-SEED 8789789465436
+SEED 2345123451234561234
 ### MAX Simulation time
 CYCLE SIZE*CHUNKS*NEW_CHUNK_DELAY
 ### Verbosity level
-DEBUG 0
+DEBUG 4
 
 ### Number of nodes in the network
-SIZE 1024
+SIZE 1000
 ### Number of chunks to transmit
-CHUNKS 100
+CHUNKS 500
 ### Chunk size in bits
-CHUNK_SIZE 40000
+CHUNK_SIZE 122000
 ### Time in milliseconds to produce a new chunk
-NEW_CHUNK_DELAY 300
+NEW_CHUNK_DELAY 1000
 ### Nodes degree
-DEGREE 9
+DEGREE 20
 ### Message delay: min and max
 MINDELAY 5
 MAXDELAY 25
@@ -61,17 +61,23 @@ simulation.logtime OBSERVER-STEP
 simulation.stdout p4s.util.PrintLogs
 
 ## Overlay network used
-protocol.link p4s.core.RandomizedNeighbor
+protocol.link p4s.core.DelayedNeighbor
 protocol.link.capacity DEGREE
-protocol.link.delay 0
+protocol.link.delay 2
 # Many kinds of delay distributions
 # 0 Uniform between max and min
 # 1 Gaussian with mean
 # 2 Exponential Truncated with mean
-#protocol.link.mudelay 0
-#protocol.link.devdelay 0
-protocol.link.mindelay 5
-protocol.link.maxdelay 250
+# 
+# Peer selection 
+# -1 Random
+#  0 Delay oriented with probability
+#
+protocol.link.select 0
+protocol.link.mudelay 80
+protocol.link.devdelay 0
+protocol.link.mindelay MINDELAY
+protocol.link.maxdelay MAXDELAY
 
 ## Protocol used for chunks distribution
 protocol.int Alternate
@@ -95,22 +101,22 @@ init.rndlink.protocol link
 ## Bandwidth protocol initializer
 init.bwi bandwidth.BandwidthAwareInitializer
 init.bwi.protocol bwp
-init.bwi.debug DEBUG
+init.bwi.debug 0
 ## CDF of bandwidth distribution
 ## separeted by commas:
 ## 128000,180000,290000
 ## 0.3,0.7,1
-init.bwi.uploadBw 128000,180000,256000
-init.bwi.downloadBw 640000,640000,640000
-init.bwi.bandwidthPr 0.3,0.7,1
+init.bwi.uploadBw 128000 #,180000,256000
+init.bwi.downloadBw 640000 #,640000,640000
+init.bwi.bandwidthPr 1 #0.3,0.7,1
 init.bwi.active_upload ACT_UP
 init.bwi.active_download ACT_DW
 init.bwi.passive_upload PAS_UP
 init.bwi.passive_download PAS_DW
 ## the following two parameters indicate the source upload/download bandwidth
 ## download is useless at the source, but it exists :)
-#init.bwi.srcup 128000
-#init.bwi.srcdw 640000
+init.bwi.srcup 128000
+init.bwi.srcdw 640000
 
 ## Chunk distribution protocol initializer
 init.ii AlternateInitializer
