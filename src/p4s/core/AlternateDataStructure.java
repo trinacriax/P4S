@@ -67,9 +67,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     private static int lastsrc = 0;
     /**Total neightbor knowledge*/
     private int nk;
-    /**It Traces nodes contacted*/
-    private ArrayList pushnodes;
-    private ArrayList pullnodes;
+
 
     public AlternateDataStructure(String prefix) {
         super();
@@ -111,8 +109,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         clh.time_in_pull = new Long("0");
         clh.switchtime = new Long("0");
         clh.nk = new Integer("0");
-        clh.pullnodes = null;
-        clh.pullnodes = null;
+
         return clh;
     }
 
@@ -148,11 +145,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.success_download = 0;
         this.success_upload = 0;
         this.nk = 0;
-        this.pushnodes = null;
-        this.pullnodes = null;
     }
-
-
     /**
      * This method is invoked in the Initialized, after the reset one.
      * @param items The number of chunks that will be distributed
@@ -160,8 +153,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * */
     public void Initialize(int items) {
         this.resetAll();
-        this.pullnodes = new ArrayList();
-        this.pushnodes = new ArrayList();
         this.chunk_list = new long[items];
         for (int i = 0; i < items; i++) {
             this.chunk_list[i] = Message.NOT_OWNED;
@@ -701,8 +692,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     }
 
     public String getConnections() {
-        String result = "[ ";
-        result += " ] Chunks " + this.getSize();// + " : " + this.bitmap();
+        String result = "]] "+ this.getSize();// + " : " + this.bitmap();
         return result;
     }
 
@@ -1005,27 +995,46 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * */
     public Node getNeighbor(Node node, int pid) {
         DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
+        int counter = 4 * net.degree();
         if(net.getCurrent() == null)
             net.setCurrent(node);
         if (this.getDebug() >= 10) {
                 System.out.println("\tNodo " + node.getID() + "\n\t" + net);
             }
-        if(this.nk == 0){            
+        if(this.nk == 0){
             NeighborElement candidate;
-            candidate = net.getDelayNeighbor();
+            candidate = net.getDelayNeighbor();            
+            while(counter >0 && (
+                    ((this.cycle == Message.PUSH_CYCLE && candidate.getPushtime() == CommonState.getTime())||//no target node already pushed
+                    (this.cycle == Message.PULL_CYCLE && candidate.getPulltime() == CommonState.getTime()))||//no target node already pulled
+                    candidate.getNeighbor().getIndex()==this.getSource())){//no Source
+                counter--;
+                candidate = net.getDelayNeighbor();
+            }
             if (this.getDebug() >= 10)
-                System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate);
-            return candidate.getNeighbor();
+                System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " ( " + this.getSource() +" ) ");
+            if(this.cycle == Message.PUSH_CYCLE)
+                candidate.setPushtime(CommonState.getTime());
+            else
+                candidate.setPulltime(CommonState.getTime());
+
+        return candidate.getNeighbor();
         }
         else if(nk == 1){
-            if(this.cycle == Message.PUSH_CYCLE)
-                return this.getPushNeighbor(node, this.getLast(this.getPushWindow()), pid);
-            else
-                return this.getPullNeighbor(node, this.getLeast(this.getPullWindow()), pid);
+            Node candidate = null;
+            if(this.cycle == Message.PUSH_CYCLE){
+                candidate = this.getPushNeighbor(node, this.getLast(this.getPushWindow()), pid);            
+            }
+            else{
+                candidate = this.getPullNeighbor(node, this.getLeast(this.getPullWindow()), pid);
+            }
+            return candidate;
         }
         else
             return null;
     }
+
+
 
     public String getNeighborhood(Node node, int pid) {
         Linkable linkable = (Linkable) node.getProtocol(FastConfig.getLinkable(pid));

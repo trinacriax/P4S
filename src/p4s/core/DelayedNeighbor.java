@@ -197,13 +197,13 @@ public class DelayedNeighbor implements Protocol, Linkable {
 // --------------------------------------------------------------------------
     /** Adds given node if it is not already in the network.*/
     public boolean addNeighbor(Node n) {
-        if (delays != null && delays.length < Network.size()) {
-            this.repopulate();
-        }
         for (int i = 0; i < len; i++) {
             if (neighbors[i].getNeighbor() == n) {
                 return false;
             }
+        }
+        if (delays != null && delays.length < Network.size()) {
+            this.repopulate();
         }
         if (len == neighbors.length) {
             int newlen = (int) Math.round(1.3 * neighbors.length);
