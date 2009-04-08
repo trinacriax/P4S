@@ -4,6 +4,7 @@ import bandwidth.BandwidthAwareProtocol;
 import peersim.config.FastConfig;
 import peersim.core.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import p4s.util.*;
 
 /**
@@ -20,7 +21,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     /**Source identifier*/
     protected int source;
     /**Cycle of the node : 0 push 1 pull */
-    protected int cycle; 
+    protected int cycle;
     /**Debug level */
     protected int debug;
     /**# of chunks transmitted correctly via push*/
@@ -32,7 +33,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     /**# of chunks offered in pull*/
     protected int pull_window;
     /**Protocol ID for bandwidth mechanism*/
-    protected int bandwidth;    
+    protected int bandwidth;
     /**#of chunks received in push*/
     protected int chunkpush;
     /**#of chunks received in pull*/
@@ -64,10 +65,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     /**Time needed to change state*/
     protected long switchtime;
     /**Contains the chunk-id that the source will push*/
-    private static int lastsrc = 0;
+    private static LinkedList lastsrc;
     /**Total neightbor knowledge*/
     private int nk;
-
 
     public AlternateDataStructure(String prefix) {
         super();
@@ -109,7 +109,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         clh.time_in_pull = new Long("0");
         clh.switchtime = new Long("0");
         clh.nk = new Integer("0");
-
+        clh.lastsrc = null;
         return clh;
     }
 
@@ -144,8 +144,10 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.switchtime = 0;
         this.success_download = 0;
         this.success_upload = 0;
+        this.lastsrc = null;
         this.nk = 0;
     }
+
     /**
      * This method is invoked in the Initialized, after the reset one.
      * @param items The number of chunks that will be distributed
@@ -153,6 +155,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * */
     public void Initialize(int items) {
         this.resetAll();
+        this.lastsrc = new LinkedList();
         this.chunk_list = new long[items];
         for (int i = 0; i < items; i++) {
             this.chunk_list[i] = Message.NOT_OWNED;
@@ -178,7 +181,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             this.setCompleted(CommonState.getTime());
         }
     }
-
 
     /**
      * The current cycle of the ndoe
@@ -207,7 +209,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * @return int PID of the bandwidth protocol
      *
      */
-
     public int getBandwidth() {
         return this.bandwidth;
     }
@@ -218,7 +219,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * @param long time in ms
      *
      */
-  
     public void setSwitchTime(long time) {
         this.switchtime = time;
     }
@@ -241,7 +241,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.debug = value;
     }
 
-
     /**
      * Get the debug level
      * @retunr value the level of verbosity 0 up to 10
@@ -249,11 +248,12 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     public int getDebug() {
         return this.debug;
     }
+
     /**
      * Set the neighbors knowledge: 0 is no, 1 is complete!
      * @param value the flag of knowledge: from stupid (0) to wise (1)
      */
-    public void setNeighborKnowledge(int value){
+    public void setNeighborKnowledge(int value) {
         this.nk = value;
     }
 
@@ -385,115 +385,115 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.pull_window = window;
     }
 
-     /**
+    /**
      * Return the number of chunks the node proposes in pull
      * @return the window size for the number of chunks proposed in pull
      **/
-
     public int getPullWindow() {
         return this.pull_window;
     }
 
-     /**
+    /**
      * Return the number of active uploads
      * @return the number of active uploads
      **/
-
     public int getActiveUpload(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         return bap.getActiveUpload();
     }
 
     public int getActiveUp(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         return bap.getActiveUp();
     }
 
     public void addActiveUp(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         bap.addActiveUp();
     }
 
     public void remActiveUp(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         bap.remActiveUp();
     }
 
     public void resetActiveUp(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         bap.resetActiveUp();
     }
 
     public int getActiveDownload(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         return bap.getActiveDownload();
     }
 
     public int getActiveDw(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         return bap.getActiveDw();
     }
+
     public void addActiveDw(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         bap.addActiveDw();
     }
 
     public void remActiveDw(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         bap.remActiveDw();
     }
 
     public void resetActiveDw(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         bap.resetActiveDw();
     }
 
-
     public int getPassiveUpload(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         return bap.getPassiveUpload();
     }
 
     public int getPassiveUp(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         return bap.getPassiveUp();
     }
 
     public void addPassiveUp(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         bap.addPassiveUp();
     }
 
     public void remPassiveUp(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         bap.remPassiveUp();
     }
 
     public void resetPassiveUp(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         bap.resetPassiveUp();
     }
 
     public int getPassiveDownload(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         return bap.getPassiveDownload();
     }
 
     public int getPassiveDw(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         return bap.getPassiveDw();
     }
+
     public void addPassiveDw(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         bap.addPassiveDw();
     }
+
     public void remPassiveDw(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         bap.remPassiveDw();
     }
 
     public void resetPassiveDw(Node node) {
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         bap.resetPassiveDw();
     }
 
@@ -615,12 +615,19 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     public long getUploadMin(Node node) {
         return ((BandwidthAwareProtocol) node.getProtocol(this.getBandwidth())).getUploadMin();
     }
-
+    
+    public long getUploadMax(Node node) {
+        return ((BandwidthAwareProtocol) node.getProtocol(this.getBandwidth())).getUploadMax();
+    }
     /**
      * Restituisce la banda minima in download
      * */
     public long getDownloadMin(Node node) {
         return ((BandwidthAwareProtocol) node.getProtocol(this.getBandwidth())).getUploadMin();
+    }
+
+    public long getDownloadMax(Node node) {
+        return ((BandwidthAwareProtocol) node.getProtocol(this.getBandwidth())).getUploadMax();
     }
 
     /**
@@ -692,7 +699,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     }
 
     public String getConnections() {
-        String result = "]] "+ this.getSize();// + " : " + this.bitmap();
+        String result = "]] " + this.getSize();// + " : " + this.bitmap();
         return result;
     }
 
@@ -754,12 +761,14 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     public void setPulling() {
         this.pulling = CommonState.getTime();
     }
+
     /**
      * ReSet pulling state
      */
     public void resetPulling() {
         this.pulling = -1;
     }
+
     /**
      * Set a chunk in download
      */
@@ -779,6 +788,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     public void resetInDown(long index) {
         this.chunk_list[(int) (index)] = Message.NOT_OWNED;
     }
+
     public String bitmap() {
         String res = "";
         for (int i = 0; i < this.chunk_list.length; i++) {
@@ -798,6 +808,13 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         }
 //        System.out.println("Adding new  "+index);
         this.addChunk(index, Message.PUSH_CYCLE);
+        if (debug >= 4) {
+            System.out.println("Adding " + index + " in the queue " + this.lastsrc.size());
+        }
+        this.lastsrc.addLast(new Integer(index));
+        if (debug >= 4) {
+            System.out.println("..." + this.lastsrc.size());
+        }
         return true;
     }
 
@@ -818,15 +835,38 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         return last;
     }
 
-    public int getLastSRC() {        
-        return this.lastsrc;
+    public int getLastSRC() {
+        int index = -1;
+        if (this.getCompleted() > 0) {
+            index = this.getNumberOfChunks() - 1;
+        } else {
+            index = (Integer) this.lastsrc.getFirst();
+        }
+        return index;
     }
 
-    public void addLastSRC() {
-        if (this.lastsrc + 1 >= this.number_of_chunks) {
-            this.setCompleted(CommonState.getTime());
-        } else if (normalize(this.chunk_list[this.lastsrc + 1]) > Message.OWNED) {
-            this.lastsrc++;
+    public void addLastSRC(int value) {
+        if(this.getCompleted() >0)
+            return;
+        int first = (Integer)this.lastsrc.getFirst();
+        if (value == first) {
+            if (this.getSize() > 1) {
+                first = (Integer) this.lastsrc.removeFirst();
+                if (debug >= 4) {
+                    System.out.println("\tRemoving " + first + " from the queue (" + this.lastsrc.size() + ")");
+                }
+            }
+            if (this.lastsrc.size() == 0 && this.getCompleted() <= 0) {
+                if (debug >= 4) {
+                    System.out.println("\tSource finishes to push chunks " + this.lastsrc.size());
+                }
+                this.setCompleted(CommonState.getTime());
+            } else {
+                first = (Integer) this.lastsrc.getFirst();
+                if (debug >= 4) {
+                    System.out.println("\tNext chunk to push " + first);
+                }
+            }
         }
     }
 
@@ -847,7 +887,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         int count = 0;
         while (elements > 0 && count < this.chunk_list.length) {
             int id = (this.chunk_list.length - count - 1);
-            if (this.chunk_list[id] !=Message.IN_DOWNLOAD && this.chunk_list[id]!= Message.NOT_OWNED && this.last_chunk_pulled != id) {
+            if (this.chunk_list[id] != Message.IN_DOWNLOAD && this.chunk_list[id] != Message.NOT_OWNED && this.last_chunk_pulled != id) {
                 result[index++] = id;
                 elements--;
             }
@@ -891,7 +931,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         }
         return owned;
     }
-    
+
     /**
      * 
      * Il metodo aggiunge un chunk alla lista di chunks che il nodo
@@ -981,7 +1021,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * Stampa le informazioni sul nodo
      * */
     public String toString(Node node) {
-        String result = "Nodo " + node.getID() + ", Time " + CommonState.getTime() +" , Fail Push " + this.fail_push + ", Fail Pull " + this.fail_pull + ", Lista " + this.getSize();
+        String result = "Nodo " + node.getID() + ", Time " + CommonState.getTime() + " , Fail Push " + this.fail_push + ", Fail Pull " + this.fail_pull + ", Lista " + this.getSize();
         if (this.getSize() == this.getNumberOfChunks()) {
             result += " >>> ha tutti i chunks.";
         } else {
@@ -989,52 +1029,51 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         }
         return result;
     }
-    
+
     /**
      * Restituisce un vicino del nodo @node
      * */
     public Node getNeighbor(Node node, int pid) {
         DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
         int counter = 4 * net.degree();
-        if(net.getCurrent() == null)
+        if (net.getCurrent() == null) {
             net.setCurrent(node);
+        }
         if (this.getDebug() >= 10) {
-                System.out.println("\tNodo " + node.getID() + "\n\t" + net);
-            }
-        if(this.nk == 0){
+            System.out.println("\tNodo " + node.getID() + "\n\t" + net);
+        }
+        if (this.nk == 0) {
             NeighborElement candidate;
-            candidate = net.getDelayNeighbor();            
-            while(counter >0 && (
-                    ((this.cycle == Message.PUSH_CYCLE && candidate.getPushtime() == CommonState.getTime())||//no target node already pushed
-                    (this.cycle == Message.PULL_CYCLE && candidate.getPulltime() == CommonState.getTime()))||//no target node already pulled
-                    candidate.getNeighbor().getIndex()==this.getSource())){//no Source
+            Alternate asrc = (Alternate) Network.get(this.getSource()).getProtocol(pid);
+            candidate = net.getDelayNeighbor();
+            while (counter > 0 && (((this.cycle == Message.PUSH_CYCLE && candidate.getPushtime() == CommonState.getTime()) ||//no target node already pushed
+                    (this.cycle == Message.PULL_CYCLE && candidate.getPulltime() == CommonState.getTime())) ||//no target node already pulled
+                    (candidate.getNeighbor().getIndex() == this.getSource() && asrc.getCompleted() <= 0))) {//no Source
                 counter--;
                 candidate = net.getDelayNeighbor();
             }
-            if (this.getDebug() >= 10)
-                System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " ( " + this.getSource() +" ) ");
-            if(this.cycle == Message.PUSH_CYCLE)
-                candidate.setPushtime(CommonState.getTime());
-            else
-                candidate.setPulltime(CommonState.getTime());
-
-        return candidate.getNeighbor();
-        }
-        else if(nk == 1){
-            Node candidate = null;
-            if(this.cycle == Message.PUSH_CYCLE){
-                candidate = this.getPushNeighbor(node, this.getLast(this.getPushWindow()), pid);            
+            if (this.getDebug() >= 10) {
+                System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " ( " + this.getSource() + " ) ");
             }
-            else{
+            if (this.cycle == Message.PUSH_CYCLE) {
+                candidate.setPushtime(CommonState.getTime());
+            } else {
+                candidate.setPulltime(CommonState.getTime());
+            }
+
+            return candidate.getNeighbor();
+        } else if (nk == 1) {
+            Node candidate = null;
+            if (this.cycle == Message.PUSH_CYCLE) {
+                candidate = this.getPushNeighbor(node, this.getLast(this.getPushWindow()), pid);
+            } else {
                 candidate = this.getPullNeighbor(node, this.getLeast(this.getPullWindow()), pid);
             }
             return candidate;
-        }
-        else
+        } else {
             return null;
+        }
     }
-
-
 
     public String getNeighborhood(Node node, int pid) {
         Linkable linkable = (Linkable) node.getProtocol(FastConfig.getLinkable(pid));
@@ -1048,7 +1087,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
 
     public Node getPushNeighbor(Node node, int chunks_push[], int pid) {
         RandomizedNeighbor rndnet = (RandomizedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
-        Alternate snd  = (Alternate) node.getProtocol(pid);
+        Alternate snd = (Alternate) node.getProtocol(pid);
         rndnet.permutation();
         rndnet.permutation();
         Node candidate = null;
@@ -1059,9 +1098,10 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
                 System.out.print("\tPUSH - Candidate Node " + candidate.getID() + "(" + i + "/" + rndnet.degree() + ")");
             }
             Alternate cnd = (Alternate) candidate.getProtocol(pid);
-            for (int k = 0; k < chunks_push.length ; k++) {
-                if (this.getDebug() >= 8)
-                    System.out.print("V["+i+"]="+candidate.getID()+" >> (" + chunks_push[k] + ", " + cnd.getChunk(chunks_push[k]) + "); ");
+            for (int k = 0; k < chunks_push.length; k++) {
+                if (this.getDebug() >= 8) {
+                    System.out.print("V[" + i + "]=" + candidate.getID() + " >> (" + chunks_push[k] + ", " + cnd.getChunk(chunks_push[k]) + "); ");
+                }
                 if (cnd.getChunk(chunks_push[k]) == Message.NOT_OWNED)// && cnd.getDownload(node)>cnd.getDownloadMin(node) && cnd.getActiveDw()<cnd.getActiveDownload())
                 {
                     flag = false;
@@ -1071,15 +1111,18 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
                 System.out.print("...skipping it has all chunks");
                 candidate = null;
             }
-                System.out.print("\n");
-            if(this.getDebug() > 8 && candidate != null)
-                System.out.println("Rec\t"+candidate.getID()+"\t"+ cnd.bitmap() + "\nSen\t"+node.getID()+"\t" + snd.bitmap());
+            System.out.print("\n");
+            if (this.getDebug() > 8 && candidate != null) {
+                System.out.println("Rec\t" + candidate.getID() + "\t" + cnd.bitmap() + "\nSen\t" + node.getID() + "\t" + snd.bitmap());
+            }
 //                return null;
         }
         if (this.getDebug() >= 6 && candidate != null) {
             System.out.println("\tNodo " + node.getID() + " seleziona vicino " + candidate.getID());
         }
-        if (flag == true) return null;
+        if (flag == true) {
+            return null;
+        }
         return candidate;
     }
 
@@ -1096,8 +1139,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             }
             Alternate cnd = (Alternate) candidate.getProtocol(pid);
             for (int k = 0; k < chunks_pull.length; k++) {
-                if (this.getDebug() >= 8) 
-                    System.out.print("V["+i+"]="+candidate.getID()+" >> (" + chunks_pull[k] + ", " + cnd.getChunk(chunks_pull[k]) + "); ");
+                if (this.getDebug() >= 8) {
+                    System.out.print("V[" + i + "]=" + candidate.getID() + " >> (" + chunks_pull[k] + ", " + cnd.getChunk(chunks_pull[k]) + "); ");
+                }
                 if ((cnd.getChunk(chunks_pull[k]) != Message.NOT_OWNED) && (cnd.getChunk(chunks_pull[k]) != Message.IN_DOWNLOAD)) //                        && cnd.getUpload(candidate)>cnd.getUploadMin(candidate) && cnd.getPassiveUp()<cnd.getPassiveUpload())
                 {
                     flag = false;
@@ -1105,20 +1149,19 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             }
             if (flag && this.getDebug() >= 8) {
                 System.out.println("...no chunks to pull\nRec\t" + cnd.bitmap() + "\nSen\t" + this.bitmap());
-            }
-            else if (this.getDebug() >= 8) {
+            } else if (this.getDebug() >= 8) {
                 System.out.println();
             }
         }
         if (this.getDebug() >= 6 && candidate != null) {
             System.out.println("\tNodo " + node.getID() + " seleziona vicino " + candidate.getID());
         }
-        if(flag == true)
+        if (flag == true) {
             return null;
+        }
 
         return candidate;
     }
-
 
     /**
      * Restituisce per ogni chunk, il tempo in cui è stato ricevuto

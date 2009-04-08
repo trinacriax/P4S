@@ -47,10 +47,14 @@ public class SourceObserver implements Control {
                     src.getID() + " invece di " + protocol.getSource());
             return false;
         }
-        if (protocol.produce() == false) {
-        } else if (protocol.getDebug() >= 2) {
-            System.out.println(CommonState.getTime() + " >> Sorgente " + src.getID() + " produce " + protocol.getLast() + " <<");
+        if (protocol.produce() != false){
+            if (protocol.getDebug() >= 2)
+                System.out.println(CommonState.getTime() + " >> Sorgente " + src.getID() + " produce " + protocol.getLast() + " <<");
         }
+        else
+            if (protocol.getDebug() >= 2)
+                System.out.println(CommonState.getTime() + " >> Sorgente " + src.getID() + " finished to produce chunks " + protocol.getSize()+ " <<");
+        
         return false;
     }
 }
