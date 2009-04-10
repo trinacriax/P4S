@@ -69,7 +69,7 @@ public class AlternateInitializer implements Control {
     // Methods
     // ------------------------------------------------------------------------
     public boolean execute() {
-        System.err.print("Alternate Initializer: Start...");
+        System.err.print("- >> Alternate Initializer: Start...");
         Node source = Network.get(Network.size() - 1);//the source is always the last node.
         for (int i = 0; i < Network.size(); i++) {
             Node aNode = Network.get(i);
@@ -93,7 +93,7 @@ public class AlternateInitializer implements Control {
         DelayedNeighbor dn = (DelayedNeighbor)source.getProtocol(FastConfig.getLinkable(pid));
         dn.populate();
         EDSimulator.add(1, new P4SMessage(null, source, Message.SWITCH_PUSH, 0L), source, pid);
-        System.err.println("finished");
+        System.err.print("finished\n");
         return false;
     }
 }

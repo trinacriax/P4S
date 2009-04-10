@@ -164,7 +164,6 @@ public class DelayedNeighbor implements Protocol, Linkable {
 // --------------------------------------------------------------------------
 // Methods
 // --------------------------------------------------------------------------
-
     public boolean contains(Node n) {
         for (int i = 0; i < len; i++) {
             if (neighbors[i] == n) {
@@ -237,10 +236,10 @@ public class DelayedNeighbor implements Protocol, Linkable {
     }
 
     public NeighborElement getTargetNeighbor() {
-        if (select == -1) {
-            return getRNDNeighbor();
-        } else {
+        if (select == 1) {
             return getDelayNeighbor();
+        } else {
+            return getRNDNeighbor();
         }
     }
 
@@ -323,7 +322,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
         StringBuffer buffer = new StringBuffer();
         buffer.append("len=" + len + " maxlen=" + neighbors.length + " NODE " + current.getIndex() + " [");
         for (int i = 0; i < len; ++i) {
-            buffer.append(neighbors[i] + " ");
+            buffer.append(neighbors[i] + "; ");
         }
         return buffer.append("]").toString();
     }
@@ -334,7 +333,11 @@ public class DelayedNeighbor implements Protocol, Linkable {
         len = 0;
     }
 
-    /**Removes a given node in the neighborhood*/
+    /**
+     * Removes a given node in the neighborhood     
+     * @param Neighbour The neighbor to remove from current node's neighborhood
+     * @return Node The node removed
+     */
     public Node remNeighbor(Node neighbour) {
         if (!this.contains(neighbour)) {
             return null;

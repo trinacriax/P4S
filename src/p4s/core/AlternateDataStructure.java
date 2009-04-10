@@ -836,38 +836,72 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     }
 
     public int getLastSRC() {
-        int index = -1;
-        if (this.getCompleted() > 0) {
-            index = this.getNumberOfChunks() - 1;
-        } else {
-            index = (Integer) this.lastsrc.getFirst();
-        }
+       int index = (Integer) lastsrc.getFirst();
+        
+//        int index = -1;
+//        if(this.lastsrc.isEmpty())
+//            return index;
+//        else 
+//            if (this.getCompleted() > 0) {
+//            index = this.getNumberOfChunks() - 1;
+//        } else {
+//            index = (Integer) this.lastsrc.getFirst();
+//        }
         return index;
     }
 
     public void addLastSRC(int value) {
-        if(this.getCompleted() >0)
+        if (this.getCompleted() > 0) {
             return;
-        int first = (Integer)this.lastsrc.getFirst();
+        }
+        int first = (Integer) lastsrc.getFirst();
         if (value == first) {
-            if (this.getSize() > 1) {
-                first = (Integer) this.lastsrc.removeFirst();
+            if (first == this.number_of_chunks - 1) {
+                if (debug >= 4) {
+                    System.out.println("\tPushing last one " + first);
+                }
+                if (this.getCompleted() <= 0) {
+                    if (debug >= 4) {
+                        System.out.println("\tSource finishes to push chunks " + this.lastsrc.size());
+                    }
+                    this.setCompleted(CommonState.getTime());
+                }
+            } else if (lastsrc.size() > 1) {
+                first = (Integer) lastsrc.removeFirst();
                 if (debug >= 4) {
                     System.out.println("\tRemoving " + first + " from the queue (" + this.lastsrc.size() + ")");
                 }
             }
-            if (this.lastsrc.size() == 0 && this.getCompleted() <= 0) {
-                if (debug >= 4) {
-                    System.out.println("\tSource finishes to push chunks " + this.lastsrc.size());
-                }
-                this.setCompleted(CommonState.getTime());
-            } else {
-                first = (Integer) this.lastsrc.getFirst();
-                if (debug >= 4) {
-                    System.out.println("\tNext chunk to push " + first);
-                }
+        } 
+        else {              
+            if (debug >= 4) {
+                System.out.println("\tNext chunk to push " + first+ " VS "+value);
             }
+
         }
+    
+//        if(this.getCompleted() >0)
+//            return;
+//        int first = (Integer)lastsrc.getFirst();
+//        if (value == first) {
+//            if (this.lastsrc.size()>1 || first == this.number_of_chunks-1) {
+//                first = (Integer) this.lastsrc.removeFirst();
+//                if (debug >= 4) {
+//                    System.out.println("\tRemoving " + first + " from the queue (" + this.lastsrc.size() + ")");
+//                }
+//            }
+//            if (this.lastsrc.isEmpty() && this.getCompleted() <= 0) {
+//                if (debug >= 4) {
+//                    System.out.println("\tSource finishes to push chunks " + this.lastsrc.size());
+//                }
+//                this.setCompleted(CommonState.getTime());
+//            } else {
+//                first = (Integer) this.lastsrc.getFirst();
+//                if (debug >= 4) {
+//                    System.out.println("\tNext chunk to push " + first);
+//                }
+//            }
+//        }
     }
 
     /**

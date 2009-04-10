@@ -1,20 +1,20 @@
 ### Simulation seed
-SEED 2345123451234561234
+SEED 7989798456451
 ### MAX Simulation time
 CYCLE SIZE*CHUNKS*NEW_CHUNK_DELAY
 ### Verbosity level
-DEBUG 4
+DEBUG 0
 
 ### Number of nodes in the network
 SIZE 1000
 ### Number of chunks to transmit
-CHUNKS 500
+CHUNKS 200
 ### Chunk size in bits
-CHUNK_SIZE 122000
+CHUNK_SIZE 128000
 ### Time in milliseconds to produce a new chunk
-NEW_CHUNK_DELAY 1000
+NEW_CHUNK_DELAY 500
 ### Nodes degree
-DEGREE 20
+DEGREE 16
 ### Message delay: min and max
 MINDELAY 5
 MAXDELAY 25
@@ -41,11 +41,11 @@ ACT_DW 4
 PAS_DW 4
 PAS_UP 4
 
-## Window size for either push or pull active message, 
+## Window size for either push or pull active message,
 ## the node either proposes PUSH_WIN chunks in push
 ## or PULL_WIN for pull
-PUSH_WIN 10
-PULL_WIN 10
+PUSH_WIN 4
+PULL_WIN 4
 
 #- - - - -  - P R O T O C O L S - - - - -  -#
 #############Random Generator#############
@@ -68,8 +68,8 @@ protocol.link.delay 2
 # 0 Uniform between max and min
 # 1 Gaussian with mean
 # 2 Exponential Truncated with mean
-# 
-# Peer selection 
+#
+# Peer selection SELECT
 # -1 Random
 #  0 Delay oriented with probability
 #
@@ -106,8 +106,8 @@ init.bwi.debug 0
 ## separeted by commas:
 ## 128000,180000,290000
 ## 0.3,0.7,1
-init.bwi.uploadBw 128000 #,180000,256000
-init.bwi.downloadBw 640000 #,640000,640000
+init.bwi.uploadBw 256000 #,180000,256000
+init.bwi.downloadBw 100000 #,640000,640000
 init.bwi.bandwidthPr 1 #0.3,0.7,1
 init.bwi.active_upload ACT_UP
 init.bwi.active_download ACT_DW
@@ -115,8 +115,8 @@ init.bwi.passive_upload PAS_UP
 init.bwi.passive_download PAS_DW
 ## the following two parameters indicate the source upload/download bandwidth
 ## download is useless at the source, but it exists :)
-init.bwi.srcup 128000
-init.bwi.srcdw 640000
+#init.bwi.srcup 256000
+#init.bwi.srcdw 640000
 
 ## Chunk distribution protocol initializer
 init.ii AlternateInitializer
@@ -142,6 +142,8 @@ include.init rndlink bwi ii
 control.00 SourceObserver
 control.00.protocol int
 control.00.step NEW_CHUNK_DELAY
+control.00.from 0
+control.00.until (NEW_CHUNK_DELAY*CHUNKS)
 
 ## Control collects statistics on the operation performed by
 ## peers in the chunk distribution process
