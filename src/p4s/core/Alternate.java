@@ -91,6 +91,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                 }
                 //To do a push a node must be in PUSH :)
                 if (sender.getCycle() != Message.PUSH_CYCLE) {
+                    if (sender.getDebug() >= 1) 
                     System.out.println("\tNode " + node.getID() + " is in PULL, now it is in pull due to parallel pull");
                     sender = receiver = null;
                     return;
