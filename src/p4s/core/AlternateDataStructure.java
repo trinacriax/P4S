@@ -782,11 +782,13 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * Set a chunk in download
      */
     public void setInDown(long index) {
-        this.chunk_list[(int) (index)] = Message.IN_DOWNLOAD;
+        if(this.chunk_list[(int) (index)] == Message.NOT_OWNED)
+            this.chunk_list[(int) (index)] = Message.IN_DOWNLOAD;
     }
 
     public void resetInDown(long index) {
-        this.chunk_list[(int) (index)] = Message.NOT_OWNED;
+        if(this.chunk_list[(int) (index)] == Message.IN_DOWNLOAD)
+            this.chunk_list[(int) (index)] = Message.NOT_OWNED;
     }
 
     public String bitmap() {
@@ -1012,7 +1014,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         int least = -1;
         int max_chunk = this.getLast();
         for (int i = 0; i < this.chunk_list.length && i < max_chunk; i++) {
-            if (normalize(this.chunk_list[i]) == Message.NOT_OWNED) {// && i != this.last_chunk_pulled) {
+            if (this.chunk_list[i] == Message.NOT_OWNED) {// && i != this.last_chunk_pulled) {
                 return i;
             }
         }
@@ -1033,7 +1035,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             elements--;
         } else {
             for (int i = 0; i < this.chunk_list.length && i < max_chunk && elements > 0; i++) {
-                if (normalize(this.chunk_list[i]) == Message.NOT_OWNED) {// && i != this.last_chunk_pulled) {
+                if (this.chunk_list[i] == Message.NOT_OWNED) {// && i != this.last_chunk_pulled) {
                     result[index++] = i;
                     elements--;
                 }
@@ -1075,19 +1077,19 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         }
         if (this.getDebug() >= 10) {
             System.out.println("\tNodo " + node.getID() + "\n\t" + net);
-        }
+        }//No knowledge about the neighborhood
         if (this.nk == 0) {
             NeighborElement candidate;
-            Alternate asrc = (Alternate) Network.get(this.getSource()).getProtocol(pid);
-            candidate = net.getDelayNeighbor();
-            while (counter > 0 && (((this.cycle == Message.PUSH_CYCLE && candidate.getPushtime() == CommonState.getTime()) ||//no target node already pushed
-                    (this.cycle == Message.PULL_CYCLE && candidate.getPulltime() == CommonState.getTime())) ||//no target node already pulled
-                    (candidate.getNeighbor().getIndex() == this.getSource() && asrc.getCompleted() <= 0))) {//no Source
+//            Alternate asrc = (Alternate) Network.get(this.getSource()).getProtocol(pid);
+            candidate = net.getTargetNeighbor();
+            while (counter > 0 && ((this.cycle == Message.PUSH_CYCLE && (candidate.getPushtime() == CommonState.getTime() || candidate.getNeighbor().getIndex() == this.getSource())) ||//no target node already pushed
+                    (this.cycle == Message.PULL_CYCLE && candidate.getPulltime() == CommonState.getTime()))){ //no target node already pulled
+//                    (candidate.getNeighbor().getIndex() == this.getSource() && asrc.getCompleted() <= 0))) {//no Source
                 counter--;
-                candidate = net.getDelayNeighbor();
+                candidate = net.getTargetNeighbor();
             }
             if (this.getDebug() >= 10) {
-                System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " ( " + this.getSource() + " ) ");
+                System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " (Source is " + this.getSource() + ") ");
             }
             if (this.cycle == Message.PUSH_CYCLE) {
                 candidate.setPushtime(CommonState.getTime());
@@ -1096,7 +1098,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             }
 
             return candidate.getNeighbor();
-        } else if (nk == 1) {
+        } else if (nk == 1) {//Global about the neighborhood
             Node candidate = null;
             if (this.cycle == Message.PUSH_CYCLE) {
                 candidate = this.getPushNeighbor(node, this.getLast(this.getPushWindow()), pid);

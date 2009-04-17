@@ -31,6 +31,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
     private static final String PAR_DEVDELAY = "devdelay";
     private static final String PAR_DELAY = "delay";
     private static final String PAR_SELECT = "select";
+    private static final String PAR_DEBUG = "debug";
     /**
      * Many kinds of delay distributions
      * 0 Uniform between max and min
@@ -52,6 +53,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
     private final long min;
     private final long range;
     private final long max;
+    private final int debug;
     protected static long[][] delays;
     private double prob[];
 
@@ -60,7 +62,8 @@ public class DelayedNeighbor implements Protocol, Linkable {
 // --------------------------------------------------------------------------
     public DelayedNeighbor(String prefix) {
         neighbors = new NeighborElement[Configuration.getInt(prefix + "." + PAR_INITCAP, DEFAULT_INITIAL_CAPACITY)];
-        select = Configuration.getInt(prefix + "." + PAR_SELECT, -1);
+        select = Configuration.getInt(prefix + "." + PAR_SELECT, 0);
+        debug = Configuration.getInt(prefix + "." + PAR_DEBUG, 0);
         len = 0;
         min = Configuration.getLong(prefix + "." + PAR_MINDELAY, 0);
         max = Configuration.getLong(prefix + "." + PAR_MAXDELAY, 0);
@@ -71,7 +74,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
         current = null;
         prob = null;
         delays = null;
-        System.err.println("Delayed Neighbor READY! " + select + ", " + delaydist);
+        System.err.println("Init DelayedNeighbor: Len " + len + ", Select " + select + ", DelayDist " + delaydist + ", MinDelay " + min + ", MaxDelay " + max + ", Mean " + mu + ", Dev " + dev);
     }
 
     public void populate() {
@@ -131,19 +134,23 @@ public class DelayedNeighbor implements Protocol, Linkable {
                         val = val < min ? min : val;
                         val = val < max ? val : max;
                         tmpDelay[i][j] = tmpDelay[j][i] = val;
-//                            System.out.println("["+i+","+j+"]="+tmpDelay[i][j] + " ("+val+")");
+                        if (debug >= 8) {
+                            System.out.println("[" + i + "," + j + "]=" + tmpDelay[i][j] + " (" + val + ")");
+                        }
                     }
                 }
             }
         }
         delays = tmpDelay;
         tmpDelay = null;
-//        for (int k = 0; k < delays.length; k++) {
-//            System.out.print(k + "]]] ");
-//            for (int v = 0; v < delays[k].length; v++) {
-//                System.out.print(delays[k][v] + ";");
+//        if (debug >= 8) {
+//            for (int k = 0; k < delays.length; k++) {
+//                System.out.print(k + "]]] ");
+//                for (int v = 0; v < delays[k].length; v++) {
+//                    System.out.print(delays[k][v] + ";");
+//                }
+//                System.out.println("[[[ " + delays[k].length);
 //            }
-//            System.out.println("[[[ " + delays[k].length);
 //        }
     }
 
@@ -164,6 +171,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
 // --------------------------------------------------------------------------
 // Methods
 // --------------------------------------------------------------------------
+
     public boolean contains(Node n) {
         for (int i = 0; i < len; i++) {
             if (neighbors[i] == n) {
@@ -181,12 +189,13 @@ public class DelayedNeighbor implements Protocol, Linkable {
             ne.setDelay(delays[current.getIndex()][ne.getNeighbor().getIndex()]);
         }
         this.delaySort(neighbors);
-//    System.out.print("<><>Node "+current.getIndex()+" >> \n\t");
-//    for(int i = 0; i < neighbors.length ;i++){
-//        NeighborElement ne = neighbors[i];
-//        System.out.print(ne+"; ");
-//    }
-//    System.out.println();
+        if (debug >= 8) {
+            System.out.print("<><>Node " + current.getIndex() + " >> \n\t");
+            for (int i = 0; i < neighbors.length; i++) {
+                System.out.print(neighbors[i] + "; ");
+            }
+            System.out.println();
+        }
     }
 
     public Node getCurrent() {
@@ -236,6 +245,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
     }
 
     public NeighborElement getTargetNeighbor() {
+        System.out.println("Select "+select);
         if (select == 1) {
             return getDelayNeighbor();
         } else {
@@ -245,34 +255,51 @@ public class DelayedNeighbor implements Protocol, Linkable {
 
     public NeighborElement getDelayNeighbor() {
         if (prob == null || prob.length < neighbors.length) {
+            double tot = 0;
             this.delaySort(neighbors);
             double viz[] = new double[neighbors.length];
             double sv = 0;
             prob = new double[neighbors.length];
             for (int i = 0; i < viz.length; i++) {
                 viz[i] = 1.0 / neighbors[i].getDelay();
-//            System.out.println(" Node "+ current.getID()+ " 1/RTTi to "+ neighbors[i].getNeighbor().getID()+" is "+ viz[i]);
+                if (debug >= 8) {
+                    System.out.println(" Node " + current.getID() + " 1/RTT(" + neighbors[i].getNeighbor().getID() + ") is " + viz[i]);
+                }
                 sv += viz[i];
             }
             for (int i = 0; i < prob.length; i++) {
                 prob[i] = viz[i] / sv;
+                if (debug >= 8) {
+                    System.out.println(" Node " + current.getID() + " Prob[" + neighbors[i].getNeighbor().getID() + "] = " + prob[i]);
+                }
+                tot += prob[i];
+            }
+            if (debug >= 8) {
+                System.out.println("Total prob. is " + tot);
             }
         }
         NeighborElement candidate = null;
         RandomRLC rlc = (RandomRLC) CommonState.r;
         double value = rlc.uniform_0_1(rlc.nextLong());
-//        System.out.println("Extract "+ value);
+        if (debug >= 8) {
+            System.out.println("Extract " + value);
+        }
         int id = 0;
         while (value > 0 && candidate == null && id < neighbors.length) {
-//            System.out.println("\tValue " +value+ ", Prob "+ prob[id]+ " peer "+ neighbors[id]);
+            if (debug >= 8) {
+                System.out.println("\t(" + id + ") Value " + value + ", Prob " + prob[id] + " (" + neighbors[id] + ")");
+            }
             value -= prob[id];
-            if (value < 0) {
+            if (value <= 0) {
                 candidate = neighbors[id];
             } else {
                 id++;
             }
         }
         if (candidate == null) {
+            if (id >= neighbors.length) {
+                id = neighbors.length - 1;
+            }
             candidate = neighbors[id];
         }
         return candidate;
@@ -280,12 +307,18 @@ public class DelayedNeighbor implements Protocol, Linkable {
 
 ///**Get a randomly selected neighbor*/
     public NeighborElement getRNDNeighbor() {
-        this.permutation();
+//        int swap[] = new int[len];
+//        for (int i = 0; i < len; i++)
+//            swap[i] = i;
+//        int temp = 0;
+//        for (int i = 0; i < len; i++) {
+//            int out = CommonState.r.nextInt(len - i);
+//            temp = swap[i];
+//            swap[i] = swap[out];
+//            swap[out] = temp;
+//        }
         int out = CommonState.r.nextInt(len);
-        NeighborElement tmp = this.neighbors[len - 1];
-        this.neighbors[len - 1] = this.neighbors[out];
-        this.neighbors[out] = tmp;
-        return this.neighbors[len - 1];
+        return this.neighbors[out];
     }
 
     /**Performs a permutation of the neighbors*/
@@ -322,7 +355,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
         StringBuffer buffer = new StringBuffer();
         buffer.append("len=" + len + " maxlen=" + neighbors.length + " NODE " + current.getIndex() + " [");
         for (int i = 0; i < len; ++i) {
-            buffer.append(neighbors[i] + "; ");
+            buffer.append("(" + i + ") " + neighbors[i] + "; ");
         }
         return buffer.append("]").toString();
     }
