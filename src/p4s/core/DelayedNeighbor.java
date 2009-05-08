@@ -67,7 +67,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
         len = 0;
         min = Configuration.getLong(prefix + "." + PAR_MINDELAY, 0);
         max = Configuration.getLong(prefix + "." + PAR_MAXDELAY, 0);
-        range = max - min;
+        range = max - min + 1;
         delaydist = Configuration.getInt(prefix + "." + PAR_DELAY, 0);
         mu = Configuration.getDouble(prefix + "." + PAR_MUDELAY, 0) - min;
         dev = Configuration.getDouble(prefix + "." + PAR_DEVDELAY, 0);
