@@ -245,7 +245,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
     }
 
     public NeighborElement getTargetNeighbor() {
-        System.out.println("Select "+select);
+//        System.out.println("Select "+select);
         if (select == 1) {
             return getDelayNeighbor();
         } else {
