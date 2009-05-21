@@ -1071,6 +1071,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * */
     public Node getNeighbor(Node node, int pid) {
         DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
+        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+//        double threshold = ( (this.chunk_size*1.0)/bap.getUploadMax()*1000);//upload time in ms
         int counter = 4 * net.degree();
         if (net.getCurrent() == null) {
             net.setCurrent(node);
@@ -1082,8 +1084,10 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             NeighborElement candidate;
 //            Alternate asrc = (Alternate) Network.get(this.getSource()).getProtocol(pid);
             candidate = net.getTargetNeighbor();
-            while (counter > 0 && ((this.cycle == Message.PUSH_CYCLE && (candidate.getPushtime() == CommonState.getTime() || candidate.getNeighbor().getIndex() == this.getSource())) ||//no target node already pushed
-                    (this.cycle == Message.PULL_CYCLE && candidate.getPulltime() == CommonState.getTime()))){ //no target node already pulled
+            while (counter > 0 && (candidate.getContactTime() == CommonState.getTime() || candidate.getNeighbor().getIndex() == this.getSource())){//no target node already pushed
+//                    ||(this.cycle == Message.PULL_CYCLE && candidate.getPulltime() == CommonState.getTime()
+//                    ){
+//            { //no target node already pulled
 //                    (candidate.getNeighbor().getIndex() == this.getSource() && asrc.getCompleted() <= 0))) {//no Source
                 counter--;
                 candidate = net.getTargetNeighbor();
@@ -1091,11 +1095,10 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             if (this.getDebug() >= 10) {
                 System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " (Source is " + this.getSource() + ") ");
             }
-            if (this.cycle == Message.PUSH_CYCLE) {
-                candidate.setPushtime(CommonState.getTime());
-            } else {
-                candidate.setPulltime(CommonState.getTime());
-            }
+//            if (this.cycle == Message.PUSH_CYCLE) {
+//                candidate.setPushtime(CommonState.getTime());
+//            } else {}
+                candidate.setContactTime(CommonState.getTime());            
 
             return candidate.getNeighbor();
         } else if (nk == 1) {//Global about the neighborhood

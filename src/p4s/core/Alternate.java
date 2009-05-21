@@ -232,8 +232,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                                 P4SMessage imm = new P4SMessage(chunks_push, node, Message.PUSH);
                                 delay = this.send(node, peer, imm, pid);
                                 if (sender.getDebug() >= 2) {
-                                    System.out.println("\t\tNode " + node.getID() + ((sender.getDebug() >= 6) ? " (" + sender.getPushAttempt() + "/" + sender.getPushRetry() +
-                                            ")" : "") + " PUSHes " + imm.getChunkids() + " to Node " + peer.getID() + " MexRX " + (CommonState.getTime() + delay));
+                                    System.out.println("\t\tNode " + node.getID() + " PUSHes " + imm.getChunkids() + " to Node " + peer.getID() + " MexRX " + (CommonState.getTime() + delay));
                                 }
                             } else {
                                 while (sender.getPushAttempt() < sender.getPushRetry()) {
@@ -381,10 +380,10 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                         this.send(node, im.getSender(), new P4SMessage(chunktopush, node, Message.FINISH_PUSH), delay, pid);
                         delay += sender.getSwitchTime();
                         this.send(node, node, new P4SMessage(null, node, Message.SWITCH_PUSH), delay, pid);
-                        if (sender.getDebug() >= 4 || sender.getSource() == node.getIndex()) {
+                        if (sender.getDebug() >= 4) {
                             System.out.println("\tNode " + node.getID() + " sends START_PUSH m:" + chunktopush + " to " + im.getSender().getID() + " MexRx " + (CommonState.getTime() + eedelay));
                         }
-                        if (sender.getDebug() >= 4 || sender.getSource() == node.getIndex()) {
+                        if (sender.getDebug() >= 4) {
                             System.out.println("\tNode " + node.getID() + " sends FINISH_PUSH m:" + chunktopush + " to " + im.getSender().getID() + " MexRx " + (CommonState.getTime() + result+ eedelay));
                         }
                         if (sender.getDebug() >= 4) {
@@ -621,8 +620,8 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
             case Message.PULL: {//Qualcuno vuole fare pull a questo nodo
                 sender = (Alternate) (node.getProtocol(pid));
                 if (sender.getDebug() >= 2) {
-                    System.out.println(CommonState.getTime() + "\tSender " + node.getID() + " " + (sender.getDebug() >= 6 ? sender.getSize() : " ") + " receives PULL from Node " +
-                            im.getSender().getID() + " for the chunk " + im.getChunkids());
+                    System.out.println(CommonState.getTime() + "\tSender " + node.getID() +  " receives PULL from Node " +
+                            im.getSender().getID() + " for the chunk " + im.getChunkids()+ (sender.getDebug() >= 6 ? " " +sender.bitmap()+"." : ".") );
                 }
                 receiver = (Alternate) (im.getSender().getProtocol(pid));
                 int pull_chunk = -1;
@@ -650,13 +649,13 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                     if (sender.getDebug() >= 3) {
                         System.out.println("\tNode " + node.getID() + " NOTOWN sends " + imm.getMessageID() + "(" + sender.getChunk(pull_chunk) + " ) to " + im.getSender().getID() + " MexRX " + (CommonState.getTime() + delay));
                     }
-                } else if (sender.getPassiveUp(node) >= sender.getPassiveUpload(node) || sender.getUpload(node) <= sender.getUploadMin(node)) {
-                    receiver.remActiveDw(im.getSender());
-                    sender.addFailPull();
-                    this.send(im.getSender(), im.getSender(), new P4SMessage(null, im.getSender(), Message.SWITCH_PULL), sender.getSwitchTime(), pid);
-                    if (sender.getDebug() >= 3) {
-                        System.out.println("\tNode " + node.getID() + " sends SWITCH_PULL to " + im.getSender().getID() + " MexRX " + (CommonState.getTime() + sender.getSwitchTime()));
-                    }
+//                } else if (sender.getPassiveUp(node) >= sender.getPassiveUpload(node) || sender.getUpload(node) <= sender.getUploadMin(node)) {
+//                    receiver.remActiveDw(im.getSender());
+//                    sender.addFailPull();
+//                    this.send(im.getSender(), im.getSender(), new P4SMessage(null, im.getSender(), Message.SWITCH_PULL), sender.getSwitchTime(), pid);
+//                    if (sender.getDebug() >= 3) {
+//                        System.out.println("\tNode " + node.getID() + " sends SWITCH_PULL to " + im.getSender().getID() + " MexRX " + (CommonState.getTime() + sender.getSwitchTime()));
+//                    }
                 } else if (response > Message.OWNED) { // il Nodo ha il chunk richiesto in PULL
                     P4SMessage imm = new P4SMessage(pull_chunk, node, Message.OK_PULL);
                     sender.setPulling();
