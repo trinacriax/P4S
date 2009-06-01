@@ -1,9 +1,8 @@
 package p4s.core;
 
-import bandwidth.BandwidthAwareProtocol;
+import bandwidth.core.BandwidthAwareProtocol;
 import peersim.config.FastConfig;
 import peersim.core.*;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import p4s.util.*;
 
@@ -65,7 +64,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     /**Time needed to change state*/
     protected long switchtime;
     /**Contains the chunk-id that the source will push*/
-    private static LinkedList lastsrc;
+    private static int lastsrc;
     /**Total neightbor knowledge*/
     private int nk;
 
@@ -109,7 +108,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         clh.time_in_pull = new Long("0");
         clh.switchtime = new Long("0");
         clh.nk = new Integer("0");
-        clh.lastsrc = null;
+//        clh.lastsrc = new Integer("0");
         return clh;
     }
 
@@ -144,7 +143,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.switchtime = 0;
         this.success_download = 0;
         this.success_upload = 0;
-        this.lastsrc = null;
+        this.lastsrc = 0;
         this.nk = 0;
     }
 
@@ -155,7 +154,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * */
     public void Initialize(int items) {
         this.resetAll();
-        this.lastsrc = new LinkedList();
+//        this.lastsrc = new LinkedList();
         this.chunk_list = new long[items];
         for (int i = 0; i < items; i++) {
             this.chunk_list[i] = Message.NOT_OWNED;
@@ -391,6 +390,11 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      **/
     public int getPullWindow() {
         return this.pull_window;
+    }
+
+    public long getRTTDelay(Node from, Node to){        
+        long delay = DelayedNeighbor.delays[from.getIndex()][to.getIndex()];
+        return delay;
     }
 
     /**
@@ -809,13 +813,11 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             index = this.getLast() + 1;
         }
 //        System.out.println("Adding new  "+index);
-        this.addChunk(index, Message.PUSH_CYCLE);
+        this.chunk_list[index] = 1;
+        if(this.chunk_list[lastsrc]==2)
+            this.lastsrc++;
         if (debug >= 4) {
-            System.out.println("Adding " + index + " in the queue " + this.lastsrc.size());
-        }
-        this.lastsrc.addLast(new Integer(index));
-        if (debug >= 4) {
-            System.out.println("..." + this.lastsrc.size());
+            System.out.println("Adding " + index + " in the queue " + this.lastsrc);
         }
         return true;
     }
@@ -838,8 +840,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     }
 
     public int getLastSRC() {
-       int index = (Integer) lastsrc.getFirst();
-        
+        return this.lastsrc;
+//       int index = (Integer) lastsrc.getFirst();
 //        int index = -1;
 //        if(this.lastsrc.isEmpty())
 //            return index;
@@ -849,61 +851,20 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
 //        } else {
 //            index = (Integer) this.lastsrc.getFirst();
 //        }
-        return index;
+//        return index;
     }
 
     public void addLastSRC(int value) {
-        if (this.getCompleted() > 0) {
-            return;
+        if(value == this.number_of_chunks)
+            this.setCompleted(CommonState.getTime());
+        else {
+              this.chunk_list[lastsrc] = 2;
         }
-        int first = (Integer) lastsrc.getFirst();
-        if (value == first) {
-            if (first == this.number_of_chunks - 1) {
-                if (debug >= 4) {
-                    System.out.println("\tPushing last one " + first);
+//        int first = (Integer) lastsrc.getFirst();
+        if (debug >= 4) {
+                    System.out.println("\tLast "+lastsrc);
                 }
-                if (this.getCompleted() <= 0) {
-                    if (debug >= 4) {
-                        System.out.println("\tSource finishes to push chunks " + this.lastsrc.size());
-                    }
-                    this.setCompleted(CommonState.getTime());
-                }
-            } else if (lastsrc.size() > 1) {
-                first = (Integer) lastsrc.removeFirst();
-                if (debug >= 4) {
-                    System.out.println("\tRemoving " + first + " from the queue (" + this.lastsrc.size() + ")");
-                }
-            }
-        } 
-        else {              
-            if (debug >= 4) {
-                System.out.println("\tNext chunk to push " + first+ " VS "+value);
-            }
-
-        }
-    
-//        if(this.getCompleted() >0)
-//            return;
-//        int first = (Integer)lastsrc.getFirst();
-//        if (value == first) {
-//            if (this.lastsrc.size()>1 || first == this.number_of_chunks-1) {
-//                first = (Integer) this.lastsrc.removeFirst();
-//                if (debug >= 4) {
-//                    System.out.println("\tRemoving " + first + " from the queue (" + this.lastsrc.size() + ")");
-//                }
-//            }
-//            if (this.lastsrc.isEmpty() && this.getCompleted() <= 0) {
-//                if (debug >= 4) {
-//                    System.out.println("\tSource finishes to push chunks " + this.lastsrc.size());
-//                }
-//                this.setCompleted(CommonState.getTime());
-//            } else {
-//                first = (Integer) this.lastsrc.getFirst();
-//                if (debug >= 4) {
-//                    System.out.println("\tNext chunk to push " + first);
-//                }
-//            }
-//        }
+//        
     }
 
     /**
