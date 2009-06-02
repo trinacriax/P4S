@@ -64,6 +64,10 @@ public interface Message {
 	 * messaggio
 	 * */
 	public final int NO_CHUNK_OWNED = 18;
+
+
+        public final int CONNECTION_RELEASE = 19;
+
 	/**
 	 * Messaggio di nodo in pulling
 	 * 

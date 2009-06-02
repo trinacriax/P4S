@@ -3,7 +3,6 @@ package p4s.core;
 import bandwidth.core.BandwidthAwareProtocol;
 import peersim.config.FastConfig;
 import peersim.core.*;
-import java.util.LinkedList;
 import p4s.util.*;
 
 /**
@@ -814,10 +813,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         }
 //        System.out.println("Adding new  "+index);
         this.chunk_list[index] = 1;
-        if(this.chunk_list[lastsrc]==2)
-            this.lastsrc++;
         if (debug >= 4) {
-            System.out.println("Adding " + index + " in the queue " + this.lastsrc);
+            System.out.println("Adding " + index + " in the queue " + lastsrc);
         }
         return true;
     }
@@ -840,31 +837,20 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     }
 
     public int getLastSRC() {
-        return this.lastsrc;
-//       int index = (Integer) lastsrc.getFirst();
-//        int index = -1;
-//        if(this.lastsrc.isEmpty())
-//            return index;
-//        else 
-//            if (this.getCompleted() > 0) {
-//            index = this.getNumberOfChunks() - 1;
-//        } else {
-//            index = (Integer) this.lastsrc.getFirst();
-//        }
-//        return index;
+        if (lastsrc + 1 == this.number_of_chunks) {
+            return lastsrc;
+        }
+        while (this.chunk_list[lastsrc] == 2) {
+            lastsrc++;
+        }
+        return lastsrc;
     }
 
     public void addLastSRC(int value) {
-        if(value == this.number_of_chunks)
+        if (value + 1 == this.number_of_chunks) {
             this.setCompleted(CommonState.getTime());
-        else {
-              this.chunk_list[lastsrc] = 2;
         }
-//        int first = (Integer) lastsrc.getFirst();
-        if (debug >= 4) {
-                    System.out.println("\tLast "+lastsrc);
-                }
-//        
+        this.chunk_list[lastsrc] = 2;
     }
 
     /**
@@ -975,7 +961,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         int least = -1;
         int max_chunk = this.getLast();
         for (int i = 0; i < this.chunk_list.length && i < max_chunk; i++) {
-            if (this.chunk_list[i] == Message.NOT_OWNED) {// && i != this.last_chunk_pulled) {
+            if (this.chunk_list[i] == Message.NOT_OWNED) {
                 return i;
             }
         }
