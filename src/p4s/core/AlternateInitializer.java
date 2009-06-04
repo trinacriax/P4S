@@ -92,7 +92,7 @@ public class AlternateInitializer implements Control {
         prot.setCycle(Message.PUSH_CYCLE);
         DelayedNeighbor dn = (DelayedNeighbor)source.getProtocol(FastConfig.getLinkable(pid));
         dn.populate();
-        EDSimulator.add(1, new P4SMessage(null, source, Message.SWITCH_PUSH, 0L), source, pid);
+        EDSimulator.add(0, new P4SMessage(null, source, Message.SWITCH_PUSH, 0L), source, pid);
         System.err.print("finished\n");
         return false;
     }

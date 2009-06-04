@@ -108,7 +108,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                     int ck = im.getChunks()[0];
                     if (sender.getChunk(ck) > Message.OWNED) {
                         if (sender.getDebug() >= 4) {
-                            System.out.print("\tNode " + node.getID() + " connection release: Chunk " + ck + ", removing active up from " + sender.getActiveUp(node));
+                            System.out.print("\tNode " + node.getID() + " connection released for the transmission of chunk " + ck + ", removing active up from " + sender.getActiveUp(node));
                         }
                         sender.remActiveUp(node);
                         sender.addSuccessUpload();
@@ -126,16 +126,17 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
 
                 //****************************************** S O U R C E    P U S H ******************************************\\
                 if (node.getIndex() == sender.getSource()) {
-                    if (sender.getUpload(node) > sender.getUploadMax(node)) {
-                        System.err.println(CommonState.getTime() + " errore " + sender.getUpload(node) + " > " + sender.getUploadMax(node));
+                    if (sender.getUpload(node) > sender.getUploadMax(node) || sender.getUpload(node) < 0) {
+                        System.err.println(CommonState.getTime() + " errore " + sender.getUpload(node) + " is greater than " + sender.getUploadMax(node)+" or is less than zero!");
                     }
                     Node peer = null;
                     long delay = 0;
                     if (sender.getCompleted() == 0 && sender.getUpload(node) > sender.getUploadMin(node)) {
-                        int chunktopush = sender.getLastSRC();//source select latest chunk
-                        while (sender.getActiveUp(node) < sender.getActiveUpload(node) && sender.getUpload(node) > sender.getUploadMin(node)) {
-                            sender.addActiveUp(node);                 
-                            peer = sender.getNeighbor(node, pid);
+                        //piece selection
+                        int chunktopush = sender.getLastSRC();//source select latest chunk not pushed yet
+                        while (sender.getActiveUp(node) < sender.getActiveUpload(node) && sender.getUpload(node) > sender.getUploadMin(node)) {//until the source may activate connections and has bandwidth
+                            sender.addActiveUp(node);
+                            peer = sender.getNeighbor(node, pid);//Peer selection
                             receiver = ((Alternate) (peer.getProtocol(pid)));
                             P4SMessage imm = new P4SMessage(chunktopush, node, Message.PUSH);
                             delay = this.send(node, peer, imm, pid);
@@ -146,40 +147,25 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                         }
                     } else if (sender.getCompleted() != 0) {
                         if (sender.getDebug() >= 1) {
-                            System.out.println("Source " + node.getID() + " finishes to send chunks");
+                            System.out.println("Source " + node.getID() + " finishes to send chunks :) "+ sender.getCompleted());
                         }
                     }
                     sender = receiver = null;
                     return;
-                } //PUSH PERFORMED BY A NORMAL PEER
+                }//********************************N O R M A L   P E E R   P U S H ******************************************\\
                 else {//E' un nodo normale
-                    if (sender.getSize() == 0) {
-                        sender.setCycle(Message.PULL_CYCLE);
-                        long delay = sender.getSwitchTime();
-                        if (sender.getDebug() >= 3) {
-                            System.out.println("\tNode " + node.getID() + " switches to PULL because it has no chunks : " + sender.getSize() +
-                                    " SWITCH to PULL at time " + (CommonState.getTime() + delay));
-                        }
-                        sender.resetPushAttempt();
-                        sender.resetActiveUp(node);
-                        sender.resetSuccessUpload();
-                        this.send(node, node, new P4SMessage(null, node, Message.SWITCH_PULL), delay, pid);
-                        sender = receiver = null;
-                        return;
-                    } //Sender ha esaurito il numero di connessioni attive in upload permesse
-                    else if (sender.getActiveUp(node) >= sender.getActiveUpload(node)) {
+                    if (sender.getActiveUp(node) >= sender.getActiveUpload(node)) {//Sender has reached #max of active upload connections
                         if (sender.getDebug() >= 4) {
                             System.out.println("\tNode " + node.getID() + " reaches maximum number of ActiveUpload");
                         }
                         sender = receiver = null;
                         return;
                     } //sender non ha più banda disponibile
-                    else if (sender.getUpload(node) < sender.getUploadMin(node)) {
+                    else if (sender.getUpload(node) <= sender.getUploadMin(node)) {//Sender has no more upload bandwidth to perform push
                         if (sender.getDebug() >= 3) {
-                            System.out.print("\tNode " + node.getID() + " has no upload bandwidth for push: ");
+                            System.out.print("\tNode " + node.getID() + " has no upload bandwidth for push: AU " + sender.getActiveUp(node)+ " PU "+sender.getPassiveUp(node)+",");
                         }
-                        if (sender.getActiveUp(node) == 0) {//il nodo non ha connessioni attive in upload, sta soddisfando un pull
-
+                        if (sender.getActiveUp(node) == 0) {//il nodo non ha connessioni attive in upload, sta soddisfando un pull quindi gli conviene andare in PULL
                             long delay = sender.getSwitchTime();
                             if (sender.getDebug() >= 3) {
                                 System.out.println(" SWITCH to PULL at time " + (CommonState.getTime() + delay));
@@ -189,52 +175,80 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                             sender.resetActiveUp(node);
                             sender.resetSuccessUpload();
                             this.send(node, node, new P4SMessage(null, node, Message.SWITCH_PULL), delay, pid);
-                        } else if (sender.getDebug() >= 3) {
-                            System.out.println();
+                        } else if (sender.getActiveUp(node) > 0 || sender.getPassiveUp(node)>0){
+                            if(sender.getDebug() >= 3) {
+                                System.out.println(" has other active transmission which have to be close before switch to pull: AU " + sender.getActiveUp(node)+ " PU "+sender.getPassiveUp(node));
+                            }
                         }
+                        else
+                            System.err.println(" has no active transmission in upload, but it has no upload bandwidth?? AU" + sender.getActiveUp(node)+ " PU "+sender.getPassiveUp(node));
                         sender = receiver = null;
                         return;
                     } //Successful push
-                    else if (sender.getSuccessUpload() > 0 && sender.getLeast() >= 0) {
-                        if (sender.getDebug() >= 4) {
-                            System.out.print("\tNode " + node.getID() + " has performed " + sender.getSuccessUpload() + " PUSH(es) with success ,");
+                    else if (sender.getSuccessUpload() > 0 || sender.getPushAttempt() >= sender.getPushRetry()) {//Sender has performed a push successfully or has reached #max of push attempts, and now switch to pull (if it can)
+                        if (sender.getDebug() >= 4 && sender.getSuccessUpload() > 0) {
+                            System.out.print("\tNode " + node.getID() + " has performed " + sender.getSuccessUpload() + " PUSH(es) with success,");
+                        }
+                        else if (sender.getDebug() >= 4 && sender.getPushAttempt() >= sender.getPushRetry()) {
+                            System.out.print("\tNode " + node.getID() + " reached max number of push attempts (" + sender.getPushAttempt() + "/" + sender.getPushRetry() + ") ");
                         }
                         if (sender.getActiveUp(node) == 0) {//il nodo non ha connessioni attive in upload e pu cambiare stato
                             long delay = sender.getSwitchTime();
-                            if (sender.getDebug() >= 4) {
-                                System.out.println(" SWITCH to PULL at time " + (CommonState.getTime() + delay));
+                            P4SMessage p4m = null;
+                            if(sender.getLeast() < 0){
+                                if (sender.getDebug() >= 4) {
+                                System.out.println(" but it has no holes in its chunk list, therefore it SWITCHes to PUSHj at time " + (CommonState.getTime() + delay));
                             }
-                            sender.setCycle(Message.PULL_CYCLE);
+                                p4m = new P4SMessage(null, node, Message.SWITCH_PUSH);
+                            }
+                            else{
+                            if (sender.getDebug() >= 4) {
+                                System.out.println(" SWITCH to PULL for chunk "+sender.getLeast()+" at time " + (CommonState.getTime() + delay));
+                            }
+                                sender.setCycle(Message.PULL_CYCLE);
+                                p4m = new P4SMessage(null, node, Message.SWITCH_PULL);
+                            }
                             sender.resetPushAttempt();
                             sender.resetActiveUp(node);
                             sender.resetSuccessUpload();
-                            this.send(node, node, new P4SMessage(null, node, Message.SWITCH_PULL), delay, pid);
+                            this.send(node, node, p4m, delay, pid);
                         } else if (sender.getDebug() >= 4) {
                             System.out.println(" has other active transmission which have to be close before switch to pull: " + sender.getActiveUp(node));
                         }
                         sender = receiver = null;
                         return;
                     } //il nodo ha esaurito il numero di tentativi ammessi in push
-                    else if (sender.getPushAttempt() >= sender.getPushRetry()) {//ha raggiunto il # di tentativi in push
-                        if (sender.getDebug() >= 4) {
-                            System.out.print("\tNode " + node.getID() + " reached max number of push attempts (" + sender.getPushAttempt() + "/" + sender.getPushRetry() + ") ");
-                        }
-                        if (sender.getActiveUp(node) == 0) {
-                            long delay = sender.getSwitchTime();
-                            if (sender.getDebug() >= 4) {
-                                System.out.println(" SWITCH to PULL al tempo " + (CommonState.getTime() + delay));
-                            }
-                            sender.setCycle(Message.PULL_CYCLE);
-                            sender.resetPushAttempt();
-                            sender.resetActiveUp(node);
-                            sender.resetSuccessUpload();
-                            this.send(node, node, new P4SMessage(null, node, Message.SWITCH_PULL), delay, pid);
-                        } else if (sender.getDebug() >= 4) {
-                            System.out.println(" has other active transmission which have to be close before switch to pull: " + sender.getActiveUp(node));
-                        }
-                        sender = receiver = null;
-                        return;
-                    } else {
+//                    else if (sender.getPushAttempt() >= sender.getPushRetry()) {//ha raggiunto il # di tentativi in push
+//                        if (sender.getDebug() >= 4) {
+//                            System.out.print("\tNode " + node.getID() + " reached max number of push attempts (" + sender.getPushAttempt() + "/" + sender.getPushRetry() + ") ");
+//                        }
+//                        if (sender.getActiveUp(node) == 0) {//il nodo non ha connessioni attive in upload e pu cambiare stato
+//                            long delay = sender.getSwitchTime();
+//                            P4SMessage p4m = null;
+//                            if(sender.getLeast() >= 0){
+//                                if (sender.getDebug() >= 4) {
+//                                System.out.println(" but it has no holes in its chunk list, therefore it SWITCHes to PUSHj at time " + (CommonState.getTime() + delay));
+//                            }
+//                                p4m = new P4SMessage(null, node, Message.SWITCH_PUSH);
+//                            }
+//                            else{
+//                            if (sender.getDebug() >= 4) {
+//                                System.out.println(" SWITCH to PULL for chunk "+sender.getLeast()+" at time " + (CommonState.getTime() + delay));
+//                            }
+//                                sender.setCycle(Message.PULL_CYCLE);
+//                                p4m = new P4SMessage(null, node, Message.SWITCH_PULL);
+//                            }
+//                            sender.resetPushAttempt();
+//                            sender.resetActiveUp(node);
+//                            sender.resetSuccessUpload();
+//                            this.send(node, node, p4m, delay, pid);
+//                        } else if (sender.getDebug() >= 4) {
+//                            System.out.println(" has other active transmission which have to be close before switch to pull: " + sender.getActiveUp(node));
+//                        }
+//                        sender = receiver = null;
+//                        return;
+//                    }
+                    else {
                         Node peer = null;
                         long delay = 0;
                         //****************************************** P U S H   G E N E R I C   N O D E ******************************************\\

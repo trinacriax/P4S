@@ -175,9 +175,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
                 this.last_chunk_pulled = -1;
             }
         }
-        if (this.getSize() == this.getNumberOfChunks() && this.getCompleted() == 0) {
-            this.setCompleted(CommonState.getTime());
-        }
     }
 
     /**
@@ -724,9 +721,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         if (this.last_chunk_pulled == (this.getNumberOfChunks() - 1)) {
             this.addChunk(this.last_chunk_pulled, Message.PULL_CYCLE);
             this.last_chunk_pulled = -1;
-            if (this.getSize() == this.getNumberOfChunks() && this.getCompleted() == 0) {
-                this.setCompleted(CommonState.getTime());
-            }
+            
         }
         return;
     }
@@ -936,6 +931,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
                 this.chunkpush++;
                 this.checkpull();
             }
+        }
+        if (this.getSize() == this.getNumberOfChunks() && this.getCompleted() == 0) {
+            this.setCompleted(CommonState.getTime());
         }
         return true;
     }
