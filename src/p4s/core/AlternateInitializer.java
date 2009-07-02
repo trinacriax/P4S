@@ -28,6 +28,7 @@ public class AlternateInitializer implements Control {
     private static final String PAR_PUSH_WINDOW = "push_window";
     private static final String PAR_PULL_WINDOW = "pull_window";
     private static final String PAR_DEBUG = "debug";
+    private static final String PAR_NEW_CHUNK = "new_chunk";
     // ------------------------------------------------------------------------
     // Fields
     // ------------------------------------------------------------------------         
@@ -37,6 +38,7 @@ public class AlternateInitializer implements Control {
     private final long chunk_size;    
     private final int debug;
     private int bandwidthp;
+    private long new_chunk;
     private final int push_retry;
     private final int pull_retry;
     private final long switchtime;
@@ -59,6 +61,7 @@ public class AlternateInitializer implements Control {
         push_retry = Configuration.getInt(prefix + "." + PAR_PUSH_RETRY, 1);
         pull_retry = Configuration.getInt(prefix + "." + PAR_PULL_RETRY, 1);
         switchtime = Configuration.getLong(prefix + "." + PAR_SWITCH_TIME, 1);
+        new_chunk =  Configuration.getLong(prefix + "." + PAR_NEW_CHUNK, -1);
         push_window = Configuration.getInt(prefix + "." + PAR_PUSH_WINDOW, 1);
         pull_window = Configuration.getInt(prefix + "." + PAR_PULL_WINDOW, 1);
         debug = Configuration.getInt(prefix + "." + PAR_DEBUG);
@@ -82,6 +85,7 @@ public class AlternateInitializer implements Control {
             prot.setPushRetry(push_retry);
             prot.setPullRetry(pull_retry);
             prot.setSwitchTime(switchtime);
+            prot.setNewChunkDelay(new_chunk);
             prot.setBandwidth(bandwidthp);
             prot.setPushWindow(push_window);
             prot.setPullWindow(pull_window);

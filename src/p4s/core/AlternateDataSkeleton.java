@@ -35,6 +35,8 @@ public void setPullRetry(int pull_retries);
 
 public void setSwitchTime(long time);
 
+public void setNewChunkDelay(long delay);
+
 public void setPushWindow(int window);
 public void setPullWindow(int window);
 

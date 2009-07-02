@@ -21,7 +21,8 @@ public class SourceObserver implements Control {
      */
     private final String name;
     /** Protocol identifier, obtained from config property {@link #PAR_PROT}. */
-    private final int pid;   
+    private final int pid;
+    private int new_chunk;
     // ///////////////////////////////////////////////////////////////////////
     // Constructor
     // ///////////////////////////////////////////////////////////////////////
@@ -32,6 +33,7 @@ public class SourceObserver implements Control {
      */
     public SourceObserver(String name) {
         this.name = name;
+        this.new_chunk = -1;
         pid = Configuration.getPid(name + "." + PAR_PROT);
         System.err.println("#Source Observer is ready");
     }
@@ -43,13 +45,17 @@ public class SourceObserver implements Control {
         Node src = Network.get(Network.size() - 1);
         Alternate protocol = (Alternate) src.getProtocol(pid);
         if (protocol.getSource() != src.getIndex()) {
-            System.err.println("Problema nella produzione del chunk, selezionata sorgente " +
+            System.err.println("Problema nella produzione del new_chunk, selezionata sorgente " +
                     src.getID() + " invece di " + protocol.getSource());
             return false;
         }
-        if (protocol.produce() != false){
+        int maxchunk = protocol.getNumberOfChunks();        
+        if (new_chunk +1 < maxchunk){
+            new_chunk++;
             if (protocol.getDebug() >= 2)
-                System.out.println(CommonState.getTime() + " >> Sorgente " + src.getID() + " produce " + protocol.getLast() + " <<");
+                System.out.println(CommonState.getTime() + " >> Sorgente " + src.getID() + " produce " + new_chunk+ " <<");
+            protocol.getLastsrc().addLast(new_chunk);
+            protocol.chunk_list[new_chunk] = 1;
         }
         else
             if (protocol.getDebug() >= 2)

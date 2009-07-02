@@ -109,6 +109,7 @@ public interface Message {
 	public final long OWNED = -1 ;
 	public final long IN_DOWNLOAD = -2;
 	public final long NOT_OWNED = -3;
+        
 
 
     

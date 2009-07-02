@@ -1,6 +1,7 @@
 package p4s.core;
 
 import bandwidth.core.BandwidthAwareProtocol;
+import java.util.LinkedList;
 import peersim.config.FastConfig;
 import peersim.core.*;
 import p4s.util.*;
@@ -63,9 +64,11 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     /**Time needed to change state*/
     protected long switchtime;
     /**Contains the chunk-id that the source will push*/
-    private static int lastsrc;
+    private static LinkedList lastsrc;
     /**Total neightbor knowledge*/
     private int nk;
+    /**Time to emerge new chunk*/
+    private long new_chunk_delay;
 
     public AlternateDataStructure(String prefix) {
         super();
@@ -107,6 +110,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         clh.time_in_pull = new Long("0");
         clh.switchtime = new Long("0");
         clh.nk = new Integer("0");
+        clh.new_chunk_delay = new Long(0);
 //        clh.lastsrc = new Integer("0");
         return clh;
     }
@@ -142,8 +146,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.switchtime = 0;
         this.success_download = 0;
         this.success_upload = 0;
-        this.lastsrc = 0;
+        lastsrc = null;
         this.nk = 0;
+        this.new_chunk_delay = 0;
     }
 
     /**
@@ -155,6 +160,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.resetAll();
 //        this.lastsrc = new LinkedList();
         this.chunk_list = new long[items];
+        this.lastsrc = new LinkedList();
         for (int i = 0; i < items; i++) {
             this.chunk_list[i] = Message.NOT_OWNED;
         }
@@ -186,7 +192,22 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     public int getCycle() {
         return this.cycle;
     }
+/**
+ * Set the time to produce a new chunk
+ * @param delay time in ms
+ */
+    public void setNewChunkDelay(long delay){
+        this.new_chunk_delay = delay;
+    }
+    
+    /**
+     * Return the time for producing a new chunk
+     * @return Time in ms
+     */
 
+    public long getNewChunkDelay(){
+        return new_chunk_delay;
+    }
     /**
      *
      * Set bandwidth protocol
@@ -796,24 +817,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         }
         return res;
     }
-
-    public boolean produce() {
-        int index = 0;
-        if (this.getSize() == 0) {
-            index = 0;
-        } else if (this.getSize() == this.getNumberOfChunks()) {
-            return false;
-        } else {
-            index = this.getLast() + 1;
-        }
-//        System.out.println("Adding new  "+index);
-        this.chunk_list[index] = 1;
-        if (debug >= 4) {
-            System.out.println("Adding " + index + " in the queue " + lastsrc);
-        }
-        return true;
-    }
-
+   
     /**
      * 
      * Il metodo restituisce l'ultimo chunk che il nodo possiede il lista se la
@@ -831,21 +835,33 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         return last;
     }
 
-    public int getLastSRC() {
-        if (lastsrc + 1 == this.number_of_chunks) {
-            return lastsrc;
+    public int getFirstChunk() {
+        if(lastsrc.isEmpty())
+            return -1;
+        int value = (Integer)lastsrc.getFirst();
+        if(this.chunk_list[value]==2)
+            return -1;
+        if (value + 1 == this.number_of_chunks) {
+            return value;
         }
-        while (this.chunk_list[lastsrc] == 2) {
-            lastsrc++;
+        while (this.chunk_list[value] == 2) {
+            value++;
         }
-        return lastsrc;
+        return (this.chunk_list[value]==1?value:-1);
     }
 
-    public void addLastSRC(int value) {
+    public LinkedList getLastsrc(){
+        return this.lastsrc;
+    }
+
+
+    public void remFirstChunk(int value) {
         if (value + 1 == this.number_of_chunks) {
             this.setCompleted(CommonState.getTime());
         }
-        this.chunk_list[lastsrc] = 2;
+        if(this.chunk_list[value]==2)
+            this.lastsrc.removeFirst();
+        this.chunk_list[value] = 2;
     }
 
     /**

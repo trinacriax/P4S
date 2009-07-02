@@ -105,10 +105,10 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                     return;
                 }
                 if (im.getChunks() != null) {
-                    int ck = im.getChunks()[0];
-                    if (sender.getChunk(ck) > Message.OWNED) {
+                    int chunkpushed = im.getChunks()[0];
+                    if (sender.getChunk(chunkpushed) >= Message.OWNED) {
                         if (sender.getDebug() >= 4) {
-                            System.out.print("\tNode " + node.getID() + " connection released for the transmission of chunk " + ck + ", removing active up from " + sender.getActiveUp(node));
+                            System.out.print("\tNode " + node.getID() + " connection released for the transmission of chunk " + chunkpushed + ", removing active up from " + sender.getActiveUp(node));
                         }
                         sender.remActiveUp(node);
                         sender.addSuccessUpload();
@@ -116,9 +116,9 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                             System.out.println(" to " + sender.getActiveUp(node));
                         }
                         if (sender.getSource() == node.getIndex()) {
-                            sender.addLastSRC(ck);
+                            sender.remFirstChunk(chunkpushed);
                             if (sender.getDebug() >= 4) {
-                                System.out.println("\tThe source " + node.getID() + " set chunk " + ck + " as transmitted, next Chunk is " + sender.getLastSRC());
+                                System.out.println("\tThe source " + node.getID() + " set chunk " + chunkpushed + " as transmitted, next Chunk is " + sender.getFirstChunk());
                             }
                         }
                     }
@@ -131,9 +131,9 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                     }
                     Node peer = null;
                     long delay = 0;
-                    if (sender.getCompleted() == 0 && sender.getUpload(node) > sender.getUploadMin(node)) {
+                    int chunktopush = sender.getFirstChunk();//source select latest chunk not pushed yet
+                    if (sender.getCompleted() == 0 && sender.getUpload(node) > sender.getUploadMin(node) && chunktopush>=0) {
                         //piece selection
-                        int chunktopush = sender.getLastSRC();//source select latest chunk not pushed yet
                         while (sender.getActiveUp(node) < sender.getActiveUpload(node) && sender.getUpload(node) > sender.getUploadMin(node)) {//until the source may activate connections and has bandwidth
                             sender.addActiveUp(node);
                             peer = sender.getNeighbor(node, pid);//Peer selection
@@ -147,7 +147,12 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                         }
                     } else if (sender.getCompleted() != 0) {
                         if (sender.getDebug() >= 1) {
-                            System.out.println("Source " + node.getID() + " finishes to send chunks :) "+ sender.getCompleted());
+                            System.out.println("\tSource " + node.getID() + " finishes to send chunks :) "+ sender.getCompleted());
+                        }
+                    }
+                    else {
+                        if (sender.getDebug() >= 1) {
+                            System.out.println("\tSource " + node.getID() + " has already pushed chunk # "+ chunktopush);
                         }
                     }
                     sender = receiver = null;
@@ -218,36 +223,6 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                         sender = receiver = null;
                         return;
                     } //il nodo ha esaurito il numero di tentativi ammessi in push
-//                    else if (sender.getPushAttempt() >= sender.getPushRetry()) {//ha raggiunto il # di tentativi in push
-//                        if (sender.getDebug() >= 4) {
-//                            System.out.print("\tNode " + node.getID() + " reached max number of push attempts (" + sender.getPushAttempt() + "/" + sender.getPushRetry() + ") ");
-//                        }
-//                        if (sender.getActiveUp(node) == 0) {//il nodo non ha connessioni attive in upload e pu cambiare stato
-//                            long delay = sender.getSwitchTime();
-//                            P4SMessage p4m = null;
-//                            if(sender.getLeast() >= 0){
-//                                if (sender.getDebug() >= 4) {
-//                                System.out.println(" but it has no holes in its chunk list, therefore it SWITCHes to PUSHj at time " + (CommonState.getTime() + delay));
-//                            }
-//                                p4m = new P4SMessage(null, node, Message.SWITCH_PUSH);
-//                            }
-//                            else{
-//                            if (sender.getDebug() >= 4) {
-//                                System.out.println(" SWITCH to PULL for chunk "+sender.getLeast()+" at time " + (CommonState.getTime() + delay));
-//                            }
-//                                sender.setCycle(Message.PULL_CYCLE);
-//                                p4m = new P4SMessage(null, node, Message.SWITCH_PULL);
-//                            }
-//                            sender.resetPushAttempt();
-//                            sender.resetActiveUp(node);
-//                            sender.resetSuccessUpload();
-//                            this.send(node, node, p4m, delay, pid);
-//                        } else if (sender.getDebug() >= 4) {
-//                            System.out.println(" has other active transmission which have to be close before switch to pull: " + sender.getActiveUp(node));
-//                        }
-//                        sender = receiver = null;
-//                        return;
-//                    }
                     else {
                         Node peer = null;
                         long delay = 0;
@@ -309,7 +284,6 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                 if (receiver.getDebug() >= 2) {
                     System.out.println(CommonState.getTime() + "\tNode " + node.getID() + " receives " + im.getMessageID() + " from " + im.getSender().getID() + " for chunk(s) " + im.getChunkids() +
                             ((receiver.getDebug() >= 6) ? " " + receiver.getBwInfo(node) + " " + receiver.getConnections() : "") + ".");
-
                 }
                 int chunktopush = -1;
                 long response = Message.OWNED; //nella proposta di push i chunk sono ordinati in modo descrescente
@@ -377,7 +351,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                     long eedelay = dn.delays[node.getIndex()][im.getSender().getIndex()];
                     eedelay = (long) (Math.ceil(eedelay / 2.0));
                     long result = bap.sendData(sender.getChunkSize(), node, im.getSender(), eedelay, sender.getBandwidth());
-                    if (result == BandwidthMessage.NO_UP || result == BandwidthMessage.NO_DOWN || result == -1) {//|| receiver.getChunk(chunktopush)!= Message.NOT_OWNED) {
+                    if (result == BandwidthMessage.NO_UP || result == BandwidthMessage.NO_DOWN || response==2) {//|| receiver.getChunk(chunktopush)!= Message.NOT_OWNED) {
                         receiver.resetInDown(chunktopush);
                         if (sender.getDebug() >= 4 && result == BandwidthMessage.NO_UP) {
                             System.out.println("\tNode " + node.getID() + " has no more upload bandwidth for transmission with Node " + im.getSender().getID() + ", upload " + sender.getUpload(node));
@@ -402,7 +376,6 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                         if (sender.getDebug() >= 4) {
                             System.out.println("\tNode " + node.getID() + " SWITCH to PUSHa (" + sender.getPushAttempt() + "/" + sender.getPushRetry() + ") at time " + CommonState.getTime() + " MexRX " + (CommonState.getTime() + delay));
                         }
-
                         this.send(node, node, new P4SMessage(null, node, Message.SWITCH_PUSH), delay, pid);
                         sender.addFailPush();
                     } else {
@@ -415,9 +388,21 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                             System.out.println("\tNode " + node.getID() + " sends FINISH_PUSH m:" + chunktopush + " to " + im.getSender().getID() + " S " + CommonState.getTime() + " --> " + (CommonState.getTime() + delay) + " (" + eedelay + ")");
                         }
                         this.send(node, im.getSender(), new P4SMessage(chunktopush, node, Message.FINISH_PUSH), delay, pid);
-                        delay = result + sender.getSwitchTime();
-                        if (sender.getDebug() >= 4) {
-                            System.out.println("\tNode " + node.getID() + " will SWITCH to PUSHb (" + sender.getPushAttempt() + "/" + sender.getPushRetry() + ") al tempo " + (CommonState.getTime() + result + sender.getSwitchTime()));
+                        if(sender.getSource() == node.getIndex()){
+                            delay = (chunktopush+1)*sender.getNewChunkDelay() - CommonState.getTime();
+                            sender.remFirstChunk(chunktopush);
+//                            System.out.println("Chunk "+(chunktopush+1)+"*"+sender.getNewChunkDelay()+" Delay "+delay);
+                            if (sender.getDebug() >= 4) {
+                                System.out.println("\tSource " + node.getID() + " will SWITCH to newPUSH (" + sender.getPushAttempt() + "/" + sender.getPushRetry() + ") al tempo " + (CommonState.getTime() + delay));                                
+                        }
+                            if(result>delay)
+                                    System.err.println("\tERRR "+CommonState.getTime()+" Delay " + delay  + " result " +result);
+                        }
+                        else{
+                            delay = result + sender.getSwitchTime();
+                            if (sender.getDebug() >= 4) {
+                                System.out.println("\tNode " + node.getID() + " will SWITCH to PUSHb (" + sender.getPushAttempt() + "/" + sender.getPushRetry() + ") al tempo " + (CommonState.getTime() + delay));
+                            }
                         }
                         this.send(node, node, new P4SMessage(chunktopush, node, Message.SWITCH_PUSH), delay, pid);
                     }
