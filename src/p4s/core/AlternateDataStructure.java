@@ -847,6 +847,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         while (this.chunk_list[value] == 2) {
             value++;
         }
+        if(debug>3)
+                System.out.println("Value "+value+"  " + this.chunk_list[value]);
         return (this.chunk_list[value]==1?value:-1);
     }
 
@@ -857,10 +859,18 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
 
     public void remFirstChunk(int value) {
         if (value + 1 == this.number_of_chunks) {
+            if(debug>3)
+                System.out.println("Setting node as completed "+value);
             this.setCompleted(CommonState.getTime());
         }
-        if(this.chunk_list[value]==2)
-            this.lastsrc.removeFirst();
+
+        if(this.chunk_list[value]==2){
+            if(debug>3)
+                System.out.print("Setting chunk as transmitted "+value);
+            int avalue = (Integer)this.lastsrc.removeFirst();
+            if(debug>3)
+                System.out.println(" >> removing "+avalue);
+        }
         this.chunk_list[value] = 2;
     }
 
