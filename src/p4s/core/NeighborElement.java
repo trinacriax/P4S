@@ -14,13 +14,14 @@ public class NeighborElement {
     private Node neighbor;
     private long delay;
     private long last_contact;
-//    private long pullcontact;
+    private int contacts;
     //altri campi
 
     public NeighborElement(Node neighbor, long delay){
         this.neighbor = neighbor;
         this.delay = delay;
-        this.last_contact = 0;// this.pullcontact = 0;
+        this.last_contact = -1;// this.pullcontact = 0;
+        this.contacts = 1;
     }
 
     public Node getNeighbor(){
@@ -33,6 +34,12 @@ public class NeighborElement {
     public void setDelay(long delay){
          this.delay = delay;
     }
+ public int getContacts(){
+    return  this.contacts;
+ }
+ public void addContact(){
+     this.contacts++;
+ }
 
     public String toString(){
         return "Node "+ this.neighbor.getIndex()+" delay "+this.delay;

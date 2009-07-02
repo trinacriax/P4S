@@ -254,7 +254,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
     }
 
     public NeighborElement getDelayNeighbor() {
-        if (prob == null || prob.length < neighbors.length) {
+        if (prob == null || prob.length < neighbors.length) {// fulfill array of probability
             double tot = 0;
             this.delaySort(neighbors);
             double viz[] = new double[neighbors.length];
@@ -282,41 +282,38 @@ public class DelayedNeighbor implements Protocol, Linkable {
         RandomRLC rlc = (RandomRLC) CommonState.r;
         double value = rlc.uniform_0_1(rlc.nextLong());
         if (debug >= 8) {
-            System.out.println("Extract " + value);
+            System.out.println("I Extract this value " + value);
         }
         int id = 0;
-        while (value > 0 && candidate == null && id < neighbors.length) {
-            if (debug >= 8) {
-                System.out.println("\t(" + id + ") Value " + value + ", Prob " + prob[id] + " (" + neighbors[id] + ")");
-            }
-            value -= prob[id];
-            if (value <= 0) {
+//        double contactz = 0;
+//        for (int i = 0; i< neighbors.length;i++)
+//            contactz += neighbors[i].getContacts();
+
+        while (value > 0 && candidate == null && id < neighbors.length) {                      
+            if (value <= (prob[id]* 1/neighbors[id].getContacts())) {
                 candidate = neighbors[id];
             } else {
+                value -=(prob[id]* 1/neighbors[id].getContacts());
                 id++;
             }
+            if (debug >= 12 && id < neighbors.length ) {
+                System.out.println("\tVALUECCC " + id + ") Value " + value + ", Prob " + prob[id]+ "("+(prob[id]*(1.0/neighbors[id].getContacts()))+ ")" + " (" + neighbors[id] + ")");
+            }
         }
+        
         if (candidate == null) {
             if (id >= neighbors.length) {
-                id = neighbors.length - 1;
+                id = rlc.nextInt(neighbors.length);
             }
             candidate = neighbors[id];
         }
+        if(debug>=10)
+            System.out.println("Return Candidate ID "+id+" -- "+candidate);
         return candidate;
     }
 
 ///**Get a randomly selected neighbor*/
     public NeighborElement getRNDNeighbor() {
-//        int swap[] = new int[len];
-//        for (int i = 0; i < len; i++)
-//            swap[i] = i;
-//        int temp = 0;
-//        for (int i = 0; i < len; i++) {
-//            int out = CommonState.r.nextInt(len - i);
-//            temp = swap[i];
-//            swap[i] = swap[out];
-//            swap[out] = temp;
-//        }
         int out = CommonState.r.nextInt(len);
         return this.neighbors[out];
     }

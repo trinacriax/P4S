@@ -54,8 +54,7 @@ public class SourceObserver implements Control {
             new_chunk++;
             if (protocol.getDebug() >= 2)
                 System.out.println(CommonState.getTime() + " >> Sorgente " + src.getID() + " produce " + new_chunk+ " <<");
-            protocol.getLastsrc().addLast(new_chunk);
-            protocol.chunk_list[new_chunk] = 1;
+            protocol.enqueueChunk(new_chunk);
         }
         else
             if (protocol.getDebug() >= 2)

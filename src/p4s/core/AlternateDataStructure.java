@@ -835,21 +835,24 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         return last;
     }
 
+    public void enqueueChunk(int new_chunk){
+        lastsrc.addLast(new_chunk);
+        this.chunk_list[new_chunk] = 1;
+    }
+
     public int getFirstChunk() {
+        int value = -1;
         if(lastsrc.isEmpty())
-            return -1;
-        int value = (Integer)lastsrc.getFirst();
-        if(this.chunk_list[value]==2)
-            return -1;
-        if (value + 1 == this.number_of_chunks) {
             return value;
+        value = (Integer)lastsrc.getFirst();
+        if (this.chunk_list[value]!= 1) {//
+            
+            value =-1;
         }
-        while (this.chunk_list[value] == 2) {
-            value++;
-        }
+
         if(debug>3)
-                System.out.println("Value "+value+"  " + this.chunk_list[value]);
-        return (this.chunk_list[value]==1?value:-1);
+                System.out.println("Value "+value+"  " + (value<0?-1:this.chunk_list[value]));
+        return value;
     }
 
     public LinkedList getLastsrc(){
@@ -857,21 +860,20 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     }
 
 
-    public void remFirstChunk(int value) {
+    public void checkList(int value) {
         if (value + 1 == this.number_of_chunks) {
             if(debug>3)
                 System.out.println("Setting node as completed "+value);
             this.setCompleted(CommonState.getTime());
         }
-
         if(this.chunk_list[value]==2){
             if(debug>3)
-                System.out.print("Setting chunk as transmitted "+value);
-            int avalue = (Integer)this.lastsrc.removeFirst();
+                System.out.print("Setting chunk as transmitted "+value+" Size "+lastsrc.size());
+            int avalue = (Integer)lastsrc.removeFirst();
             if(debug>3)
                 System.out.println(" >> removing "+avalue);
+            this.chunk_list[avalue]=CommonState.getTime();
         }
-        this.chunk_list[value] = 2;
     }
 
     /**
@@ -1042,9 +1044,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * */
     public Node getNeighbor(Node node, int pid) {
         DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
-        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
+//        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
 //        double threshold = ( (this.chunk_size*1.0)/bap.getUploadMax()*1000);//upload time in ms
-        int counter = 4 * net.degree();
+        int counter = 4*net.degree();
         if (net.getCurrent() == null) {
             net.setCurrent(node);
         }
@@ -1055,13 +1057,12 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             NeighborElement candidate;
 //            Alternate asrc = (Alternate) Network.get(this.getSource()).getProtocol(pid);
             candidate = net.getTargetNeighbor();
+            if(debug>=10)
+            System.out.println("Looking for a candidate "+counter);
             while (counter > 0 && (candidate.getContactTime() == CommonState.getTime() || candidate.getNeighbor().getIndex() == this.getSource())){//no target node already pushed
-//                    ||(this.cycle == Message.PULL_CYCLE && candidate.getPulltime() == CommonState.getTime()
-//                    ){
-//            { //no target node already pulled
-//                    (candidate.getNeighbor().getIndex() == this.getSource() && asrc.getCompleted() <= 0))) {//no Source
                 counter--;
                 candidate = net.getTargetNeighbor();
+                if(debug>=10)System.out.println("Here the candidate "+candidate+ "  "+(counter > 0 && (candidate.getContactTime() == CommonState.getTime() || candidate.getNeighbor().getIndex() == this.getSource())));
             }
             if (this.getDebug() >= 10) {
                 System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " (Source is " + this.getSource() + ") ");
@@ -1069,7 +1070,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
 //            if (this.cycle == Message.PUSH_CYCLE) {
 //                candidate.setPushtime(CommonState.getTime());
 //            } else {}
-                candidate.setContactTime(CommonState.getTime());            
+                candidate.setContactTime(CommonState.getTime());
+                candidate.addContact();
 
             return candidate.getNeighbor();
         } else if (nk == 1) {//Global about the neighborhood
