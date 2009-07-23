@@ -64,7 +64,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     /**Time needed to change state*/
     protected long switchtime;
     /**Contains the chunk-id that the source will push*/
-    private static LinkedList lastsrc;
+//    private static LinkedList lastsrc;
     /**Total neightbor knowledge*/
     private int nk;
     /**Time to emerge new chunk*/
@@ -146,7 +146,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.switchtime = 0;
         this.success_download = 0;
         this.success_upload = 0;
-        lastsrc = null;
+//        lastsrc = null;
         this.nk = 0;
         this.new_chunk_delay = 0;
     }
@@ -160,7 +160,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.resetAll();
 //        this.lastsrc = new LinkedList();
         this.chunk_list = new long[items];
-        this.lastsrc = new LinkedList();
+//        this.lastsrc = new LinkedList();
         for (int i = 0; i < items; i++) {
             this.chunk_list[i] = Message.NOT_OWNED;
         }
@@ -836,27 +836,20 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     }
 
     public void enqueueChunk(int new_chunk){
-        lastsrc.addLast(new_chunk);
         this.chunk_list[new_chunk] = 1;
     }
 
     public int getFirstChunk() {
-        int value = -1;
-        if(lastsrc.isEmpty())
-            return value;
-        value = (Integer)lastsrc.getFirst();
-        if (this.chunk_list[value]!= 1) {//
-            
-            value =-1;
+        int chunktopush = 0;
+        while(chunktopush < this.chunk_list.length && this.chunk_list[chunktopush]!=1 &&  this.chunk_list[chunktopush]!=2){
+            chunktopush++;
         }
+        if((chunktopush +1 == this.chunk_list.length && this.chunk_list[chunktopush]!=1)|| chunktopush>=this.chunk_list.length)
+            chunktopush = -1;
 
         if(debug>3)
-                System.out.println("Value "+value+"  " + (value<0?-1:this.chunk_list[value]));
-        return value;
-    }
-
-    public LinkedList getLastsrc(){
-        return this.lastsrc;
+                System.out.println("chunk to push is "+chunktopush);
+        return chunktopush;
     }
 
 
@@ -868,11 +861,10 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         }
         if(this.chunk_list[value]==2){
             if(debug>3)
-                System.out.print("Setting chunk as transmitted "+value+" Size "+lastsrc.size());
-            int avalue = (Integer)lastsrc.removeFirst();
+                System.out.print("Setting chunk as transmitted "+value);            
             if(debug>3)
-                System.out.println(" >> removing "+avalue);
-            this.chunk_list[avalue]=CommonState.getTime();
+                System.out.println(" >> removing "+value);
+            this.chunk_list[value]=CommonState.getTime();
         }
     }
 

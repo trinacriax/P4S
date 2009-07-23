@@ -39,15 +39,15 @@ public class P4SMessage {
 		this.bandwidth = 0;
 		
 	}
-	
-	public P4SMessage(int chunkid, Node sender, int MessageID, long bandwidth)
-	{	
-		this.chunkids = new int[1];
-		this.chunkids[0] = chunkid;
-		this.sender = sender;
-		this.MessageID = MessageID;
-		this.bandwidth = bandwidth;		
-	}
+//
+//	public P4SMessage(int chunkid, Node sender, int MessageID, long bandwidth)
+//	{
+//		this.chunkids = new int[1];
+//		this.chunkids[0] = chunkid;
+//		this.sender = sender;
+//		this.MessageID = MessageID;
+//		this.bandwidth = bandwidth;
+//	}
 	
     public Node getSender(){
         return this.sender;

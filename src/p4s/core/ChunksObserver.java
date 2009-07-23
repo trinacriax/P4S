@@ -128,10 +128,10 @@ public class ChunksObserver implements Control {
         }
         Runtime r = Runtime.getRuntime();
         r.gc();
-
+        Alternate protocol = (Alternate) Network.get(Network.size()-1).getProtocol(pid);
         System.err.print("Time " + CommonState.getTime());
         if (notallfinish) {
-            System.err.print(": Active " + active + ". Completed " + count + ". Simulation continues...\n");//+".\n"+assenti);
+            System.err.print(": Active " + active + ". Completed " + count + ". Simulation continues...("+ protocol.getFirstChunk()+")\n");//+".\n"+assenti);
             return false;
         } else if ((!notallfinish) && CommonState.getTime() != CommonState.getEndTime()) {
             System.err.println(". All Nodes complete: " + count + ". Set time to end time...");//+".\n"+assenti);

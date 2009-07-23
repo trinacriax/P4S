@@ -1,35 +1,51 @@
 ### Simulation seed
-SEED 12512312313213
+SEED 255494005831
 ### MAX Simulation time
 CYCLE NETSIZE*CHUNKS*Ts
 
 ### Verbosity level
-DEBUG 8
+DEBUG 4
 
 ### Number of nodes in the network
-NETSIZE 1000
+NETSIZE 4000
 
 ### Number of chunks to transmit
-CHUNKS 100
+CHUNKS 2000
 
 ### Nodes degree
-DEGREE 20
+DEGREE 16
 
 ### Message delay: min and max
 DELTAmin 10
-DELTAmax 500
+DELTAmax 250
 
 ## Bitrate streaming
 Bs 1000000
 
 ### Time in milliseconds to produce a new chunk
-Ts 500.0
+Ts 400
 
-## Source Bandwitdth
+## Source Bandwitdth Multiplicator of the Bitstream
 BMs BMp
 
 ## Peers Bandwidth (Multiple of Bs)
-BMp (Ts/(Ts-DELTAmax))*1.1
+BMp ((Ts*105)/((Ts-DELTAmax)))
+
+
+### Type of delay distribution
+# Many kinds of delay distributions
+# 0 Uniform between max and min
+# 1 Gaussian with mean
+# 2 Exponential Truncated with mean
+DDELAY 0
+MUDELAY 0
+DEVDELAY 0
+
+
+## Peer selection SELECT
+#  0 Random selection
+#  1 Delay oriented with probability
+PPSEL 1
 
 ## Dropping rate [0:1]
 ## Currently, this protocol does not implement any form of "message recovery"
@@ -39,14 +55,14 @@ DROP 0
 ## Maximum number of active connections in upload and download
 ## Active means that the node issues either a push or pull to a target node
 ## push for upload and pull for download.
-ALPHA_up 14
+ALPHA_up 4
 ALPHA_down 4
 
 ## Maximum number of passice connections in upload and download
 ## Passive means that the node is the target node which receives either a push or pull request
 ## therefor it will either receive a chunk via push or satisfy a pull request.
-PI_up 14
-PI_down 100
+PI_up 1
+PI_down 20
 
 ## Window size for either push or pull active message,
 ## the node either proposes OMEGA_push chunks in push
@@ -73,7 +89,7 @@ random.seed SEED
 network.size NETSIZE
 
 simulation.endtime CYCLE
-simulation.experiments 1
+simulation.experiments 40
 simulation.timebits 16
 simulation.logtime OBSERVER-STEP
 simulation.stdout p4s.util.PrintLogs
@@ -81,19 +97,10 @@ simulation.stdout p4s.util.PrintLogs
 ## Overlay network used
 protocol.link p4s.core.DelayedNeighbor
 protocol.link.capacity DEGREE
-protocol.link.delay 0
-# Many kinds of delay distributions
-# 0 Uniform between max and min
-# 1 Gaussian with mean
-# 2 Exponential Truncated with mean
-
-## Peer selection SELECT
-#  0 Random selection
-#  1 Delay oriented with probability
-#
-protocol.link.select 1
-protocol.link.mudelay 80
-protocol.link.devdelay 0
+protocol.link.delay DDELAY
+protocol.link.select PPSEL
+protocol.link.mudelay MUDELAY
+protocol.link.devdelay DEVDELAY
 protocol.link.mindelay DELTAmin
 protocol.link.maxdelay DELTAmax
 protocol.link.debug DEBUG
@@ -120,14 +127,14 @@ init.rndlink.protocol link
 ## Bandwidth protocol initializer
 init.bwi bandwidth.core.BandwidthAwareInitializer
 init.bwi.protocol bwp
-init.bwi.debug DEBUG
+init.bwi.debug DEBUG*2
 
 ## CDF of bandwidth.core.distribution
 ## separeted by commas:
 ## 128000,180000,290000
 ## 0.3,0.7,1
-init.bwi.uploadBw BMp*Bs        #,180000,256000
-init.bwi.downloadBw BMp*Bs*10   #,640000,640000
+init.bwi.uploadBw (Bs*BMp)/100
+init.bwi.downloadBw (Bs*BMp*10)/100
 init.bwi.bandwidthPr 1 #0.3,0.7,1
 init.bwi.active_upload ALPHA_up
 init.bwi.active_download ALPHA_down
@@ -136,8 +143,8 @@ init.bwi.passive_download PI_down
 
 ## the following two parameters indicate the source upload/download bandwidth
 ## download is useless at the source, but it exists :)
-init.bwi.srcup BMs*Bs
-init.bwi.srcdw BMs*Bs*10
+init.bwi.srcup (Bs*BMs)/100
+init.bwi.srcdw (Bs*BMs*10)/100
 
 ## Chunk distribution protocol initializer
 init.ii AlternateInitializer

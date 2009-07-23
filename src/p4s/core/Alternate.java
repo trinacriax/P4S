@@ -384,8 +384,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                         }
                         this.send(node, node, new P4SMessage(null, node, Message.SWITCH_PUSH), delay, pid);
                         sender.addFailPush();
-                    } else {
-                        
+                    } else {                        
                         long delay = this.send(node, im.getSender(), new P4SMessage(chunktopush, node, Message.START_PUSH), pid);
                         if (sender.getDebug() >= 4) {
                             System.out.println("\tNode " + node.getID() + " sends START_PUSH m:" + chunktopush + " to " + im.getSender().getID() + " S " + CommonState.getTime() + " --> " + (CommonState.getTime() + delay) + " (" + eedelay + ")");
