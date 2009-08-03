@@ -20,6 +20,9 @@ public class DelayedNeighbor implements Protocol, Linkable {
      * Default init capacity
      */
     private static final int DEFAULT_INITIAL_CAPACITY = 10;
+    private static final int RND_DUMMY = 0;
+    private static final int RND_SMART = 1;
+    private static final int DELAY_ORIENTED= 2;
     /**
      * Initial capacity. Defaults to {@value #DEFAULT_INITIAL_CAPACITY}.
      * @config
@@ -76,6 +79,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
         delays = null;
         System.err.println("Init DelayedNeighbor: Len " + len + ", Select " + select + ", DelayDist " + delaydist + ", MinDelay " + min + ", MaxDelay " + max + ", Mean " + mu + ", Dev " + dev);
     }
+
 
     public void populate() {
         this.delays = new long[Network.size()][Network.size()];
@@ -246,37 +250,46 @@ public class DelayedNeighbor implements Protocol, Linkable {
 
     public NeighborElement getTargetNeighbor() {
 //        System.out.println("Select "+select);
-        if (select == 1) {
-            return getDelayNeighbor();
-        } else {
+        if (select == RND_DUMMY) {
             return getRNDNeighbor();
+        }
+        else if (select == RND_SMART) {
+            return getRNDSmartNeighbor();
+        }
+        else if (select == DELAY_ORIENTED) {
+            return getDelayNeighbor();
+        } 
+        return getRNDNeighbor();
+    }
+
+    public void computeProbabilities() {
+        double tot = 0;
+        this.delaySort(neighbors);
+        double viz[] = new double[neighbors.length];
+        double sv = 0;
+        prob = new double[neighbors.length];
+        for (int i = 0; i < viz.length; i++) {
+            viz[i] = 1.0 / neighbors[i].getDelay();
+            if (debug >= 8) {
+                System.out.println(" Node " + current.getID() + " 1/RTT(" + neighbors[i].getNeighbor().getID() + ") is " + viz[i]);
+            }
+            sv += viz[i];
+        }
+        for (int i = 0; i < prob.length; i++) {
+            prob[i] = viz[i] / sv;
+            if (debug >= 8) {
+                System.out.println(" Node " + current.getID() + " Prob[" + neighbors[i].getNeighbor().getID() + "] = " + prob[i]);
+            }
+            tot += prob[i];
+        }
+        if (debug >= 8) {
+            System.out.println("Total prob. is " + tot);
         }
     }
 
     public NeighborElement getDelayNeighbor() {
         if (prob == null || prob.length < neighbors.length) {// fulfill array of probability
-            double tot = 0;
-            this.delaySort(neighbors);
-            double viz[] = new double[neighbors.length];
-            double sv = 0;
-            prob = new double[neighbors.length];
-            for (int i = 0; i < viz.length; i++) {
-                viz[i] = 1.0 / neighbors[i].getDelay();
-                if (debug >= 8) {
-                    System.out.println(" Node " + current.getID() + " 1/RTT(" + neighbors[i].getNeighbor().getID() + ") is " + viz[i]);
-                }
-                sv += viz[i];
-            }
-            for (int i = 0; i < prob.length; i++) {
-                prob[i] = viz[i] / sv;
-                if (debug >= 8) {
-                    System.out.println(" Node " + current.getID() + " Prob[" + neighbors[i].getNeighbor().getID() + "] = " + prob[i]);
-                }
-                tot += prob[i];
-            }
-            if (debug >= 8) {
-                System.out.println("Total prob. is " + tot);
-            }
+            this.computeProbabilities();
         }
         NeighborElement candidate = null;
         RandomRLC rlc = (RandomRLC) CommonState.r;
@@ -285,37 +298,46 @@ public class DelayedNeighbor implements Protocol, Linkable {
             System.out.println("I Extract this value " + value);
         }
         int id = 0;
-//        double contactz = 0;
-//        for (int i = 0; i< neighbors.length;i++)
-//            contactz += neighbors[i].getContacts();
-
-        while (value > 0 && candidate == null && id < neighbors.length) {                      
-            if (value <= (prob[id]* 1/neighbors[id].getContacts())) {
+        while (value > 0 && candidate == null && id < neighbors.length) {
+            if (debug >= 8) {
+                System.out.println("\t(" + id + ") Value " + value + ", Prob " + prob[id] + " (" + neighbors[id] + ")");
+            }
+            value -= prob[id];
+            if (value <= 0)
                 candidate = neighbors[id];
-            } else {
-                value -=(prob[id]* 1/neighbors[id].getContacts());
-                id++;
-            }
-            if (debug >= 12 && id < neighbors.length ) {
-                System.out.println("\tVALUECCC " + id + ") Value " + value + ", Prob " + prob[id]+ "("+(prob[id]*(1.0/neighbors[id].getContacts()))+ ")" + " (" + neighbors[id] + ")");
-            }
+            id++;
         }
-        
-        if (candidate == null) {
-            if (id >= neighbors.length) {
-                id = rlc.nextInt(neighbors.length);
-            }
-            candidate = neighbors[id];
+        if (candidate == null && id >= neighbors.length) {
+            if (debug >= 10)
+            System.out.println("Out of Candidate ID range: "+id+" -- "+candidate);
+                id = 0;
+                candidate = neighbors[id];
         }
-        if(debug>=10)
+        if (debug >= 10)
             System.out.println("Return Candidate ID "+id+" -- "+candidate);
         return candidate;
     }
 
-///**Get a randomly selected neighbor*/
+/**
+ * Get a randomly selected neighbor*/
     public NeighborElement getRNDNeighbor() {
-        int out = CommonState.r.nextInt(len);
-        return this.neighbors[out];
+        RandomRLC rlc = (RandomRLC) CommonState.r;
+        return this.neighbors[rlc.nextInt(this.neighbors.length)];
+    }
+
+    public NeighborElement getRNDSmartNeighbor() {
+        RandomRLC rlc = (RandomRLC) CommonState.r;
+        NeighborElement candidate = this.neighbors[rlc.nextInt(len)];
+        int counter = this.neighbors.length*2;
+        double ratio = 0.5;
+        while (counter > 0 && candidate.getContactTime()>0 && ratio <0.45){//no target node already pushed
+                counter--;
+                candidate = this.neighbors[rlc.nextInt(len)];
+                if(debug>=10)
+                    System.out.println("Selecting candidate "+candidate+ " Cnt "+counter+ "; Contact "+candidate.getContactTime()+ ", ratio  "+ratio+">>>" +(counter > 0 && candidate.getContactTime()>0 && ratio <0.5));
+                ratio = candidate.getContactTime()/(CommonState.getTime()*1.0);
+        }
+        return candidate;
     }
 
     /**Performs a permutation of the neighbors*/

@@ -1,7 +1,6 @@
 package p4s.core;
 
 import bandwidth.core.BandwidthAwareProtocol;
-import java.util.LinkedList;
 import peersim.config.FastConfig;
 import peersim.core.*;
 import p4s.util.*;
@@ -853,7 +852,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     }
 
 
-    public void checkList(int value) {
+    public void markChunk(int value) {
         if (value + 1 == this.number_of_chunks) {
             if(debug>3)
                 System.out.println("Setting node as completed "+value);
@@ -865,6 +864,15 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             if(debug>3)
                 System.out.println(" >> removing "+value);
             this.chunk_list[value]=CommonState.getTime();
+        }
+    }
+
+     public void unmarkChunk(int value) {
+        if(this.chunk_list[value]==2){
+            if(debug>3)
+                System.out.print("Setting chunk as not-transmitted "+value);
+            this.chunk_list[value]=1;
+            System.out.println(", now is "+this.chunk_list[value]);
         }
     }
 
@@ -1032,51 +1040,21 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     }
 
     /**
-     * Restituisce un vicino del nodo @node
+     * Restituisce un vicino del nodo in base al peer selection algorithm in usor
      * */
     public Node getNeighbor(Node node, int pid) {
         DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
-//        BandwidthAwareProtocol bap = (BandwidthAwareProtocol)node.getProtocol(this.bandwidth);
-//        double threshold = ( (this.chunk_size*1.0)/bap.getUploadMax()*1000);//upload time in ms
-        int counter = 4*net.degree();
         if (net.getCurrent() == null) {
             net.setCurrent(node);
         }
         if (this.getDebug() >= 10) {
             System.out.println("\tNodo " + node.getID() + "\n\t" + net);
         }//No knowledge about the neighborhood
-        if (this.nk == 0) {
-            NeighborElement candidate;
-//            Alternate asrc = (Alternate) Network.get(this.getSource()).getProtocol(pid);
-            candidate = net.getTargetNeighbor();
-            if(debug>=10)
-            System.out.println("Looking for a candidate "+counter);
-            while (counter > 0 && (candidate.getContactTime() == CommonState.getTime() || candidate.getNeighbor().getIndex() == this.getSource())){//no target node already pushed
-                counter--;
-                candidate = net.getTargetNeighbor();
-                if(debug>=10)System.out.println("Here the candidate "+candidate+ "  "+(counter > 0 && (candidate.getContactTime() == CommonState.getTime() || candidate.getNeighbor().getIndex() == this.getSource())));
-            }
+            NeighborElement candidate = net.getTargetNeighbor();
             if (this.getDebug() >= 10) {
                 System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " (Source is " + this.getSource() + ") ");
             }
-//            if (this.cycle == Message.PUSH_CYCLE) {
-//                candidate.setPushtime(CommonState.getTime());
-//            } else {}
-                candidate.setContactTime(CommonState.getTime());
-                candidate.addContact();
-
             return candidate.getNeighbor();
-        } else if (nk == 1) {//Global about the neighborhood
-            Node candidate = null;
-            if (this.cycle == Message.PUSH_CYCLE) {
-                candidate = this.getPushNeighbor(node, this.getLast(this.getPushWindow()), pid);
-            } else {
-                candidate = this.getPullNeighbor(node, this.getLeast(this.getPullWindow()), pid);
-            }
-            return candidate;
-        } else {
-            return null;
-        }
     }
 
     public String getNeighborhood(Node node, int pid) {
@@ -1089,83 +1067,83 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         return results;
     }
 
-    public Node getPushNeighbor(Node node, int chunks_push[], int pid) {
-        RandomizedNeighbor rndnet = (RandomizedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
-        Alternate snd = (Alternate) node.getProtocol(pid);
-        rndnet.permutation();
-        rndnet.permutation();
-        Node candidate = null;
-        boolean flag = true;
-        for (int i = 0; flag && i < rndnet.degree(); i++) {
-            candidate = rndnet.getNeighbor(i);
-            if (flag && this.getDebug() >= 8) {
-                System.out.print("\tPUSH - Candidate Node " + candidate.getID() + "(" + i + "/" + rndnet.degree() + ")");
-            }
-            Alternate cnd = (Alternate) candidate.getProtocol(pid);
-            for (int k = 0; k < chunks_push.length; k++) {
-                if (this.getDebug() >= 8) {
-                    System.out.print("V[" + i + "]=" + candidate.getID() + " >> (" + chunks_push[k] + ", " + cnd.getChunk(chunks_push[k]) + "); ");
-                }
-                if (cnd.getChunk(chunks_push[k]) == Message.NOT_OWNED)// && cnd.getDownload(node)>cnd.getDownloadMin(node) && cnd.getActiveDw()<cnd.getActiveDownload())
-                {
-                    flag = false;
-                }
-            }
-            if (flag && this.getDebug() >= 8) {
-                System.out.print("...skipping it has all chunks");
-                candidate = null;
-            }
-            System.out.print("\n");
-            if (this.getDebug() > 8 && candidate != null) {
-                System.out.println("Rec\t" + candidate.getID() + "\t" + cnd.bitmap() + "\nSen\t" + node.getID() + "\t" + snd.bitmap());
-            }
-//                return null;
-        }
-        if (this.getDebug() >= 6 && candidate != null) {
-            System.out.println("\tNodo " + node.getID() + " seleziona vicino " + candidate.getID());
-        }
-        if (flag == true) {
-            return null;
-        }
-        return candidate;
-    }
-
-    public Node getPullNeighbor(Node node, int chunks_pull[], int pid) {
-        RandomizedNeighbor rndnet = (RandomizedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
-        rndnet.permutation();
-        rndnet.permutation();
-        Node candidate = null;
-        boolean flag = true;
-        for (int i = 0; flag && i < rndnet.degree(); i++) {
-            candidate = rndnet.getNeighbor(i);
-            if (flag && this.getDebug() >= 8) {
-                System.out.print(" \tPULL - Candidate Node " + candidate.getID() + "(" + i + "/" + rndnet.degree() + ")");
-            }
-            Alternate cnd = (Alternate) candidate.getProtocol(pid);
-            for (int k = 0; k < chunks_pull.length; k++) {
-                if (this.getDebug() >= 8) {
-                    System.out.print("V[" + i + "]=" + candidate.getID() + " >> (" + chunks_pull[k] + ", " + cnd.getChunk(chunks_pull[k]) + "); ");
-                }
-                if ((cnd.getChunk(chunks_pull[k]) != Message.NOT_OWNED) && (cnd.getChunk(chunks_pull[k]) != Message.IN_DOWNLOAD)) //                        && cnd.getUpload(candidate)>cnd.getUploadMin(candidate) && cnd.getPassiveUp()<cnd.getPassiveUpload())
-                {
-                    flag = false;
-                }
-            }
-            if (flag && this.getDebug() >= 8) {
-                System.out.println("...no chunks to pull\nRec\t" + cnd.bitmap() + "\nSen\t" + this.bitmap());
-            } else if (this.getDebug() >= 8) {
-                System.out.println();
-            }
-        }
-        if (this.getDebug() >= 6 && candidate != null) {
-            System.out.println("\tNodo " + node.getID() + " seleziona vicino " + candidate.getID());
-        }
-        if (flag == true) {
-            return null;
-        }
-
-        return candidate;
-    }
+//    public Node getPushNeighbor(Node node, int chunks_push[], int pid) {
+//        RandomizedNeighbor rndnet = (RandomizedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
+//        Alternate snd = (Alternate) node.getProtocol(pid);
+//        rndnet.permutation();
+//        rndnet.permutation();
+//        Node candidate = null;
+//        boolean flag = true;
+//        for (int i = 0; flag && i < rndnet.degree(); i++) {
+//            candidate = rndnet.getNeighbor(i);
+//            if (flag && this.getDebug() >= 8) {
+//                System.out.print("\tPUSH - Candidate Node " + candidate.getID() + "(" + i + "/" + rndnet.degree() + ")");
+//            }
+//            Alternate cnd = (Alternate) candidate.getProtocol(pid);
+//            for (int k = 0; k < chunks_push.length; k++) {
+//                if (this.getDebug() >= 8) {
+//                    System.out.print("V[" + i + "]=" + candidate.getID() + " >> (" + chunks_push[k] + ", " + cnd.getChunk(chunks_push[k]) + "); ");
+//                }
+//                if (cnd.getChunk(chunks_push[k]) == Message.NOT_OWNED)// && cnd.getDownload(node)>cnd.getDownloadMin(node) && cnd.getActiveDw()<cnd.getActiveDownload())
+//                {
+//                    flag = false;
+//                }
+//            }
+//            if (flag && this.getDebug() >= 8) {
+//                System.out.print("...skipping it has all chunks");
+//                candidate = null;
+//            }
+//            System.out.print("\n");
+//            if (this.getDebug() > 8 && candidate != null) {
+//                System.out.println("Rec\t" + candidate.getID() + "\t" + cnd.bitmap() + "\nSen\t" + node.getID() + "\t" + snd.bitmap());
+//            }
+////                return null;
+//        }
+//        if (this.getDebug() >= 6 && candidate != null) {
+//            System.out.println("\tNodo " + node.getID() + " seleziona vicino " + candidate.getID());
+//        }
+//        if (flag == true) {
+//            return null;
+//        }
+//        return candidate;
+//    }
+//
+//    public Node getPullNeighbor(Node node, int chunks_pull[], int pid) {
+//        RandomizedNeighbor rndnet = (RandomizedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
+//        rndnet.permutation();
+//        rndnet.permutation();
+//        Node candidate = null;
+//        boolean flag = true;
+//        for (int i = 0; flag && i < rndnet.degree(); i++) {
+//            candidate = rndnet.getNeighbor(i);
+//            if (flag && this.getDebug() >= 8) {
+//                System.out.print(" \tPULL - Candidate Node " + candidate.getID() + "(" + i + "/" + rndnet.degree() + ")");
+//            }
+//            Alternate cnd = (Alternate) candidate.getProtocol(pid);
+//            for (int k = 0; k < chunks_pull.length; k++) {
+//                if (this.getDebug() >= 8) {
+//                    System.out.print("V[" + i + "]=" + candidate.getID() + " >> (" + chunks_pull[k] + ", " + cnd.getChunk(chunks_pull[k]) + "); ");
+//                }
+//                if ((cnd.getChunk(chunks_pull[k]) != Message.NOT_OWNED) && (cnd.getChunk(chunks_pull[k]) != Message.IN_DOWNLOAD)) //                        && cnd.getUpload(candidate)>cnd.getUploadMin(candidate) && cnd.getPassiveUp()<cnd.getPassiveUpload())
+//                {
+//                    flag = false;
+//                }
+//            }
+//            if (flag && this.getDebug() >= 8) {
+//                System.out.println("...no chunks to pull\nRec\t" + cnd.bitmap() + "\nSen\t" + this.bitmap());
+//            } else if (this.getDebug() >= 8) {
+//                System.out.println();
+//            }
+//        }
+//        if (this.getDebug() >= 6 && candidate != null) {
+//            System.out.println("\tNodo " + node.getID() + " seleziona vicino " + candidate.getID());
+//        }
+//        if (flag == true) {
+//            return null;
+//        }
+//
+//        return candidate;
+//    }
 
     /**
      * Restituisce per ogni chunk, il tempo in cui è stato ricevuto

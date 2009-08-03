@@ -117,7 +117,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                             System.out.println(" to " + sender.getActiveUp(node));
                         }
                         if (sender.getSource() == node.getIndex()) {
-                            sender.checkList(chunkpushed);
+                            sender.markChunk(chunkpushed);
                             if (sender.getDebug() >= 4) {
                                 System.out.println("\tThe source " + node.getID() + " set chunk " + chunkpushed + " as transmitted, next Chunk is " + sender.getFirstChunk());
                             }
@@ -357,7 +357,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                     }
                     else if (sender.getSource() == node.getIndex())
                             result = BandwidthMessage.NO_UP;
-                    if (result == BandwidthMessage.NO_UP || result == BandwidthMessage.NO_DOWN ) {//|| receiver.getChunk(chunktopush)!= Message.NOT_OWNED) {
+                    if (result == BandwidthMessage.NO_UP || result == BandwidthMessage.NO_DOWN ) {// Push failed - no resources
                         receiver.resetInDown(chunktopush);
                         if (sender.getDebug() >= 4 && result == BandwidthMessage.NO_UP) {
                             System.out.println("\tNode " + node.getID() + " has no more upload bandwidth for transmission with Node " + im.getSender().getID() + ", upload " + sender.getUpload(node));
@@ -384,7 +384,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                         }
                         this.send(node, node, new P4SMessage(null, node, Message.SWITCH_PUSH), delay, pid);
                         sender.addFailPush();
-                    } else {                        
+                    } else {
                         long delay = this.send(node, im.getSender(), new P4SMessage(chunktopush, node, Message.START_PUSH), pid);
                         if (sender.getDebug() >= 4) {
                             System.out.println("\tNode " + node.getID() + " sends START_PUSH m:" + chunktopush + " to " + im.getSender().getID() + " S " + CommonState.getTime() + " --> " + (CommonState.getTime() + delay) + " (" + eedelay + ")");
@@ -395,7 +395,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                         }
                         this.send(node, im.getSender(), new P4SMessage(chunktopush, node, Message.FINISH_PUSH), delay, pid);
                         if(sender.getSource() == node.getIndex()){
-                            delay = (chunktopush+1)*sender.getNewChunkDelay() - CommonState.getTime();
+                            delay = (chunktopush+1)*sender.getNewChunkDelay() - CommonState.getTime() +1 ;
                             sender.chunk_list[chunktopush] = 2;
                             if(result>delay){
                                     System.err.println(CommonState.getTime()+"\tATTENTION Source will spend more time in upload chunk "+chunktopush+" Delay " + delay  + " result " +result);
