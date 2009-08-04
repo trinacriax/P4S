@@ -709,6 +709,22 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.pull_success++;
     }
 
+    public long getProposePush() {
+        return this.push_propose;
+    }
+
+    public long getProposePull() {
+        return this.pull_propose;
+    }
+
+    public long getSuccessPush() {
+        return this.push_success;
+    }
+
+    public long getSuccessPull() {
+        return this.pull_success;
+    }
+
     /**
      * Aggiunge 1 al numero di push falliti
      * */
@@ -1033,6 +1049,18 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         for (int i = 0; i < this.chunk_list.length; i++) {
 //            System.out.println(normalize(chunk_list[i]) + " i "+i);
             if (normalize(this.chunk_list[i]) > Message.OWNED || this.chunk_list[i] == Message.SKIPPED) {
+                size++;
+            }
+        }
+        return size;
+    }
+
+
+    public int getSkipped() {
+        int size = 0;
+        for (int i = 0; i < this.chunk_list.length; i++) {
+//            System.out.println(normalize(chunk_list[i]) + " i "+i);
+            if (this.chunk_list[i] == Message.SKIPPED) {
                 size++;
             }
         }
