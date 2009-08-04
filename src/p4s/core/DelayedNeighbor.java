@@ -22,7 +22,8 @@ public class DelayedNeighbor implements Protocol, Linkable {
     private static final int DEFAULT_INITIAL_CAPACITY = 10;
     private static final int RND_DUMMY = 0;
     private static final int RND_SMART = 1;
-    private static final int DELAY_ORIENTED= 2;
+    private static final int DELAY_ORIENTED = 2;
+    private static final int PEER_BANNED = -100;
     /**
      * Initial capacity. Defaults to {@value #DEFAULT_INITIAL_CAPACITY}.
      * @config
@@ -79,7 +80,6 @@ public class DelayedNeighbor implements Protocol, Linkable {
         delays = null;
         System.err.println("Init DelayedNeighbor: Len " + len + ", Select " + select + ", DelayDist " + delaydist + ", MinDelay " + min + ", MaxDelay " + max + ", Mean " + mu + ", Dev " + dev);
     }
-
 
     public void populate() {
         this.delays = new long[Network.size()][Network.size()];
@@ -206,6 +206,32 @@ public class DelayedNeighbor implements Protocol, Linkable {
         return this.current;
     }
 
+    /**
+     * Se the buffermap for each chunk
+     * @param chunkn
+     */
+    public void setChunks(int chunkn) {
+        for (int i = 0; i < neighbors.length; i++) {
+            if (neighbors[i] != null) {
+                neighbors[i].setChunks(chunkn);
+            }
+        }
+    }
+
+    /**
+     * Banning a given peer
+     * @param target
+     */
+    public void setBannedPeer(Node target) {
+        NeighborElement ne = this.getNeighbor(target);
+        if (debug > 8) {
+            System.out.println("Banning  " + target.getIndex() + " > " + ne);
+        }
+        if (ne != null) {
+            ne.setBanned();
+        }
+    }
+
 // --------------------------------------------------------------------------
     /** Adds given node if it is not already in the network.*/
     public boolean addNeighbor(Node n) {
@@ -252,33 +278,45 @@ public class DelayedNeighbor implements Protocol, Linkable {
 //        System.out.println("Select "+select);
         if (select == RND_DUMMY) {
             return getRNDNeighbor();
-        }
-        else if (select == RND_SMART) {
-            return getRNDSmartNeighbor();
-        }
-        else if (select == DELAY_ORIENTED) {
+        } else if (select == RND_SMART) {
+            return getRNDNeighbor();
+//            return getRNDSmartNeighbor();
+        } else if (select == DELAY_ORIENTED) {
             return getDelayNeighbor();
-        } 
+        }
         return getRNDNeighbor();
     }
 
-    public void computeProbabilities() {
+    public NeighborElement getTargetNeighbor(int chunks[], long value) {
+//        System.out.println("Select "+select);
+        if (select == RND_SMART) {
+            return getRNDSmartNeighbor(chunks, value);
+        } else if (select == DELAY_ORIENTED) {
+            return getDelayNeighbor(chunks, value);
+        }
+        return getRNDNeighbor();
+    }
+
+    public void computeProbabilities(NeighborElement[] neighborz) {
         double tot = 0;
-        this.delaySort(neighbors);
-        double viz[] = new double[neighbors.length];
+        this.delaySort(neighborz);
+        double viz[] = new double[neighborz.length];
         double sv = 0;
-        prob = new double[neighbors.length];
+        prob = new double[neighborz.length];
         for (int i = 0; i < viz.length; i++) {
-            viz[i] = 1.0 / neighbors[i].getDelay();
+            viz[i] = 1.0 / neighborz[i].getDelay();
             if (debug >= 8) {
-                System.out.println(" Node " + current.getID() + " 1/RTT(" + neighbors[i].getNeighbor().getID() + ") is " + viz[i]);
+                System.out.println(" Node " + neighborz[i].getNeighbor().getID() + " 1/RTT(" + neighborz[i].getNeighbor().getID() + ") is " + viz[i]);
             }
             sv += viz[i];
+        }
+        if (debug >= 8) {
+            System.out.println(">>> pobabilities <<<");
         }
         for (int i = 0; i < prob.length; i++) {
             prob[i] = viz[i] / sv;
             if (debug >= 8) {
-                System.out.println(" Node " + current.getID() + " Prob[" + neighbors[i].getNeighbor().getID() + "] = " + prob[i]);
+                System.out.println(" Node " + neighborz[i].getNeighbor().getID() + " Prob[" + neighborz[i].getNeighbor().getID() + "] = " + prob[i]);
             }
             tot += prob[i];
         }
@@ -289,7 +327,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
 
     public NeighborElement getDelayNeighbor() {
         if (prob == null || prob.length < neighbors.length) {// fulfill array of probability
-            this.computeProbabilities();
+            this.computeProbabilities(neighbors);
         }
         NeighborElement candidate = null;
         RandomRLC rlc = (RandomRLC) CommonState.r;
@@ -300,44 +338,104 @@ public class DelayedNeighbor implements Protocol, Linkable {
         int id = 0;
         while (value > 0 && candidate == null && id < neighbors.length) {
             if (debug >= 8) {
-                System.out.println("\t(" + id + ") Value " + value + ", Prob " + prob[id] + " (" + neighbors[id] + ")");
+                System.out.println("\t(" + id + ") Value " + value + ", Prob " + prob[id] + " (" + neighbors[id] + ")\n");
             }
             value -= prob[id];
-            if (value <= 0)
+            if (value <= 0) {
                 candidate = neighbors[id];
+            }
             id++;
         }
         if (candidate == null && id >= neighbors.length) {
-            if (debug >= 10)
-            System.out.println("Out of Candidate ID range: "+id+" -- "+candidate);
-                id = 0;
-                candidate = neighbors[id];
+            if (debug >= 10) {
+                System.out.println("Out of Candidate ID range: " + id + " -- " + candidate);
+            }
+            id = 0;
+            candidate = neighbors[id];
         }
-        if (debug >= 10)
-            System.out.println("Return Candidate ID "+id+" -- "+candidate);
+        if (debug >= 10) {
+            System.out.println("Return Candidate ID " + id + " -- " + candidate);
+        }
         return candidate;
     }
 
-/**
- * Get a randomly selected neighbor*/
+    /**
+     * Filter the neighbors over the chunks required, and extract a neighbor with a delay distribution
+     * @param chunks array of chunks desired
+     * @param val criteria
+     * @return NeighborElement which satisfy the requirement
+     */
+    public NeighborElement getDelayNeighbor(int chunks[], long value) {
+        int val = (int) value;
+        NeighborElement[] copy_neighborz = this.getFilteredNeighborhood(chunks, val);
+        if (copy_neighborz == null) {
+            return null;//no neighbors with these properties
+        }        //compute probabilities; prob contains new values;
+        computeProbabilities(copy_neighborz);
+        NeighborElement candidate = null;//se candidate to null
+        RandomRLC rlc = (RandomRLC) CommonState.r;//instance of random generator
+        double randomv = rlc.nextDouble();//extract first value
+        if (debug >= 8) {
+            System.out.println("Extract this value " + randomv);
+        }
+        int id = 0;//reflectes the positionof the pointer in the array of probabilities
+        while (randomv > 0 && candidate == null && id < copy_neighborz.length) {
+            if (debug >= 8) {
+                System.out.println("\t(" + id + ") Val. " + randomv + ", Prob. " + prob[id] + " (" + copy_neighborz[id] + ") " + copy_neighborz[id].getChunks(chunks, val) + " (" + copy_neighborz[id].getBanned() + ") .");
+            }
+            randomv -= prob[id];//loop until reach the probability extracted
+            if (randomv <= 0) {//wehn i find the node with the given probability
+                candidate = copy_neighborz[id];//retrieve the peer
+            }
+            id++;//add one to go ahead in the probability matrix            
+        }
+        if (debug >= 10) {
+            System.out.println("Return Candidate ID " + id + " -- " + candidate);
+        }
+        return candidate;
+    }
+
+    /**
+     * Get a randomly selected neighbor*/
     public NeighborElement getRNDNeighbor() {
         RandomRLC rlc = (RandomRLC) CommonState.r;
         return this.neighbors[rlc.nextInt(this.neighbors.length)];
     }
 
-    public NeighborElement getRNDSmartNeighbor() {
-        RandomRLC rlc = (RandomRLC) CommonState.r;
-        NeighborElement candidate = this.neighbors[rlc.nextInt(len)];
-        int counter = this.neighbors.length*2;
-        double ratio = 0.5;
-        while (counter > 0 && candidate.getContactTime()>0 && ratio <0.45){//no target node already pushed
-                counter--;
-                candidate = this.neighbors[rlc.nextInt(len)];
-                if(debug>=10)
-                    System.out.println("Selecting candidate "+candidate+ " Cnt "+counter+ "; Contact "+candidate.getContactTime()+ ", ratio  "+ratio+">>>" +(counter > 0 && candidate.getContactTime()>0 && ratio <0.5));
-                ratio = candidate.getContactTime()/(CommonState.getTime()*1.0);
+    public NeighborElement[] getFilteredNeighborhood(int chunks[], int val) {
+        NeighborElement copy_neighbors[] = new NeighborElement[neighbors.length];
+        int index = 0;
+        //filtering the array of neighbors with my criteria
+        for (int i = 0; i < copy_neighbors.length; i++) {
+            copy_neighbors[i] = null;
+            if (neighbors[i].getChunks(chunks, val) > 0 && neighbors[i].getContactTime() != CommonState.getTime()) {
+                copy_neighbors[index++] = neighbors[i];
+            }
         }
-        return candidate;
+        if (index == 0)//no nodes satisfy the criteria
+        {
+            return null;
+        }
+        //resize the array
+        if (index < copy_neighbors.length) {
+            NeighborElement copy_neighborz[] = new NeighborElement[index];
+            for (int i = 0; i < copy_neighborz.length; i++) {
+                copy_neighborz[i] = copy_neighbors[i];
+            }
+            return copy_neighborz;
+        } else {
+            return copy_neighbors;
+        }
+    }
+
+    public NeighborElement getRNDSmartNeighbor(int chunks[], long value) {
+        int val = (int) value;
+        RandomRLC rlc = (RandomRLC) CommonState.r;
+        NeighborElement[] copy_neighborz = this.getFilteredNeighborhood(chunks, val);
+        if (copy_neighborz == null) {
+            return null;
+        }
+        return copy_neighborz[rlc.nextInt(copy_neighborz.length)];
     }
 
     /**Performs a permutation of the neighbors*/
