@@ -259,6 +259,26 @@ public class DelayedNeighbor implements Protocol, Linkable {
         return true;
     }
 
+    public long getMaxRTT(){
+        long max = 0;
+        for (int i = 0; i < neighbors.length; i++) {
+            if (neighbors[i] != null && delays[this.current.getIndex()][neighbors[i].getNeighbor().getIndex()]>max) {
+                max = delays[this.current.getIndex()][neighbors[i].getNeighbor().getIndex()];
+            }
+        }
+        return max;
+    }
+
+    public long getMinRTT(){
+        long min = -1;
+        for (int i = 0; i < neighbors.length; i++) {
+            if (neighbors[i] != null && (delays[this.current.getIndex()][neighbors[i].getNeighbor().getIndex()]<min || min ==-1)) {
+                min = delays[this.current.getIndex()][neighbors[i].getNeighbor().getIndex()];
+            }
+        }
+        return min;
+    }
+
 // --------------------------------------------------------------------------
     /**Get the i-th neighbor*/
     public Node getNeighbor(int i) {

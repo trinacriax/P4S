@@ -70,8 +70,13 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
 //    private static LinkedList lastsrc;
     /**Total neightbor knowledge*/
     private int nk;
+    protected long playout;
+    protected long peer_playout;
     /**Time to emerge new chunk*/
     private long new_chunk_delay;
+    private long min_del;
+    private long max_del;
+    private Node current;
 
     public AlternateDataStructure(String prefix) {
         super();
@@ -83,43 +88,48 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * 
      */
     public Object clone() {
-        AlternateDataStructure clh = null;
+        AlternateDataStructure ads = null;
         try {
-            clh = (AlternateDataStructure) super.clone();
+            ads = (AlternateDataStructure) super.clone();
         } catch (CloneNotSupportedException e) {
         } // never happens
-        clh.chunk_list = null;// new long[1];
-        clh.bandwidth = new Integer(0);
-        clh.number_of_chunks = new Integer("0");
-        clh.last_chunk_pulled = new Integer("-1");
-        clh.completed = new Long("0");
-        clh.pulling = new Long("-1");
-        clh.debug = new Integer("0");
-        clh.fail_pull = new Integer("0");
-        clh.fail_push = new Integer("0");
-        clh.chunk_size = new Integer("0");
-        clh.push_window = new Integer("0");
-        clh.cycle = new Integer("0");
-        clh.source = new Integer("0");
-        clh.success_upload = new Integer("0");
-        clh.success_download = new Integer("0");
-        clh.chunkpush = new Integer("0");
-        clh.chunkpull = new Integer("0");
-        clh.max_push_attempts = new Integer("0");
-        clh.max_pull_attempts = new Integer("0");
-        clh.push_attempts = new Integer("0");
-        clh.pull_attempts = new Integer("0");
-        clh.time_in_push = new Long("0");
-        clh.time_in_pull = new Long("0");
-        clh.switchtime = new Long("0");
-        clh.push_propose = new Long("0");
-        clh.push_success = new Long("0");
-        clh.pull_propose = new Long("0");
-        clh.pull_success = new Long("0");
-        clh.nk = new Integer("0");
-        clh.new_chunk_delay = new Long(0);
-//        clh.lastsrc = new Integer("0");
-        return clh;
+        ads.chunk_list = null;// new long[1];
+        ads.bandwidth = new Integer(0);
+        ads.number_of_chunks = new Integer("0");
+        ads.last_chunk_pulled = new Integer("-1");
+        ads.completed = new Long("0");
+        ads.pulling = new Long("-1");
+        ads.debug = new Integer("0");
+        ads.fail_pull = new Integer("0");
+        ads.fail_push = new Integer("0");
+        ads.chunk_size = new Integer("0");
+        ads.push_window = new Integer("0");
+        ads.cycle = new Integer("0");
+        ads.source = new Integer("0");
+        ads.success_upload = new Integer("0");
+        ads.success_download = new Integer("0");
+        ads.chunkpush = new Integer("0");
+        ads.chunkpull = new Integer("0");
+        ads.max_push_attempts = new Integer("0");
+        ads.max_pull_attempts = new Integer("0");
+        ads.push_attempts = new Integer("0");
+        ads.pull_attempts = new Integer("0");
+        ads.time_in_push = new Long("0");
+        ads.time_in_pull = new Long("0");
+        ads.switchtime = new Long("0");
+        ads.push_propose = new Long("0");
+        ads.push_success = new Long("0");
+        ads.pull_propose = new Long("0");
+        ads.pull_success = new Long("0");
+        ads.playout= new Long("0");
+        ads.nk = new Integer("0");
+        ads.new_chunk_delay = new Long(0);
+        ads.peer_playout  = new Long(0);
+        ads.min_del = new Long("0");
+        ads.max_del = new Long("0");
+        ads.current = null;
+//        ads.lastsrc = new Integer("0");
+        return ads;
     }
 
     /**
@@ -153,10 +163,13 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.switchtime = 0;
         this.success_download = 0;
         this.success_upload = 0;
-//        lastsrc = null;
+        this.playout =0;
         this.nk = 0;
         this.new_chunk_delay = 0;
+        this.peer_playout = 0;
         this.push_propose = this.push_success = this.push_success = this.pull_propose = 0;
+        this.min_del = this.max_del = 0;
+        this.current = null;
     }
 
     /**
@@ -181,6 +194,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      *
      */
     public void setCycle(int _cycle) {
+        if(this.peer_playout==0)
+            this.updatePlayoutTime();
         this.cycle = _cycle;
         this.checkpull();
         if (this.cycle == Message.PULL_CYCLE && this.last_chunk_pulled != -1) {
@@ -766,6 +781,47 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         return result;
     }
 
+
+    public void setPlayoutTime(int time_sec){
+        this.playout = new Long(time_sec);
+    }
+
+    public void updatePlayoutTime(){
+        if(this.peer_playout == 0 )
+            this.peer_playout = this.playout * Message.MILLISECONDI+CommonState.getTime();
+    }
+
+    public long getPlayoutTime(){
+        return this.playout;
+    }
+
+    public long getPeerPlayout(){
+        return this.peer_playout;
+    }
+
+    public long getDeadline(int chunkid){
+        return  this.peer_playout + this.new_chunk_delay * chunkid;
+        
+    }
+
+    public void setRTTDelays(Node node, int pid) {
+        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
+        this.min_del = net.getMinRTT();
+        this.max_del = net.getMaxRTT();
+    }
+
+    public boolean isPullable(int chunkid){
+        long time_available = getDeadline(chunkid) - CommonState.getTime();
+        if(time_available<0){
+            if(this.chunk_list[chunkid]==Message.NOT_OWNED)
+                    this.chunk_list[chunkid]=Message.SKIPPED;
+            System.err.println("It is strange: at time "+CommonState.getTime()+" tries to pull chunk "+chunkid+ " with deadline "+ time_available+". It should be already marked as skipped! "+this.peer_playout);
+            return false;
+        }
+        long time_needed = this.max_del + (long)(Math.floor(this.chunk_size/this.getUploadMin(this.current)));//XXX tio fix, nodes can learn the upload time from history :) with its neighbors
+        return (time_available >= time_needed);
+    }
+
     /**
      * 
      * Set lastpull to the chunk just received in pull
@@ -1071,7 +1127,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         int least = -1;
         int max_chunk = this.getLast();
         for (int i = 0; i < this.chunk_list.length && i < max_chunk; i++) {
-            if (this.chunk_list[i] == Message.NOT_OWNED) {
+            if(this.chunk_list[i] == Message.NOT_OWNED && !this.isPullable(i))
+                this.chunk_list[i]=Message.SKIPPED;
+                else if (this.chunk_list[i] == Message.NOT_OWNED) {
                 return i;
             }
         }
@@ -1092,7 +1150,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             elements--;
         } else {
             for (int i = 0; i < this.chunk_list.length && i < max_chunk && elements > 0; i++) {
-                if (this.chunk_list[i] == Message.NOT_OWNED) {// && i != this.last_chunk_pulled) {
+                 if(this.chunk_list[i] == Message.NOT_OWNED && !this.isPullable(i))
+                    this.chunk_list[i]=Message.SKIPPED;
+                else if (this.chunk_list[i] == Message.NOT_OWNED) {// && i != this.last_chunk_pulled) {
                     result[index++] = i;
                     elements--;
                 }
@@ -1122,25 +1182,11 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         }
         return result;
     }
-//
-//    /**
-//     * Restituisce un vicino del nodo in base al peer selection algorithm in uso
-//     * */
-//    public Node getTargetNeighbor(Node node, int pid) {
-//        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
-//        if (net.getCurrent() == null) {
-//            net.setCurrent(node);
-//            net.setChunks(this.number_of_chunks);
-//        }
-//        if (this.getDebug() >= 10) {
-//            System.out.println("\tNodo " + node.getID() + "\n\t" + net);
-//        }//No knowledge about the neighborhood
-//        NeighborElement candidate = net.getTargetNeighbor();
-//        if (this.getDebug() >= 10) {
-//            System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " (Source is " + this.getSource() + ") ");
-//        }
-//        return candidate.getNeighbor();
-//    }
+
+    public void setCurrent(Node ac){
+            this.current = ac;
+    }
+
 
     /**
      * Given a neighbor, returns the NeighborElement associated
@@ -1153,7 +1199,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
         if (net.getCurrent() == null) {
             net.setCurrent(node);
+            this.setRTTDelays(node, pid);
             net.setChunks(this.number_of_chunks);
+            this.setRTTDelays(node, pid);
             if (net.getNeighbor(Network.get(this.source)) != null) {
                 net.setBannedPeer(Network.get(this.getSource()));
             }
@@ -1184,6 +1232,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
         if (net.getCurrent() == null) {
             net.setCurrent(node);
+            this.setRTTDelays(node, pid);
             net.setChunks(this.number_of_chunks);
             if (net.getNeighbor(Network.get(this.source)) != null) {
                 net.setBannedPeer(Network.get(this.getSource()));
@@ -1215,6 +1264,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
         if (net.getCurrent() == null) {
             net.setCurrent(node);
+            this.setRTTDelays(node, pid);
             net.setChunks(this.number_of_chunks);
             if (net.getNeighbor(Network.get(this.source)) != null) {
                 net.setBannedPeer(Network.get(this.getSource()));

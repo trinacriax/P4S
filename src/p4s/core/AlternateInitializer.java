@@ -29,6 +29,7 @@ public class AlternateInitializer implements Control {
     private static final String PAR_PULL_WINDOW = "pull_window";
     private static final String PAR_DEBUG = "debug";
     private static final String PAR_NEW_CHUNK = "new_chunk";
+    private static final String PAR_PLAYOUT = "playout";
     // ------------------------------------------------------------------------
     // Fields
     // ------------------------------------------------------------------------         
@@ -44,6 +45,7 @@ public class AlternateInitializer implements Control {
     private final long switchtime;
     private final int push_window;
     private final int pull_window;
+    private final int playout;
 
     // //////////////////////////////
     // ------------------------------------------------------------------------
@@ -64,6 +66,7 @@ public class AlternateInitializer implements Control {
         new_chunk =  Configuration.getLong(prefix + "." + PAR_NEW_CHUNK, -1);
         push_window = Configuration.getInt(prefix + "." + PAR_PUSH_WINDOW, 1);
         pull_window = Configuration.getInt(prefix + "." + PAR_PULL_WINDOW, 1);
+        playout = Configuration.getInt(prefix + "." + PAR_PLAYOUT, 0);
         debug = Configuration.getInt(prefix + "." + PAR_DEBUG);
         bandwidthp = Configuration.getPid(prefix + "." + PAR_BANDWIDTH);
     }
@@ -91,6 +94,8 @@ public class AlternateInitializer implements Control {
             prot.setPullWindow(pull_window);
             prot.setNeighborKnowledge(neigh);
             prot.setDebug(debug);
+            prot.setPlayoutTime(playout);
+            prot.setCurrent(aNode);
         }
         AlternateDataSkeleton prot = (AlternateDataSkeleton) source.getProtocol(pid);
         prot.setCycle(Message.PUSH_CYCLE);

@@ -293,8 +293,8 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                     chunktopush = im.getChunks()[i];
                     response = receiver.getChunk(chunktopush);
                 }
-                NeighborElement ne = receiver.getNeighbor(node, im.getSender(), pid);//retrieve the neighbor of the sender
-                ne.setChunks(im.getChunks(), Message.OWNED);//set the chunks set offered
+//                NeighborElement ne = receiver.getNeighbor(node, im.getSender(), pid);//retrieve the neighbor of the sender
+//                ne.setChunks(im.getChunks(), Message.OWNED);//set the chunks set offered
                 //************************** NODO NON HA BANDA ****************************
                 if (receiver.getPassiveDw(node) >= receiver.getPassiveDownload(node) || receiver.getDownload(node) < receiver.getDownloadMin(node)) {//numero massimo di download passivi raggiunto
                     if (receiver.getDebug() >= 3) {
@@ -646,8 +646,8 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
             }
             case Message.PULL: {//Qualcuno vuole fare pull a questo nodo
                 sender = (Alternate) (node.getProtocol(pid));
-                 NeighborElement ne = sender.getNeighbor(node,im.getSender(), pid);//the sender store the information of that peer which does not have the chunk
-                 ne.setChunks(im.getChunks(), Message.NOT_OWNED);
+//                 NeighborElement ne = sender.getNeighbor(node,im.getSender(), pid);//the sender store the information of that peer which does not have the chunk
+//                 ne.setChunks(im.getChunks(), Message.NOT_OWNED);
                 if (sender.getDebug() >= 2) {
                     System.out.println(CommonState.getTime() + "\tSender " + node.getID() + " receives PULL from Node " +
                             im.getSender().getID() + " for the chunk " + im.getChunkids() + (sender.getDebug() >= 6 ? " " + sender.bitmap() + "." : "."));
@@ -694,7 +694,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                 sender = receiver = null;
                 return;
             }
-            case Message.OK_PULL: {   //il Nodo sender accetta il PULL
+            case Message.OK_PULL: {   //il Nodo ssender accetta il PULL
                 sender = ((Alternate) (im.getSender().getProtocol(pid)));
                 receiver = ((Alternate) (node.getProtocol(pid)));
                 int chunktopull = im.getChunks()[0];
@@ -702,8 +702,8 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                     System.out.println(CommonState.getTime() + "\tNode " + node.getID() + " rec" + im.getMessageID() + " from " + im.getSender().getID() + " for the chunk " +
                             im.getChunkids());
                 }
-                NeighborElement ne = receiver.getNeighbor(node,im.getSender(), pid);//the sender store the information of that peer which does not have the chunk
-                ne.setChunk(chunktopull, Message.OWNED);
+//                NeighborElement ne = receiver.getNeighbor(node,im.getSender(), pid);//the sender store the information of that peer which does not have the chunk
+//                ne.setChunk(chunktopull, Message.OWNED);
                 BandwidthAwareProtocol bap = (BandwidthAwareProtocol) im.getSender().getProtocol(sender.getBandwidth());
                 DelayedNeighbor dn = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
                 long eedelay = dn.delays[node.getIndex()][im.getSender().getIndex()];
@@ -756,8 +756,8 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                         System.out.println("\tNode " + node.getID() + " will SWITCH to PULL (" + receiver.getPullAttempt() + "/" + receiver.getPullRetry() + ") al tempo " + (CommonState.getTime() + delay));
                     }
                     this.send(node, node, new P4SMessage(null, node, Message.SWITCH_PULL), delay, pid);
-                    ne = sender.getNeighbor(im.getSender(),node, pid);//the sender store the information of that peer which does not have the chunk
-                    ne.setChunk(chunktopull, Message.OWNED);
+//                    ne = sender.getNeighbor(im.getSender(),node, pid);//the sender store the information of that peer which does not have the chunk
+//                    ne.setChunk(chunktopull, Message.OWNED);
                 }
                 sender = receiver = null;
                 return;
