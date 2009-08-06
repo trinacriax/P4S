@@ -345,6 +345,9 @@ public class DelayedNeighbor implements Protocol, Linkable {
         }
     }
 
+
+
+
     public NeighborElement getDelayNeighbor() {
         if (prob == null || prob.length < neighbors.length) {// fulfill array of probability
             this.computeProbabilities(neighbors);
@@ -448,6 +451,18 @@ public class DelayedNeighbor implements Protocol, Linkable {
             return copy_neighbors;
         }
     }
+/**
+ * Reset the information we have on a given chunk in the neighbors to initial state, we don't know nothing, therefore all nodes become eligible to be pulled.
+ * @param chunkid
+ */
+
+     public void flushNeighborhood(int chunkid){
+    for(int i = 0; i < neighbors.length;i++){
+        if(neighbors[i]!=null)
+            neighbors[i].setChunk(chunkid, 0);
+    }
+    }
+
 /**
  * Return a neighbors selected randomly among a set of neighbors which satisfy a given criteria
  * @param chunks

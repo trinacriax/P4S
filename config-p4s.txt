@@ -1,5 +1,5 @@
 ### Simulation seed
-SEED 255494005831
+SEED 28017076024
 ### MAX Simulation time
 CYCLE NETSIZE*CHUNKS*Ts
 
@@ -7,30 +7,37 @@ CYCLE NETSIZE*CHUNKS*Ts
 DEBUG 4
 
 ### Number of nodes in the network
-NETSIZE 4000
+NETSIZE 500
 
 ### Number of chunks to transmit
-CHUNKS 2000
+CHUNKS 200
 
 ### Nodes degree
 DEGREE 16
 
 ### Message delay: min and max
 DELTAmin 10
-DELTAmax 250
+DELTAmax 50
 
 ## Bitrate streaming
 Bs 1000000
 
 ### Time in milliseconds to produce a new chunk
-Ts 400
+Ts 500
 
-## Source Bandwitdth Multiplicator of the Bitstream
+## Source Bandwitdth
 BMs BMp
 
 ## Peers Bandwidth (Multiple of Bs)
-BMp ((Ts*105)/((Ts-DELTAmax)))
+BMb ((Ts*100)/((Ts-DELTAmax)))
+BMp BMb*1
 
+## Playout Time in seconds
+PLAYT 100
+
+## Deadline threshold, time after which the chunk is skipped
+##DL 1
+##to be defined.
 
 ### Type of delay distribution
 # Many kinds of delay distributions
@@ -55,20 +62,20 @@ DROP 0
 ## Maximum number of active connections in upload and download
 ## Active means that the node issues either a push or pull to a target node
 ## push for upload and pull for download.
-ALPHA_up 4
-ALPHA_down 4
+ALPHA_up 1
+ALPHA_down 1
 
 ## Maximum number of passice connections in upload and download
 ## Passive means that the node is the target node which receives either a push or pull request
 ## therefor it will either receive a chunk via push or satisfy a pull request.
 PI_up 1
-PI_down 20
+PI_down 10
 
 ## Window size for either push or pull active message,
 ## the node either proposes OMEGA_push chunks in push
 ## or OMEGA_pull for pull
-OMEGA_push 4
-OMEGA_pull 4
+OMEGA_push 1
+OMEGA_pull 1
 
 ### Maximum number of push and pull attempts
 RHO_push 1
@@ -89,7 +96,7 @@ random.seed SEED
 network.size NETSIZE
 
 simulation.endtime CYCLE
-simulation.experiments 40
+simulation.experiments 1
 simulation.timebits 16
 simulation.logtime OBSERVER-STEP
 simulation.stdout p4s.util.PrintLogs
@@ -127,7 +134,7 @@ init.rndlink.protocol link
 ## Bandwidth protocol initializer
 init.bwi bandwidth.core.BandwidthAwareInitializer
 init.bwi.protocol bwp
-init.bwi.debug DEBUG*2
+init.bwi.debug DEBUG
 
 ## CDF of bandwidth.core.distribution
 ## separeted by commas:
@@ -159,6 +166,8 @@ init.ii.new_chunk Ts
 init.ii.debug DEBUG
 init.ii.OMEGA_pushdow OMEGA_push
 init.ii.OMEGA_pulldow OMEGA_pull
+init.ii.playout PLAYT
+init.ii.pull_rounds 1
 ## 0 - no knowledge on neighbors buffer states
 ## 1 - total knowledge on neighbors buffer state
 init.ii.neighborsknow 0

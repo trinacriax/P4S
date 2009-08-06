@@ -77,6 +77,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     private long min_del;
     private long max_del;
     private Node current;
+    private int pull_rounds;
+//    private byte _pull_rounds[];
 
     public AlternateDataStructure(String prefix) {
         super();
@@ -127,6 +129,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         ads.peer_playout = new Long(0);
         ads.min_del = new Long("0");
         ads.max_del = new Long("0");
+        ads.pull_rounds= new Integer("0");
+//        ads._pull_rounds= null;
         ads.current = null;
 //        ads.lastsrc = new Integer("0");
         return ads;
@@ -170,6 +174,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.push_propose = this.push_success = this.push_success = this.pull_propose = 0;
         this.min_del = this.max_del = 0;
         this.current = null;
+        this.pull_rounds = 0;
+//        this._pull_rounds = null;
     }
 
     /**
@@ -182,8 +188,10 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
 //        this.lastsrc = new LinkedList();
         this.chunk_list = new long[items];
 //        this.lastsrc = new LinkedList();
+//        this._pull_rounds = new byte[items];
         for (int i = 0; i < items; i++) {
             this.chunk_list[i] = Message.NOT_OWNED;
+//            this._pull_rounds [i]=pull_rounds;
         }
     }
 
@@ -810,25 +818,88 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.max_del = net.getMaxRTT();
     }
 
+    public void setPullRounds(int rounds){
+        this.pull_rounds = rounds;
+    }
+
+    public int getPullRounds(){
+        return (int)this.pull_rounds;
+    }
+    
+//    public void remPullRounds(int  chunk){
+//        this._pull_rounds[chunk]--;
+//    }
+//
+//    public int getPullRounds(int chunk){
+//        return (int)this._pull_rounds[chunk];
+//    }
+//
+//    public int getPullRounds(int chunks[]){
+//        int ok = 0;
+//        for(int i = 0; i < chunks.length; i++){
+//        if(this._pull_rounds[chunks[i]]==0){
+//            ok--;
+//              if(debug>=4)
+//                  System.out.println("\tNo more pull rounds for chunk " + chunks[i] + " = "+this._pull_rounds[chunks[i]]+" skipping...");
+//              this.skipChunk(chunks[i]);
+//        }
+//        }
+//        return ok;
+//    }
+//
+//    public void remPullRounds(int chunks[]) {
+//        for (int i = 0; i < chunks.length; i++) {
+//            this._pull_rounds[chunks[i]]--;
+//        }
+//    }
+
+//    public String getPullRounds(int chunks[]) {
+//        String output = "";
+//        for (int i = 0; i < chunks.length; i++) {
+//            output+="K: "+chunks[i]+", PR "+this._pull_rounds[chunks[i]]+"; ";
+//        }
+//        return output;
+//    }
+
     public boolean isPullable(int chunkid) {
+        if (this.playout < 0) {
+            if (debug >= 4)
+                System.out.println("\tPlayout is set to infinity, " + chunkid + " will be pullable for ever :)");
+            return true;
+        }
         long time_available = getDeadline(chunkid) - CommonState.getTime();
+        if (debug >= 4) {
+                    System.out.print("\tTime available is " + time_available + " ("+getDeadline(chunkid)+"); ");
+                }
         if (time_available < 0) {
             if (this.chunk_list[chunkid] == Message.NOT_OWNED) {
-                this.chunk_list[chunkid] = Message.SKIPPED;
+                this.skipChunk(chunkid);
+                if (debug >= 4) {
+                    System.out.print("is lower than 0, no more time to retrieve "+ chunkid + " SKIP IT.");
+                    
+                }
                 this.checkCompleted();
             }
-            if (debug >= 8) {
+            if (debug >= 4) {
                 System.out.println(current.getID() + " It is strange: at time " + CommonState.getTime() + " tries to pull chunk " + chunkid + " with deadline " + time_available + ". It should be already marked as skipped! " + this.peer_playout);
             }
             return false;
         }
         long time_needed = this.max_del + (long) (Math.floor(this.chunk_size / this.getUploadMax(this.current)));//XXX to fix, nodes can learn the upload speed/time of its neighbors from history
+         if (debug >= 4) {
+                    System.out.print("Time needed to receive the chunk " + chunkid + " is " + time_needed+ " while the time available is " + time_available+"; ");
+                }
         if (time_available >= time_needed) {
+            if (debug >= 4) {
+                    System.out.println("so we have time to search it for pull");
+                }
             return true;
         } else {
             if (this.chunk_list[chunkid] == Message.NOT_OWNED) {
-                this.chunk_list[chunkid] = Message.SKIPPED;
-                this.checkCompleted();
+                this.skipChunk(chunkid);
+                if (debug >= 4) {
+                    System.out.println("we have no more time to retrieve it, SKIP");
+                }
             }
             return false;
         }
@@ -1091,15 +1162,24 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     public boolean skipChunk(int chunk) {
         if (this.chunk_list[chunk] == Message.NOT_OWNED) {
             this.chunk_list[chunk] = Message.SKIPPED;
+            if (debug >= 4) {
+            System.out.println("\tSkipping " + chunk+" is pullable? "+this.isPullable(chunk));
+                
+            }
+            this.isPullable(chunk);
         }
         this.checkCompleted();
         return true;
     }
 
-    public boolean skipChunk(int chunks[]) {
+    public boolean skipChunks(int chunks[]) {
         for (int k = 0; k < chunks.length; k++) {
             if (this.chunk_list[chunks[k]] == Message.NOT_OWNED) {
                 this.chunk_list[chunks[k]] = Message.SKIPPED;
+                if (debug >= 4) {
+                    System.out.println("\tSkipping " + chunks[k]+" is pullable? "+this.isPullable(chunks[k]));
+                }
+                
             }
             this.checkCompleted();
         }
@@ -1207,6 +1287,17 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
 
     public void setCurrent(Node ac) {
         this.current = ac;
+    }
+
+    public void flushNeighbors(int chunk, Node node, int pid) {
+        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
+        net.flushNeighborhood(chunk);
+    }
+
+    public void flushNeighbors(int chunks[], Node node, int pid) {
+        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
+        for(int  k = 0; k< chunks.length;k++)
+            net.flushNeighborhood(chunks[k]);
     }
 
     /**

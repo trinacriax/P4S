@@ -49,5 +49,7 @@ public void setNeighborKnowledge(int value);
 public void setPlayoutTime(int time_sec);
 
 public void setCurrent(Node current);
+
+public void setPullRounds(int rounds);
 }
 

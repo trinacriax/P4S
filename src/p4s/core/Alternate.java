@@ -608,24 +608,45 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                 } else {//richieste pull sequenziali non parallele	
                     Node peer = null;
                     while (receiver.getActiveDw(node) < receiver.getActiveDownload(node) && receiver.getPullAttempt() < receiver.getPullRetry() && receiver.getCycle() == Message.PULL_CYCLE) {
-                        peer = receiver.getTargetNeighborPull(chunks_to_pull,node, pid);
-                        if (peer != null) {
-                            receiver.addProposePull();
-                            receiver.addActiveDw(node);
-                            receiver.addPullAttempt();
+                        peer = receiver.getTargetNeighborPull(chunks_to_pull, node, pid);
+                        if (peer == null && (receiver.getPlayoutTime() < 0 || receiver.getPullRounds() > 0)) {
+                            if (receiver.getPlayoutTime() < 0) {
+                                if (receiver.getDebug() >= 2) {
+                                    System.out.print("\t\tNode " + node.getID() + " has an infinite time of playoutime, and chunks will be pulled for ever. ");
+                                }
+                            }
+                            if (receiver.getPullRounds() == 0) {
+                                if (receiver.getDebug() >= 2) {
+                                    System.out.print("\t\tNode " + node.getID() + " has more pull rounds to spend " + receiver.getPullRounds() +"...");
+                                }
+                            }
+                            if (receiver.getDebug() >= 2) {
+                                    System.out.println("Flushing the neighbors");
+                                }
+
+                            receiver.flushNeighbors(chunks_to_pull, node, pid);
+                            peer = receiver.getTargetNeighborPull(chunks_to_pull, node, pid);
+                            if (receiver.getDebug() >= 2) {
+                                System.out.println("\t\tSelect peer " + peer + " " + (peer != null ? peer.getID() : " NULL"));
+                            }
+                        }
+                    if (peer != null) {
+                        receiver.addProposePull();
+                        receiver.addActiveDw(node);
+                        receiver.addPullAttempt();
                             P4SMessage imm = new P4SMessage(chunks_to_pull, node, Message.PULL);
                             long delay = this.send(node, peer, imm, pid);
                             if (receiver.getDebug() >= 2) {
                                 System.out.println("\t\tNode " + node.getID() + " " + receiver.getPullAttempt() + "PULL " +
                                         imm.getChunkids() + "to Node " + peer.getID() + " MexRX " + (delay + CommonState.getTime()));
                             }
-                        } else {
-                            receiver.skipChunk(chunks_to_pull);
+                        } else {                            
+                            receiver.skipChunks(chunks_to_pull);
                             while (receiver.getPullAttempt() < receiver.getPullRetry()) {
                                 receiver.addPullAttempt();
                             }
                             if (receiver.getDebug() >= 3) {
-                                System.out.println("\t--- Il Node " + node.getID() + " does not have useful neighbors to pulls");
+                                System.out.println("\t--- Il Node " + node.getID() + " does not have useful neighbors to pulls and no more pull rounds "+ receiver.getPullRounds());
                             }
                             if (receiver.getActiveDw(node) == 0) {
                                 long delay = receiver.getSwitchTime();
