@@ -416,7 +416,8 @@ public class DelayedNeighbor implements Protocol, Linkable {
     }
 
     /**
-     * Get a randomly selected neighbor*/
+     * Get a randomly selected neighbor without any kind of filtering
+     */
     public NeighborElement getRNDNeighbor() {
         RandomRLC rlc = (RandomRLC) CommonState.r;
         return this.neighbors[rlc.nextInt(this.neighbors.length)];
@@ -428,7 +429,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
         //filtering the array of neighbors with my criteria
         for (int i = 0; i < copy_neighbors.length; i++) {
             copy_neighbors[i] = null;
-            if (neighbors[i].getChunks(chunks, val) > 0 && neighbors[i].getContactTime() != CommonState.getTime()) {
+            if (neighbors[i].getChunks(chunks, val) > 0 && neighbors[i].getContactTime() != CommonState.getTime() &&  !neighbors[i].getBanned()) {
                 copy_neighbors[index++] = neighbors[i];
             }
         }
@@ -447,7 +448,12 @@ public class DelayedNeighbor implements Protocol, Linkable {
             return copy_neighbors;
         }
     }
-
+/**
+ * Return a neighbors selected randomly among a set of neighbors which satisfy a given criteria
+ * @param chunks
+ * @param value
+ * @return
+ */
     public NeighborElement getRNDSmartNeighbor(int chunks[], long value) {
         int val = (int) value;
         RandomRLC rlc = (RandomRLC) CommonState.r;

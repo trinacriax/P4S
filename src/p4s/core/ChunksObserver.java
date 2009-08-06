@@ -114,14 +114,16 @@ public class ChunksObserver implements Control {
 
         int count = 0;
         int active = 0;
+//        String tmp="";
         boolean notallfinish = false;
         for (int i = 0; i < Network.size(); i++) {
             Alternate protocol = (Alternate) Network.get(i).getProtocol(pid);
             if (protocol.getCycle() != -1) {
                 active++;
             }
-            if (protocol.getSize() < protocol.getNumberOfChunks() || protocol.getCompleted() == 0) {
+            if (protocol.getAllChunks() < protocol.getNumberOfChunks() || protocol.getCompleted() == 0) {
                 notallfinish = true;
+//                tmp+=" "+Network.get(i).getID()+"("+protocol.getAllChunks()+") -- "+protocol.getCompleted()+". ";
             } else {
                 count++;
             }

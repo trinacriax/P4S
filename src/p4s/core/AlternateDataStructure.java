@@ -121,10 +121,10 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         ads.push_success = new Long("0");
         ads.pull_propose = new Long("0");
         ads.pull_success = new Long("0");
-        ads.playout= new Long("0");
+        ads.playout = new Long("0");
         ads.nk = new Integer("0");
         ads.new_chunk_delay = new Long(0);
-        ads.peer_playout  = new Long(0);
+        ads.peer_playout = new Long(0);
         ads.min_del = new Long("0");
         ads.max_del = new Long("0");
         ads.current = null;
@@ -163,7 +163,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.switchtime = 0;
         this.success_download = 0;
         this.success_upload = 0;
-        this.playout =0;
+        this.playout = 0;
         this.nk = 0;
         this.new_chunk_delay = 0;
         this.peer_playout = 0;
@@ -194,12 +194,13 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      *
      */
     public void setCycle(int _cycle) {
-        if(this.peer_playout==0)
+        if (this.peer_playout == 0) {
             this.updatePlayoutTime();
+        }
         this.cycle = _cycle;
         this.checkpull();
         if (this.cycle == Message.PULL_CYCLE && this.last_chunk_pulled != -1) {
-            if ((this.getSize() + 1) == this.getNumberOfChunks() && this.last_chunk_pulled == (this.getNumberOfChunks() - 1)) {
+            if ((this.getAllChunks() + 1) == this.getNumberOfChunks() && this.last_chunk_pulled == (this.getNumberOfChunks() - 1)) {
                 this.addChunk(last_chunk_pulled, Message.PULL_CYCLE);
                 this.last_chunk_pulled = -1;
             }
@@ -776,32 +777,31 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.time_in_pull += timeinpull;
     }
 
-    public String getConnections() {
-        String result = "]] " + this.getSize();// + " : " + this.bitmap();
-        return result;
-    }
-
-
-    public void setPlayoutTime(int time_sec){
+//    public String getConnections() {
+//        String result = "]] " + this.getSize();// + " : " + this.bitmap();
+//        return result;
+//    }
+    public void setPlayoutTime(int time_sec) {
         this.playout = new Long(time_sec);
     }
 
-    public void updatePlayoutTime(){
-        if(this.peer_playout == 0 )
-            this.peer_playout = this.playout * Message.MILLISECONDI+CommonState.getTime();
+    public void updatePlayoutTime() {
+        if (this.peer_playout == 0) {
+            this.peer_playout = this.playout * Message.MILLISECONDI + CommonState.getTime();
+        }
     }
 
-    public long getPlayoutTime(){
+    public long getPlayoutTime() {
         return this.playout;
     }
 
-    public long getPeerPlayout(){
+    public long getPeerPlayout() {
         return this.peer_playout;
     }
 
-    public long getDeadline(int chunkid){
-        return  this.peer_playout + this.new_chunk_delay * chunkid;
-        
+    public long getDeadline(int chunkid) {
+        return this.peer_playout + this.new_chunk_delay * chunkid;
+
     }
 
     public void setRTTDelays(Node node, int pid) {
@@ -810,16 +810,28 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.max_del = net.getMaxRTT();
     }
 
-    public boolean isPullable(int chunkid){
+    public boolean isPullable(int chunkid) {
         long time_available = getDeadline(chunkid) - CommonState.getTime();
-        if(time_available<0){
-            if(this.chunk_list[chunkid]==Message.NOT_OWNED)
-                    this.chunk_list[chunkid]=Message.SKIPPED;
-            System.err.println("It is strange: at time "+CommonState.getTime()+" tries to pull chunk "+chunkid+ " with deadline "+ time_available+". It should be already marked as skipped! "+this.peer_playout);
+        if (time_available < 0) {
+            if (this.chunk_list[chunkid] == Message.NOT_OWNED) {
+                this.chunk_list[chunkid] = Message.SKIPPED;
+                this.checkCompleted();
+            }
+            if (debug >= 8) {
+                System.out.println(current.getID() + " It is strange: at time " + CommonState.getTime() + " tries to pull chunk " + chunkid + " with deadline " + time_available + ". It should be already marked as skipped! " + this.peer_playout);
+            }
             return false;
         }
-        long time_needed = this.max_del + (long)(Math.floor(this.chunk_size/this.getUploadMin(this.current)));//XXX tio fix, nodes can learn the upload time from history :) with its neighbors
-        return (time_available >= time_needed);
+        long time_needed = this.max_del + (long) (Math.floor(this.chunk_size / this.getUploadMax(this.current)));//XXX to fix, nodes can learn the upload speed/time of its neighbors from history
+        if (time_available >= time_needed) {
+            return true;
+        } else {
+            if (this.chunk_list[chunkid] == Message.NOT_OWNED) {
+                this.chunk_list[chunkid] = Message.SKIPPED;
+                this.checkCompleted();
+            }
+            return false;
+        }
     }
 
     /**
@@ -991,8 +1003,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * 
      * */
     public int[] getLast(int elements) {
-        if (this.getSize() < elements) {
-            elements = this.getSize();
+        if (this.getOwnedChunks() < elements) {
+            elements = this.getOwnedChunks();
         }
         int result[] = new int[elements];
         int index = 0;
@@ -1044,6 +1056,12 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         return owned;
     }
 
+    public void checkCompleted() {
+        if (this.getAllChunks() == this.getNumberOfChunks() && this.getCompleted() == 0) {
+            this.setCompleted(CommonState.getTime());
+        }
+    }
+
     /**
      * 
      * Il metodo aggiunge un chunk alla lista di chunks che il nodo
@@ -1066,9 +1084,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
                 this.checkpull();
             }
         }
-        if (this.getSize() == this.getNumberOfChunks() && this.getCompleted() == 0) {
-            this.setCompleted(CommonState.getTime());
-        }
+        this.checkCompleted();
         return true;
     }
 
@@ -1076,9 +1092,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         if (this.chunk_list[chunk] == Message.NOT_OWNED) {
             this.chunk_list[chunk] = Message.SKIPPED;
         }
-        if (this.getSize() == this.getNumberOfChunks() && this.getCompleted() == 0) {
-            this.setCompleted(CommonState.getTime());
-        }
+        this.checkCompleted();
         return true;
     }
 
@@ -1087,9 +1101,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             if (this.chunk_list[chunks[k]] == Message.NOT_OWNED) {
                 this.chunk_list[chunks[k]] = Message.SKIPPED;
             }
-            if (this.getSize() == this.getNumberOfChunks() && this.getCompleted() == 0) {
-                this.setCompleted(CommonState.getTime());
-            }
+            this.checkCompleted();
         }
         return true;
     }
@@ -1100,7 +1112,18 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * in Download
      * 
      */
-    public int getSize() {
+    public int getOwnedChunks() {
+        int size = 0;
+        for (int i = 0; i < this.chunk_list.length; i++) {
+//            System.out.println(normalize(chunk_list[i]) + " i "+i);
+            if (normalize(this.chunk_list[i]) > Message.OWNED) {
+                size++;
+            }
+        }
+        return size;
+    }
+
+    public int getAllChunks() {
         int size = 0;
         for (int i = 0; i < this.chunk_list.length; i++) {
 //            System.out.println(normalize(chunk_list[i]) + " i "+i);
@@ -1110,7 +1133,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         }
         return size;
     }
-
 
     public int getSkipped() {
         int size = 0;
@@ -1127,9 +1149,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         int least = -1;
         int max_chunk = this.getLast();
         for (int i = 0; i < this.chunk_list.length && i < max_chunk; i++) {
-            if(this.chunk_list[i] == Message.NOT_OWNED && !this.isPullable(i))
-                this.chunk_list[i]=Message.SKIPPED;
-                else if (this.chunk_list[i] == Message.NOT_OWNED) {
+            if (this.chunk_list[i] == Message.NOT_OWNED && !this.isPullable(i)) {
+                this.chunk_list[i] = Message.SKIPPED;
+            } else if (this.chunk_list[i] == Message.NOT_OWNED) {
                 return i;
             }
         }
@@ -1150,9 +1172,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             elements--;
         } else {
             for (int i = 0; i < this.chunk_list.length && i < max_chunk && elements > 0; i++) {
-                 if(this.chunk_list[i] == Message.NOT_OWNED && !this.isPullable(i))
-                    this.chunk_list[i]=Message.SKIPPED;
-                else if (this.chunk_list[i] == Message.NOT_OWNED) {// && i != this.last_chunk_pulled) {
+                if (this.chunk_list[i] == Message.NOT_OWNED && !this.isPullable(i)) {
+                    this.chunk_list[i] = Message.SKIPPED;
+                } else if (this.chunk_list[i] == Message.NOT_OWNED) {// && i != this.last_chunk_pulled) {
                     result[index++] = i;
                     elements--;
                 }
@@ -1174,8 +1196,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * Stampa le informazioni sul nodo
      * */
     public String toString(Node node) {
-        String result = "Nodo " + node.getID() + ", Time " + CommonState.getTime() + " , Fail Push " + this.fail_push + ", Fail Pull " + this.fail_pull + ", Lista " + this.getSize();
-        if (this.getSize() == this.getNumberOfChunks()) {
+        String result = "Nodo " + node.getID() + ", Time " + CommonState.getTime() + " , Fail Push " + this.fail_push + ", Fail Pull " + this.fail_pull + ", Lista " + this.getAllChunks();
+        if (this.getAllChunks() == this.getNumberOfChunks()) {
             result += " >>> ha tutti i chunks.";
         } else {
             result += ".";
@@ -1183,10 +1205,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         return result;
     }
 
-    public void setCurrent(Node ac){
-            this.current = ac;
+    public void setCurrent(Node ac) {
+        this.current = ac;
     }
-
 
     /**
      * Given a neighbor, returns the NeighborElement associated
@@ -1234,6 +1255,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             net.setCurrent(node);
             this.setRTTDelays(node, pid);
             net.setChunks(this.number_of_chunks);
+            this.setRTTDelays(node, pid);
             if (net.getNeighbor(Network.get(this.source)) != null) {
                 net.setBannedPeer(Network.get(this.getSource()));
             }
@@ -1266,6 +1288,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             net.setCurrent(node);
             this.setRTTDelays(node, pid);
             net.setChunks(this.number_of_chunks);
+            this.setRTTDelays(node, pid);
             if (net.getNeighbor(Network.get(this.source)) != null) {
                 net.setBannedPeer(Network.get(this.getSource()));
             }

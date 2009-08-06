@@ -58,7 +58,7 @@ public class SourceObserver implements Control {
         }
         else
             if (protocol.getDebug() >= 2)
-                System.out.println(CommonState.getTime() + " >> Sorgente " + src.getID() + " finished to produce chunks " + protocol.getSize()+ " <<");
+                System.out.println(CommonState.getTime() + " >> Sorgente " + src.getID() + " finished to produce chunks " + protocol.getAllChunks()+ " <<");
         
         return false;
     }

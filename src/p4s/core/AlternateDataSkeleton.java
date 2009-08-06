@@ -9,7 +9,7 @@ public int getLast();
 
 public boolean addChunk(int index, int method);
 
-public int getSize();
+//public int getSize();
 
 public void Initialize(int n);
 
