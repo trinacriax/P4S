@@ -243,6 +243,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                             if (peer != null) {//there exist a target candidate
                                 receiver = (Alternate) peer.getProtocol(pid);
                                 sender.addActiveUp(node);
+                                sender.addProposePush();
                                 P4SMessage imm = new P4SMessage(chunks_push, node, Message.PUSH);
                                 delay = this.send(node, peer, imm, pid);
                                 if (sender.getDebug() >= 2) {

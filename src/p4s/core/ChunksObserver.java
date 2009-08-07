@@ -86,7 +86,7 @@ public class ChunksObserver implements Control {
                 GZIPOutputStream gzipoperation = new GZIPOutputStream(foso);
                 this.outMatrix = new PrintWriter(gzipmatrix);
                 this.outOperation = new PrintWriter(gzipoperation);
-                outOperation.write("#Chunk in push, Time in Push, Push Propose, Push success, Fail Push, Chunk in Pull, Time in Pull, pull propose, pull success, Fail Pull\n");
+                outOperation.write("#ChkPush\tTimePu\tPushSig\tPushSuc\tFailPush\tChkPull\tTimePu\tPullsig\tPullSuc\tFailPull\tSkip\n");
                 for (int i = 0; i < Network.size(); i++) {
                     Node nodos = Network.get(i);
                     Alternate protocol = (Alternate) nodos.getProtocol(pid);
@@ -95,8 +95,8 @@ public class ChunksObserver implements Control {
                         outMatrix.write(protocol.chunk_list[j] + " ");
                     }
                     outMatrix.write("\n");
-                    outOperation.write(protocol.getChunkInPush() + " " + protocol.getTimePush() + " " +protocol.getProposePush()+" " +protocol.getSuccessPush()+" " + protocol.getFailPush() + " " +
-                            protocol.getChunkInPull() + " " + protocol.getTimePull() + " " +protocol.getProposePull()+" " +protocol.getSuccessPull()+" " + protocol.getFailPull() + " " + protocol.getSkipped());
+                    outOperation.write(protocol.getChunkInPush() + "\t" + protocol.getTimePush() + "\t" +protocol.getProposePush()+"\t" +protocol.getSuccessPush()+"\t" + protocol.getFailPush() + "\t" +
+                            protocol.getChunkInPull() + "\t" + protocol.getTimePull() + "\t" +protocol.getProposePull()+"\t" +protocol.getSuccessPull()+"\t" + protocol.getFailPull() + "\t" + protocol.getSkipped()+"\n");
                             //                            "\t# Node " + nodos.getID() + " Chunks " + protocol.getSize() + " on " + protocol.getNumberOfChunks() + "\n");
                     }
                 }
