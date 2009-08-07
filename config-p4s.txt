@@ -4,13 +4,13 @@ SEED 28017076024
 CYCLE NETSIZE*CHUNKS*Ts
 
 ### Verbosity level
-DEBUG 4
+DEBUG 0
 
 ### Number of nodes in the network
-NETSIZE 500
+NETSIZE 1000
 
 ### Number of chunks to transmit
-CHUNKS 200
+CHUNKS 400
 
 ### Nodes degree
 DEGREE 16
@@ -33,11 +33,10 @@ BMb ((Ts*100)/((Ts-DELTAmax)))
 BMp BMb*1
 
 ## Playout Time in seconds
-PLAYT 100
+PLAYT 10
 
-## Deadline threshold, time after which the chunk is skipped
-##DL 1
-##to be defined.
+## ROUNDS OF PULL
+PULLROUNDS 0
 
 ### Type of delay distribution
 # Many kinds of delay distributions
@@ -62,8 +61,8 @@ DROP 0
 ## Maximum number of active connections in upload and download
 ## Active means that the node issues either a push or pull to a target node
 ## push for upload and pull for download.
-ALPHA_up 1
-ALPHA_down 1
+ALPHA_up 3
+ALPHA_down 4
 
 ## Maximum number of passice connections in upload and download
 ## Passive means that the node is the target node which receives either a push or pull request
@@ -74,8 +73,8 @@ PI_down 10
 ## Window size for either push or pull active message,
 ## the node either proposes OMEGA_push chunks in push
 ## or OMEGA_pull for pull
-OMEGA_push 1
-OMEGA_pull 1
+OMEGA_push 4
+OMEGA_pull 4
 
 ### Maximum number of push and pull attempts
 RHO_push 1
@@ -164,10 +163,10 @@ init.ii.pull_retry RHO_pull
 init.ii.switchtime SWITCHTIME
 init.ii.new_chunk Ts
 init.ii.debug DEBUG
-init.ii.OMEGA_pushdow OMEGA_push
-init.ii.OMEGA_pulldow OMEGA_pull
+init.ii.push_window OMEGA_push
+init.ii.pull_window OMEGA_pull
 init.ii.playout PLAYT
-init.ii.pull_rounds 1
+init.ii.pull_rounds PULLROUNDS
 ## 0 - no knowledge on neighbors buffer states
 ## 1 - total knowledge on neighbors buffer state
 init.ii.neighborsknow 0
