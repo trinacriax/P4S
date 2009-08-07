@@ -609,31 +609,33 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                     Node peer = null;
                     while (receiver.getActiveDw(node) < receiver.getActiveDownload(node) && receiver.getPullAttempt() < receiver.getPullRetry() && receiver.getCycle() == Message.PULL_CYCLE) {
                         peer = receiver.getTargetNeighborPull(chunks_to_pull, node, pid);
+                        //se il nodo non ha piuvicini a cui richiedere il chunk...
+                        //ma ha playoutime infinito oppure puo` ha piu` round di richiesta ai suoi vicini i.e. puo` resettare lo stato dei vicini e richiedere a tutti nuovamente
+                        //
                         if (peer == null && (receiver.getPlayoutTime() < 0 || receiver.getPullRounds() > 0)) {
                             if (receiver.getPlayoutTime() < 0) {
                                 if (receiver.getDebug() >= 2) {
                                     System.out.print("\t\tNode " + node.getID() + " has an infinite time of playoutime, and chunks will be pulled for ever. ");
                                 }
                             }
-                            if (receiver.getPullRounds() == 0) {
+                            if (receiver.getPullRounds() > 0) {
                                 if (receiver.getDebug() >= 2) {
-                                    System.out.print("\t\tNode " + node.getID() + " has more pull rounds to spend " + receiver.getPullRounds() +"...");
+                                    System.out.print("\t\tNode " + node.getID() + " has more pull rounds: " + receiver.getPullRounds() + "...");
                                 }
                             }
                             if (receiver.getDebug() >= 2) {
-                                    System.out.println("Flushing the neighbors");
-                                }
-
+                                System.out.println("Flushing the neighbors");
+                            }
                             receiver.flushNeighbors(chunks_to_pull, node, pid);
                             peer = receiver.getTargetNeighborPull(chunks_to_pull, node, pid);
                             if (receiver.getDebug() >= 2) {
-                                System.out.println("\t\tSelect peer " + peer + " " + (peer != null ? peer.getID() : " NULL"));
+                                System.out.println("\t\tSelect peer " + (peer != null ? peer.getID() : " NULL"));
                             }
                         }
-                    if (peer != null) {
-                        receiver.addProposePull();
-                        receiver.addActiveDw(node);
-                        receiver.addPullAttempt();
+                        if (peer != null) {
+                            receiver.addProposePull();
+                            receiver.addActiveDw(node);
+                            receiver.addPullAttempt();
                             P4SMessage imm = new P4SMessage(chunks_to_pull, node, Message.PULL);
                             long delay = this.send(node, peer, imm, pid);
                             if (receiver.getDebug() >= 2) {
@@ -715,7 +717,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                 sender = receiver = null;
                 return;
             }
-            case Message.OK_PULL: {   //il Nodo ssender accetta il PULL
+            case Message.OK_PULL: {//il Nodo ssender accetta il PULL
                 sender = ((Alternate) (im.getSender().getProtocol(pid)));
                 receiver = ((Alternate) (node.getProtocol(pid)));
                 int chunktopull = im.getChunks()[0];

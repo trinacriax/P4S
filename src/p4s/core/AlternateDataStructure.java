@@ -823,7 +823,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     }
 
     public int getPullRounds(){
-        return (int)this.pull_rounds;
+        return this.pull_rounds;
     }
     
 //    public void remPullRounds(int  chunk){
@@ -885,9 +885,10 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             }
             return false;
         }
-        long time_needed = this.max_del + (long) (Math.floor(this.chunk_size / this.getUploadMax(this.current)));//XXX to fix, nodes can learn the upload speed/time of its neighbors from history
+        double uptime = Math.ceil((this.chunk_size*1.0 / (this.getUploadMax(this.current)*1.0))*Message.MILLISECONDI);
+        long time_needed = Math.round(this.max_del + uptime) ;//XXX to fix, nodes can learn the upload speed/time of its neighbors from history
          if (debug >= 4) {
-                    System.out.print("Time needed to receive the chunk " + chunkid + " is " + time_needed+ " while the time available is " + time_available+"; ");
+                    System.out.print("Time needed to receive the chunk " + chunkid + " (Size "+this.chunk_size+", Upload "+this.getUploadMax(this.current)+") is " + time_needed+ "; ");
                 }
         if (time_available >= time_needed) {
             if (debug >= 4) {
@@ -1163,8 +1164,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         if (this.chunk_list[chunk] == Message.NOT_OWNED) {
             this.chunk_list[chunk] = Message.SKIPPED;
             if (debug >= 4) {
-            System.out.println("\tSkipping " + chunk+" is pullable? "+this.isPullable(chunk));
-                
+            System.out.println("\tSkipping " + chunk+" is pullable? ");
             }
             this.isPullable(chunk);
         }
@@ -1253,6 +1253,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         } else {
             for (int i = 0; i < this.chunk_list.length && i < max_chunk && elements > 0; i++) {
                 if (this.chunk_list[i] == Message.NOT_OWNED && !this.isPullable(i)) {
+                    System.out.println("Here");
                     this.chunk_list[i] = Message.SKIPPED;
                 } else if (this.chunk_list[i] == Message.NOT_OWNED) {// && i != this.last_chunk_pulled) {
                     result[index++] = i;
