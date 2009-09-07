@@ -1,16 +1,16 @@
 ### Simulation seed
-SEED 28017076024
+SEED 1324542565231132
 ### MAX Simulation time
 CYCLE NETSIZE*CHUNKS*Ts
 
 ### Verbosity level
-DEBUG 0
+DEBUG 4
 
 ### Number of nodes in the network
-NETSIZE 1000
+NETSIZE 100
 
 ### Number of chunks to transmit
-CHUNKS 400
+CHUNKS 40
 
 ### Nodes degree
 DEGREE 16
@@ -30,10 +30,10 @@ BMs BMp
 
 ## Peers Bandwidth (Multiple of Bs)
 BMb ((Ts*100)/((Ts-DELTAmax)))
-BMp BMb*1
+BMp BMb
 
 ## Playout Time in seconds
-PLAYT 10
+PLAYT -1
 
 ## ROUNDS OF PULL
 PULLROUNDS 0
@@ -50,7 +50,8 @@ DEVDELAY 0
 
 ## Peer selection SELECT
 #  0 Random selection
-#  1 Delay oriented with probability
+#  1 Random smart
+#  2 Delay oriented with probability
 PPSEL 1
 
 ## Dropping rate [0:1]
@@ -95,7 +96,7 @@ random.seed SEED
 network.size NETSIZE
 
 simulation.endtime CYCLE
-simulation.experiments 1
+simulation.experiments 2
 simulation.timebits 16
 simulation.logtime OBSERVER-STEP
 simulation.stdout p4s.util.PrintLogs
