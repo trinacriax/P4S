@@ -1,0 +1,5 @@
+set output "CCOUTFILE.eps"
+set terminal postscript eps enhanced color font "Tahoma,14"
+set ylabel "#Operations"
+set xlabel "Multi Bs"
+set title "Operation distribution."

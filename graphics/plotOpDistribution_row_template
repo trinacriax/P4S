@@ -1,0 +1,15 @@
+"CCFILE" index CCID using 1:2 title "CCTITLE,CiPh"  with line ls CPID,\\
+
+"CCFILE" index CCID using 1:6 title "CCTITLE,CiPl" with line ls CPID,\\
+
+"CCFILE" index CCID using 1:3 title "CCTITLE,PPh" with line ls CPID,\\
+
+"CCFILE" index CCID using 1:7 title "CCTITLE,PPl" with line ls CPID,\\
+
+"CCFILE" index CCID using 1:4 title "CCTITLE,SPh" with line ls CPID,\\
+
+"CCFILE" index CCID using 1:8 title "CCTITLE,SPl" with line ls CPID,\\
+
+"CCFILE" index CCID using 1:5 title "CCTITLE,FPh" with line ls CPID,\\
+
+"CCFILE" index CCID using 1:8 title "CCTITLE,FPl" with line ls CPID EEOL

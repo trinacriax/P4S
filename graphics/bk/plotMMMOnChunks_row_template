@@ -1,0 +1,2 @@
+"CCFILE" i CCID using 1:2:3:4 title "CCTITLE" with yerrorbars ls CCLINE,\
+"CCFILE" i CCID using 1:2 notitle  with line ls CCLINE EEOL

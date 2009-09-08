@@ -1,0 +1,5 @@
+set output "CCOUTFILE"
+set terminal postscript eps enhanced color font "Tahoma,14"
+set xlabel "Upload x Bs"
+set ylabel "Delay [sec]"
+set title "90-th percentile average chunks' diffusion delays amg all peers for different configurations"

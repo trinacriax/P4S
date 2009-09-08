@@ -1,0 +1,5 @@
+set output "CCOUTFILE.eps"
+set terminal postscript eps enhanced color font "Tahoma,14"
+set ylabel  "Delay [sec]"
+set xlabel "ChunksId"
+set title "Propagation Min,Median,90% Perc vs upload bandwidth and peer selection"

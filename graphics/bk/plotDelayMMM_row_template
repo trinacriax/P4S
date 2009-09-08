@@ -1,0 +1,5 @@
+"CCFILE" index CCID using 1:($2/1000) title "min,CCTITLE" with line ls CPID,\\
+
+"CCFILE" index CCID using 1:($7/1000) title "med,CCTITLE" with line ls CPID,\\
+
+"CCFILE" index CCID using 1:($11/1000) title "90,CCTITLE" with line ls CPID EEOL

@@ -1,0 +1,5 @@
+set output "CCOUTFILE.eps"
+set terminal postscript eps enhanced color font "Tahoma,14"
+set ylabel "PDF"
+set xlabel "Delay [sec]"
+set title "Approximation of the PDF of the Chunks' diffusion delay."

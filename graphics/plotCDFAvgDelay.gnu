@@ -1,0 +1,5 @@
+set output "cdf_avg_delay_400.eps"
+set terminal postscript eps enhanced color font "Tahoma,14"
+set ylabel "CDF Chunks"
+set xlabel "Delay [sec]"
+set title "CDF Avg chunks' diffusion delay."
