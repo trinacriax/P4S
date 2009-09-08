@@ -4,13 +4,13 @@ SEED 1324542565231132
 CYCLE NETSIZE*CHUNKS*Ts
 
 ### Verbosity level
-DEBUG 4
+DEBUG 0
 
 ### Number of nodes in the network
-NETSIZE 100
+NETSIZE 1000
 
 ### Number of chunks to transmit
-CHUNKS 40
+CHUNKS 1000
 
 ### Nodes degree
 DEGREE 16
@@ -30,7 +30,7 @@ BMs BMp
 
 ## Peers Bandwidth (Multiple of Bs)
 BMb ((Ts*100)/((Ts-DELTAmax)))
-BMp BMb
+mi BMp BMb*1.2
 
 ## Playout Time in seconds
 PLAYT -1
@@ -52,7 +52,7 @@ DEVDELAY 0
 #  0 Random selection
 #  1 Random smart
 #  2 Delay oriented with probability
-PPSEL 1
+PPSEL 2
 
 ## Dropping rate [0:1]
 ## Currently, this protocol does not implement any form of "message recovery"
@@ -62,13 +62,13 @@ DROP 0
 ## Maximum number of active connections in upload and download
 ## Active means that the node issues either a push or pull to a target node
 ## push for upload and pull for download.
-ALPHA_up 3
+ALPHA_up 4
 ALPHA_down 4
 
 ## Maximum number of passice connections in upload and download
 ## Passive means that the node is the target node which receives either a push or pull request
 ## therefor it will either receive a chunk via push or satisfy a pull request.
-PI_up 1
+PI_up 4
 PI_down 10
 
 ## Window size for either push or pull active message,
@@ -140,8 +140,10 @@ init.bwi.debug DEBUG
 ## separeted by commas:
 ## 128000,180000,290000
 ## 0.3,0.7,1
-init.bwi.uploadBw (Bs*BMp)/100
-init.bwi.downloadBw (Bs*BMp*10)/100
+init.bwi.uploadBw Bs
+init.bwi.downloadBw Bs*10
+init.bwi.bms BMs/100
+init.bwi.bmp BMp/100
 init.bwi.bandwidthPr 1 #0.3,0.7,1
 init.bwi.active_upload ALPHA_up
 init.bwi.active_download ALPHA_down
@@ -150,8 +152,8 @@ init.bwi.passive_download PI_down
 
 ## the following two parameters indicate the source upload/download bandwidth
 ## download is useless at the source, but it exists :)
-init.bwi.srcup (Bs*BMs)/100
-init.bwi.srcdw (Bs*BMs*10)/100
+#init.bwi.srcup (Bs*BMs)/100
+#init.bwi.srcdw (Bs*BMs*10)/100
 
 ## Chunk distribution protocol initializer
 init.ii AlternateInitializer
