@@ -4,13 +4,13 @@ SEED 1324542565231132
 CYCLE NETSIZE*CHUNKS*Ts
 
 ### Verbosity level
-DEBUG 0
+DEBUG 4
 
 ### Number of nodes in the network
-NETSIZE 1000
+NETSIZE 100
 
 ### Number of chunks to transmit
-CHUNKS 1000
+CHUNKS 100
 
 ### Nodes degree
 DEGREE 16
@@ -30,7 +30,7 @@ BMs BMp
 
 ## Peers Bandwidth (Multiple of Bs)
 BMb ((Ts*100)/((Ts-DELTAmax)))
-mi BMp BMb*1.2
+BMp BMb*1.1
 
 ## Playout Time in seconds
 PLAYT -1
@@ -82,7 +82,7 @@ RHO_push 1
 RHO_pull 1
 
 ### Observer Step in milliseconds
-SAMPLE_STEP 10000
+SAMPLE_STEP 2000
 
 ## Time in millisecond needed for a node to switch between states:
 ## push -> pull and vice-versa
@@ -96,7 +96,7 @@ random.seed SEED
 network.size NETSIZE
 
 simulation.endtime CYCLE
-simulation.experiments 2
+simulation.experiments 1
 simulation.timebits 16
 simulation.logtime OBSERVER-STEP
 simulation.stdout p4s.util.PrintLogs

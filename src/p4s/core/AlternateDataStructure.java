@@ -651,6 +651,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * Aggiunge 1 al numero di chunk ottenuti in pull
      * */
     public void addChunkInPull() {
+        System.out.println("\nADDCHUNKPULL");
         this.chunkpull++;
     }
 
@@ -730,6 +731,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     }
 
     public void addSuccessPull() {
+        System.out.println("\nADDSUCCESSPULL");
         this.pull_success++;
     }
 
@@ -1146,14 +1148,19 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * 
      */
     public boolean addChunk(int chunk, int method) {
+        System.out.print("ADDing "+chunk+ "  "+this.chunk_list[chunk]);
         if ((this.chunk_list[chunk] == Message.NOT_OWNED) || (this.chunk_list[chunk] == Message.IN_DOWNLOAD)) {
             this.chunk_list[chunk] = CommonState.getTime();
             if (method == Message.PULL_CYCLE) {
+                System.out.print("in pull :) "+this.getSuccessPull());
                 this.chunk_list[chunk] *= -1;
-                this.chunkpull++;
+                this.addSuccessPull();
+                System.out.println(" >> "+this.getSuccessPull());
             } else {
-                this.chunkpush++;
+                System.out.print("in push :) "+this.getChunkInPush());
+                this.addChunkInPush();
                 this.checkpull();
+                System.out.println(" >> "+this.getChunkInPush());
             }
         }
         this.checkCompleted();

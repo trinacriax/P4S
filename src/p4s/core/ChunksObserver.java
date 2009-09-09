@@ -86,7 +86,7 @@ public class ChunksObserver implements Control {
                 GZIPOutputStream gzipoperation = new GZIPOutputStream(foso);
                 this.outMatrix = new PrintWriter(gzipmatrix);
                 this.outOperation = new PrintWriter(gzipoperation);
-                outOperation.write("#ChkPush\tTimePu\tPushSig\tPushSuc\tFailPush\tChkPull\tTimePu\tPullsig\tPullSuc\tFailPull\tSkip\n");
+                outOperation.write("#RiPh\tPshTm\tPshSig\tPshSuc\tFlPsh\tPlUp\tPlTm\tPlSig\tPlSuc\tFlPl\tSkip\n");
                 for (int i = 0; i < Network.size(); i++) {
                     Node nodos = Network.get(i);
                     Alternate protocol = (Alternate) nodos.getProtocol(pid);
@@ -115,6 +115,8 @@ public class ChunksObserver implements Control {
         int count = 0;
         int active = 0;
 //        String tmp="";
+        int cipull=0;
+        int crpull=0;
         boolean notallfinish = false;
         for (int i = 0; i < Network.size(); i++) {
             Alternate protocol = (Alternate) Network.get(i).getProtocol(pid);
@@ -127,13 +129,15 @@ public class ChunksObserver implements Control {
             } else {
                 count++;
             }
+            cipull += protocol.getChunkInPull();
+            crpull += protocol.getSuccessPull();
         }
         Runtime r = Runtime.getRuntime();
         r.gc();
         Alternate protocol = (Alternate) Network.get(Network.size()-1).getProtocol(pid);
         System.err.print("Time " + CommonState.getTime());
         if (notallfinish) {
-            System.err.print(": Active " + active + ". Completed " + count + ". Simulation continues...(Source emerges "+ protocol.getFirstChunk()+" chunks)\n");//+".\n"+assenti);
+            System.err.print(": Active " + active + ". Completed " + count + ". Simulation continues...(Source emerges "+ protocol.getFirstChunk()+" chunks) " +cipull +" VS " +crpull +  "\n");//+".\n"+assenti);
             return false;
         } else if ((!notallfinish) && CommonState.getTime() != CommonState.getEndTime()) {
             System.err.println(". All Nodes complete: " + count + ". Set time to end time...");//+".\n"+assenti);

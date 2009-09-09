@@ -798,19 +798,21 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
             case Message.FINISH_PULL: {   //Il receiver finisce la ricezione del chunk
                 sender = ((Alternate) (im.getSender().getProtocol(pid)));
                 receiver = ((Alternate) (node.getProtocol(pid)));
-                receiver.addSuccessPull();
                 if (receiver.getDebug() >= 2) {
-                    System.out.println(CommonState.getTime() + "\tNode " + node.getID() + " recFINISH_PULL " + im.getChunkids() +
-                            " from " + im.getSender().getID());
+                    System.out.print(CommonState.getTime() + "\tNode " + node.getID() + " recFINISH_PULL " + im.getChunkids() + " ("+receiver.getSuccessPull()+") from " + im.getSender().getID()+"("+sender.getChunkInPull()+")");
                 }
+                sender.addChunkInPull();                
                 sender.remPassiveUp(im.getSender());
                 if (sender.getPassiveUp(im.getSender()) == 0) {
                     sender.resetPulling();
                 }
                 receiver.remActiveDw(node);
                 receiver.addSuccessDownload();
-                long chunkpulled = im.getChunks()[0];
-                receiver.addChunk((int) chunkpulled, Message.PULL_CYCLE);
+                int chunkpulled = (int)im.getChunks()[0];
+                receiver.addChunk(chunkpulled, Message.PULL_CYCLE);//add success pull in add chunk
+                if (receiver.getDebug() >= 2) {
+                    System.out.println("("+receiver.getSuccessPull()+") vs " +"("+sender.getChunkInPull()+")");
+                }
                 sender = receiver = null;
                 return;
             }
