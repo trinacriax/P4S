@@ -733,6 +733,8 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                 long eedelay = dn.delays[node.getIndex()][im.getSender().getIndex()];
                 eedelay = (long) (Math.ceil(eedelay / 2.0));
                 long result = bap.sendData(sender.getChunkSize(), im.getSender(), node, eedelay, sender.getBandwidth());
+                if(receiver.getChunk(chunktopull)==Message.IN_DOWNLOAD)
+                    result = BandwidthMessage.NO_DOWN;
                 if (result == BandwidthMessage.NO_UP || result == BandwidthMessage.NO_DOWN) {
                     receiver.addFailPull();
                     if (receiver.getDebug() >= 3 && result == BandwidthMessage.NO_UP) {
