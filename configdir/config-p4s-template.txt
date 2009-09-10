@@ -1,0 +1,206 @@
+### Simulation seed
+SEED CCSEED
+### MAX Simulation time
+CYCLE NETSIZE*CHUNKS*Ts
+
+### Verbosity level
+DEBUG 0
+
+### Number of nodes in the network
+NETSIZE CCPEERS
+
+### Number of chunks to transmit
+CHUNKS CCCHUNKS
+
+### Nodes degree
+DEGREE CCDEGREE
+
+### Message delay: min and max
+DELTAmin CCDMIN
+DELTAmax CCDMAX
+
+## Bitrate streaming 
+Bs CCBS
+
+### Time in milliseconds to produce a new chunk
+Ts CCTS
+
+## Source Bandwitdth
+BMs BMp
+
+## Peers Bandwidth (Multiple of Bs)
+#BMb ((Ts*100)/((Ts-DELTAmax)))
+BMp CCBMULT
+
+## Playout Time in seconds
+PLAYT CCPLAYT
+
+## ROUNDS OF PULL
+PULLROUNDS CCPULLR
+
+### Type of delay distribution
+# Many kinds of delay distributions
+# 0 Uniform between max and min
+# 1 Gaussian with mean
+# 2 Exponential Truncated with mean
+DDELAY CCDDELAY
+MUDELAY CCMUDELAY
+DEVDELAY CCDEVDELAY
+
+
+## Peer selection SELECT
+#  0 Random dummy
+#  1 Random smart
+#  2 Delay oriented with probability
+PPSEL CCPPSEL
+
+## Dropping rate [0:1]
+## Currently, this protocol does not implement any form of "message recovery"
+## therefor we are working on reliable channel.
+DROP 0
+
+## Maximum number of active connections in upload and download
+## Active means that the node issues either a push or pull to a target node
+## push for upload and pull for download.
+ALPHA_up CCALPHAUP
+ALPHA_down CCALPHADW
+
+## Maximum number of passice connections in upload and download
+## Passive means that the node is the target node which receives either a push or pull request
+## therefor it will either receive a chunk via push or satisfy a pull request.
+PI_up CCPIUP
+PI_down CCPIDW
+
+## Window size for either push or pull active message,
+## the node either proposes OMEGA_push chunks in push
+## or OMEGA_pull for pull
+OMEGA_push CCOMEGAP1
+OMEGA_pull CCOMEGAP2
+
+### Maximum number of push and pull attempts
+RHO_push CCRHOP1
+RHO_pull CCRHOP2
+
+### Observer Step in milliseconds
+SAMPLE_STEP 10000
+
+## Time in millisecond needed for a node to switch between states:
+## push -> pull and vice-versa
+SWITCHTIME 1
+
+#- - - - -  - P R O T O C O L S - - - - -  -#
+#############Random Generator#############
+random p4s.util.RandomRLC
+random.seed SEED
+##########Simulator parameter#########
+network.size NETSIZE
+
+simulation.endtime CYCLE
+simulation.experiments 10
+simulation.timebits 16
+simulation.logtime OBSERVER-STEP
+simulation.stdout p4s.util.PrintLogs
+
+## Overlay network used
+protocol.link p4s.core.DelayedNeighbor
+protocol.link.capacity DEGREE
+protocol.link.delay DDELAY
+protocol.link.select PPSEL
+protocol.link.mudelay MUDELAY
+protocol.link.devdelay DEVDELAY
+protocol.link.mindelay DELTAmin
+protocol.link.maxdelay DELTAmax
+protocol.link.debug DEBUG
+
+## Protocol used for chunks distribution
+protocol.int Alternate
+protocol.int.linkable link
+protocol.int.transport urt
+
+## Transport protocol used
+protocol.urt UniformRandomTransportP4S
+protocol.urt.mindelay DELTAmin
+protocol.urt.maxdelay DELTAmax
+
+## Bandwidth protocol used
+protocol.bwp bandwidth.core.BandwidthAwareProtocol
+
+#- - - - - - I N I T I A L I Z E R S - - - - -  -#
+## Overlay network initializer
+init.rndlink WireKOutUnd
+init.rndlink.k DEGREE
+init.rndlink.protocol link
+
+## Bandwidth protocol initializer
+init.bwi bandwidth.core.BandwidthAwareInitializer
+init.bwi.protocol bwp
+init.bwi.debug DEBUG
+
+## CDF of bandwidth.core.distribution
+## separeted by commas:
+## 128000,180000,290000
+## 0.3,0.7,1
+init.bwi.uploadBw Bs
+init.bwi.downloadBw Bs*10
+init.bwi.bms BMs
+init.bwi.bmp BMp
+init.bwi.bandwidthPr 1 #0.3,0.7,1
+init.bwi.active_upload ALPHA_up
+init.bwi.active_download ALPHA_down
+init.bwi.passive_upload PI_up
+init.bwi.passive_download PI_down
+
+## the following two parameters indicate the source upload/download bandwidth
+## download is useless at the source, but it exists :)
+#init.bwi.srcup (Bs*BMs)/100
+#init.bwi.srcdw (Bs*BMs*10)/100
+
+## Chunk distribution protocol initializer
+init.ii AlternateInitializer
+init.ii.protocol int
+init.ii.bandwidth bwp
+init.ii.chunks CHUNKS
+init.ii.chunk_size Bs*Ts/1000
+init.ii.push_retry RHO_push
+init.ii.pull_retry RHO_pull
+init.ii.switchtime SWITCHTIME
+init.ii.new_chunk Ts
+init.ii.debug DEBUG
+init.ii.push_window OMEGA_push
+init.ii.pull_window OMEGA_pull
+init.ii.playout PLAYT
+init.ii.pull_rounds PULLROUNDS
+## 0 - no knowledge on neighbors buffer states
+## 1 - total knowledge on neighbors buffer state
+init.ii.neighborsknow 0
+
+## Initializers order
+include.init rndlink bwi ii
+
+#- - - - - - C O N T R O L S - - - - -  -#
+## Control that produces chunks at the source
+control.00 SourceObserver
+control.00.protocol int
+control.00.step Ts
+
+## Control collects statistics on the operation performed by
+## peers in the chunk distribution process
+control.04 OperationObserver
+control.04.protocol int
+control.04.step SAMPLE_STEP/5
+control.04.size NETSIZE
+control.04.chunks CHUNKS
+## Write results at the end of each experiment
+control.04.FINAL
+control.04.debug DEBUG
+
+## Control collects statistics on the time in
+## which peers receives chunks
+control.08 ChunksObserver
+control.08.protocol int
+control.08.step SAMPLE_STEP
+control.08.size NETSIZE
+control.08.chunks CHUNKS
+## Write results at the end of each experiment
+control.08.FINAL
+control.08.debug DEBUG
