@@ -32,20 +32,16 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     protected int pull_window;
     /**Protocol ID for bandwidth mechanism*/
     protected int bandwidth;
-    /**#of chunks received in push*/
-    protected int chunkpush;
-    /**#of chunks received in pull*/
-    protected int chunkpull;
+//    /**#of chunks received in push*/
+//    protected int chunkpush;
+//    /**#of chunks received in pull*/
+//    protected int chunkpull;
     /**Chunk's size in bits*/
     protected long chunk_size;
     /**Last chunk retrieved via pull*/
     protected int last_chunk_pulled;
     /**Time in which the node has stared to satisfy a pull request, -1 no pull*/
     protected long pulling;
-    /**# of failed push*/
-    protected int fail_push;
-    /**# of failed pull*/
-    protected int fail_pull;
     /**Time in which node completes its chunk-list*/
     protected long completed;
     /**Max # of push attempts */
@@ -62,10 +58,34 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     protected long time_in_pull;
     /**Time needed to change state*/
     protected long switchtime;
-    protected long push_propose;
-    protected long push_success;
-    protected long pull_propose;
-    protected long pull_success;
+    /**Passive Push propose*/
+    protected int push_propose_p;
+    /**Passive Push successuful*/
+    protected int push_success_p;
+    /**Passive Push failed*/
+    protected int push_failed_p;
+
+    /**Passive Pull propose */
+    protected int pull_propose_p;
+    /**Passive Pull success*/
+    protected int pull_success_p;
+    /**Passive Pull failed*/
+    protected int pull_failed_p;
+
+    /**Active Push propose */
+    protected int push_propose_a;
+    /**Active Push success */
+    protected int push_success_a;
+    /**Active Push failed */
+    protected int push_failed_a;
+
+    /**Active Pull propose */
+    protected int pull_propose_a;
+    /**Active Pull success */
+    protected int pull_success_a;
+    /**Active Pull failed*/
+    protected int pull_failed_a;
+
     /**Contains the chunk-id that the source will push*/
 //    private static LinkedList lastsrc;
     /**Total neightbor knowledge*/
@@ -102,16 +122,43 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         ads.completed = new Long("0");
         ads.pulling = new Long("-1");
         ads.debug = new Integer("0");
-        ads.fail_pull = new Integer("0");
-        ads.fail_push = new Integer("0");
+
+           /**Passive Push propose*/
+    push_propose_p = new Integer("0");
+    /**Passive Push successuful*/
+    push_success_p = new Integer("0");
+    /**Passive Push failed*/
+    push_failed_p = new Integer("0");
+
+    /**Passive Pull propose */
+    pull_propose_p = new Integer("0");
+    /**Passive Pull success*/
+    pull_success_p = new Integer("0");
+    /**Passive Pull failed*/
+    pull_failed_p = new Integer("0");
+
+    /**Active Push propose */
+    push_propose_a = new Integer("0");
+    /**Active Push success */
+    push_success_a = new Integer("0");
+    /**Active Push failed */
+    push_failed_a = new Integer("0");
+
+    /**Active Pull propose */
+    pull_propose_a = new Integer("0");
+    /**Active Pull success */
+    pull_success_a = new Integer("0");
+    /**Active Pull failed*/
+    pull_failed_a = new Integer("0");
+
         ads.chunk_size = new Integer("0");
         ads.push_window = new Integer("0");
         ads.cycle = new Integer("0");
         ads.source = new Integer("0");
         ads.success_upload = new Integer("0");
         ads.success_download = new Integer("0");
-        ads.chunkpush = new Integer("0");
-        ads.chunkpull = new Integer("0");
+//        ads.chunkpush = new Integer("0");
+//        ads.chunkpull = new Integer("0");
         ads.max_push_attempts = new Integer("0");
         ads.max_pull_attempts = new Integer("0");
         ads.push_attempts = new Integer("0");
@@ -119,10 +166,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         ads.time_in_push = new Long("0");
         ads.time_in_pull = new Long("0");
         ads.switchtime = new Long("0");
-        ads.push_propose = new Long("0");
-        ads.push_success = new Long("0");
-        ads.pull_propose = new Long("0");
-        ads.pull_success = new Long("0");
         ads.playout = new Long("0");
         ads.nk = new Integer("0");
         ads.new_chunk_delay = new Long(0);
@@ -151,13 +194,37 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.push_window = 0;
         this.debug = 0;
         this.bandwidth = 0;
-        this.fail_pull = 0;
-        this.fail_push = 0;
+    push_propose_p = 0;
+    /**Passive Push successuful*/
+    push_success_p = 0;
+    /**Passive Push failed*/
+    push_failed_p = 0;
+
+    /**Passive Pull propose */
+    pull_propose_p = 0;
+    /**Passive Pull success*/
+    pull_success_p = 0;
+    /**Passive Pull failed*/
+    pull_failed_p = 0;
+
+    /**Active Push propose */
+    push_propose_a = 0;
+    /**Active Push success */
+    push_success_a = 0;
+    /**Active Push failed */
+    push_failed_a = 0;
+
+    /**Active Pull propose */
+    pull_propose_a = 0;
+    /**Active Pull success */
+    pull_success_a = 0;
+    /**Active Pull failed*/
+    pull_failed_a = 0;
         this.number_of_chunks = 0;
         this.cycle = -1;
         this.source = 0;
-        this.chunkpush = 0;
-        this.chunkpull = 0;
+//        this.chunkpush = 0;
+//        this.chunkpull = 0;
         this.max_push_attempts = 0;
         this.max_pull_attempts = 0;
         this.push_attempts = 0;
@@ -170,8 +237,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.playout = 0;
         this.nk = 0;
         this.new_chunk_delay = 0;
-        this.peer_playout = 0;
-        this.push_propose = this.push_success = this.push_success = this.pull_propose = 0;
+        this.peer_playout = 0;        
         this.min_del = this.max_del = 0;
         this.current = null;
         this.pull_rounds = 0;
@@ -633,34 +699,34 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.success_download = 0;
     }
 
-    /**
-     * Aggiunge 1 al numero di chunk ottenuti mediante push
-     * */
-    public void addChunkInPush() {
-        this.chunkpush++;
-    }
-
-    /**
-     * Restituisce il numero di chunk ottenuti in push
-     * */
-    public int getChunkInPush() {
-        return this.chunkpush;
-    }
-
-    /**
-     * Aggiunge 1 al numero di chunk ottenuti in pull
-     * */
-    public void addChunkInPull() {
-//        System.out.println("\nADDCHUNKPULL");
-        this.chunkpull++;
-    }
-
-    /**
-     * Restituisce il numero di chunk ottenuti in pull
-     * */
-    public int getChunkInPull() {
-        return this.chunkpull;
-    }
+//    /**
+//     * Aggiunge 1 al numero di chunk ottenuti mediante push
+//     * */
+//    public void addChunkInPush() {
+//        this.chunkpush++;
+//    }
+//
+//    /**
+//     * Restituisce il numero di chunk ottenuti in push
+//     * */
+//    public int getChunkInPush() {
+//        return this.chunkpush;
+//    }
+//
+//    /**
+//     * Aggiunge 1 al numero di chunk ottenuti in pull
+//     * */
+//    public void addChunkInPull() {
+////        System.out.println("\nADDCHUNKPULL");
+//        this.chunkpull++;
+//    }
+//
+//    /**
+//     * Restituisce il numero di chunk ottenuti in pull
+//     * */
+//    public int getChunkInPull() {
+//        return this.chunkpull;
+//    }
 
     /**
      * Imposta la sorgente della trasmissione
@@ -718,66 +784,105 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         return this.chunk_size;
     }
 
-    public void addProposePush() {
-        this.push_propose++;
+    public void addActivePushSuccess() {
+        this.push_success_a++;
     }
 
-    public void addProposePull() {
-        this.pull_propose++;
+    public int getActivePushSuccess() {
+        return this.push_success_a;
     }
 
-    public void addSuccessPush() {
-        this.push_success++;
+    public void addActivePushPropose() {
+        this.push_propose_a++;
     }
 
-    public void addSuccessPull() {
-//        System.out.println("\nADDSUCCESSPULL");
-        this.pull_success++;
+    public int getActivePushPropose() {
+        return this.push_propose_a;
     }
 
-    public long getProposePush() {
-        return this.push_propose;
+    public void addActivePushFailed() {
+        this.push_failed_a++;
     }
 
-    public long getProposePull() {
-        return this.pull_propose;
+    public int getActivePushFailed() {
+        return this.push_failed_a;
     }
 
-    public long getSuccessPush() {
-        return this.push_success;
+
+    public void addActivePullSuccess() {
+        this.pull_success_a++;
     }
 
-    public long getSuccessPull() {
-        return this.pull_success;
+    public int getActivePullSuccess() {
+        return this.pull_success_a;
     }
 
-    /**
-     * Aggiunge 1 al numero di push falliti
-     * */
-    public void addFailPush() {
-        this.fail_push++;
+    public void addActivePullPropose() {
+        this.pull_propose_a++;
     }
 
-    /**
-     * Restituisce il numero di push falliti
-     * */
-    public int getFailPush() {
-        return this.fail_push;
+    public int getActivePullPropose() {
+        return this.pull_propose_a;
     }
 
-    /**
-     * Aggiunge 1 al numero di pull falliti
-     * */
-    public void addFailPull() {
-        this.fail_pull++;
+    public void addActivePullFailed() {
+        this.pull_failed_a++;
     }
 
-    /**
-     * Restituisce il numero di pull falliti
-     * */
-    public int getFailPull() {
-        return this.fail_pull;
+    public int getActivePullFailed() {
+        return this.pull_failed_a;
     }
+
+
+    public void addPassivePushSuccess() {
+        this.push_success_p++;
+    }
+
+    public int getPassivePushSuccess() {
+        return this.push_success_p;
+    }
+
+    public void addPassivePushPropose() {
+        this.push_propose_p++;
+    }
+
+    public int getPassivePushPropose() {
+        return this.push_propose_p;
+    }
+
+    public void addPassivePushFailed() {
+        this.push_failed_p++;
+    }
+
+    public int getPassivePushFailed() {
+        return this.push_failed_p;
+    }
+
+
+    public void addPassivePullSuccess() {
+        this.pull_success_p++;
+    }
+
+    public int getPassivePullSuccess() {
+        return this.pull_success_p;
+    }
+
+    public void addPassivePullPropose() {
+        this.pull_propose_p++;
+    }
+
+    public int getPassivePullPropose() {
+        return this.pull_propose_p;
+    }
+
+    public void addPassivePullFailed() {
+        this.pull_failed_p++;
+    }
+
+    public int getPassivePullFailed() {
+        return this.pull_failed_p;
+    }
+
 
     public void addTimeInPush(long timeinpush) {
         this.time_in_push += timeinpush;
@@ -1154,12 +1259,12 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             if (method == Message.PULL_CYCLE) {
 //                System.out.print("in pull :) "+this.getSuccessPull());
                 this.chunk_list[chunk] *= -1;
-                this.addSuccessPull();
+//                this.addActivePullSuccess();
 //                System.out.println(" >> "+this.getSuccessPull());
 //                System.out.println(" >> "+this.getSuccessPull());
             } else {
 //                System.out.print("in push :) "+this.getChunkInPush());
-                this.addChunkInPush();
+//                this.addPassivePushSuccess();
                 this.checkpull();
 //                System.out.println(" >> "+this.getChunkInPush());
             }
@@ -1285,7 +1390,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * Stampa le informazioni sul nodo
      * */
     public String toString(Node node) {
-        String result = "Nodo " + node.getID() + ", Time " + CommonState.getTime() + " , Fail Push " + this.fail_push + ", Fail Pull " + this.fail_pull + ", Lista " + this.getAllChunks();
+        String result = "Nodo " + node.getID() + ", Time " + CommonState.getTime() +", Lista " + this.getAllChunks();
         if (this.getAllChunks() == this.getNumberOfChunks()) {
             result += " >>> ha tutti i chunks.";
         } else {

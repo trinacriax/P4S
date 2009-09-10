@@ -1,23 +1,23 @@
 ### Simulation seed
-SEED 1324542565231132
+SEED 305227729310
 ### MAX Simulation time
 CYCLE NETSIZE*CHUNKS*Ts
 
 ### Verbosity level
-DEBUG 4
+DEBUG 0
 
 ### Number of nodes in the network
-NETSIZE 100
+NETSIZE 1000
 
 ### Number of chunks to transmit
-CHUNKS 100
+CHUNKS 1000
 
 ### Nodes degree
 DEGREE 16
 
 ### Message delay: min and max
 DELTAmin 10
-DELTAmax 50
+DELTAmax 250
 
 ## Bitrate streaming
 Bs 1000000
@@ -29,8 +29,8 @@ Ts 500
 BMs BMp
 
 ## Peers Bandwidth (Multiple of Bs)
-BMb ((Ts*100)/((Ts-DELTAmax)))
-BMp BMb*1.1
+#BMb ((Ts*100)/((Ts-DELTAmax)))
+BMp 2.3
 
 ## Playout Time in seconds
 PLAYT -1
@@ -49,7 +49,7 @@ DEVDELAY 0
 
 
 ## Peer selection SELECT
-#  0 Random selection
+#  0 Random dummy
 #  1 Random smart
 #  2 Delay oriented with probability
 PPSEL 2
@@ -68,21 +68,21 @@ ALPHA_down 4
 ## Maximum number of passice connections in upload and download
 ## Passive means that the node is the target node which receives either a push or pull request
 ## therefor it will either receive a chunk via push or satisfy a pull request.
-PI_up 4
+PI_up 1
 PI_down 10
 
 ## Window size for either push or pull active message,
 ## the node either proposes OMEGA_push chunks in push
 ## or OMEGA_pull for pull
-OMEGA_push 4
-OMEGA_pull 4
+OMEGA_push 1
+OMEGA_pull 1
 
 ### Maximum number of push and pull attempts
 RHO_push 1
 RHO_pull 1
 
 ### Observer Step in milliseconds
-SAMPLE_STEP 2000
+SAMPLE_STEP 10000
 
 ## Time in millisecond needed for a node to switch between states:
 ## push -> pull and vice-versa
@@ -96,7 +96,7 @@ random.seed SEED
 network.size NETSIZE
 
 simulation.endtime CYCLE
-simulation.experiments 1
+simulation.experiments 10
 simulation.timebits 16
 simulation.logtime OBSERVER-STEP
 simulation.stdout p4s.util.PrintLogs
@@ -142,8 +142,8 @@ init.bwi.debug DEBUG
 ## 0.3,0.7,1
 init.bwi.uploadBw Bs
 init.bwi.downloadBw Bs*10
-init.bwi.bms BMs/100
-init.bwi.bmp BMp/100
+init.bwi.bms BMs
+init.bwi.bmp BMp
 init.bwi.bandwidthPr 1 #0.3,0.7,1
 init.bwi.active_upload ALPHA_up
 init.bwi.active_download ALPHA_down

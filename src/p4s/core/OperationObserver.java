@@ -91,8 +91,8 @@ public class OperationObserver implements Control {
                 pushy = pully = 0;
                 for (int i = 0; i < Network.size(); i++) {
                     Alternate protocol = (Alternate) Network.get(i).getProtocol(pid);
-                    pushy += protocol.getChunkInPush();
-                    pully += protocol.getChunkInPull();
+//                    pushy += protocol.getChunkInPush();
+//                    pully += protocol.getChunkInPull();
                 }
                 if (CommonState.getTime() == 0) {
                     this.gzWriter.write("#Time,chunk in push,chunk in pull\n");
