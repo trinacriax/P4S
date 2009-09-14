@@ -64,6 +64,13 @@ echo "set key out horiz top center" >> $NAMEF
 echo "set size 1,1" >> $NAMEF
 echo "plot \\" >> $NAMEF
 cpid=0
+# Size 999, Chunks 5000, Exps 1, ChunkRate 1000, DegreeK 16, 
+# BMS 1.0, SUP 1000000, SDW 10000000, 
+# BMP 1.5 , BUP 1500000 , BDW 15000000 , 
+# BDS 1.0 , 
+# ActiveUp 1, ActiveDw 1, PassiveUp 1, PassiveDw 10, PushWin 4, PullWin 4, PushRetry 1, PullRetry 1,
+# DelayType 0, Select 1, Mindelay 10, Maxdelay 250
+
 while read aline; 
 	do
 	if [ $DEBUG -eq "1" ]
@@ -92,7 +99,7 @@ while read aline;
 	then
 		crate="0"$crate
 	fi
-	cbupmult=`echo $aline | egrep -o "BUMULT [0-9]+[.]*[0-9]{1}"[,]*|egrep -o [.0-9]+`
+	cbupmult=`echo $aline | egrep -o "BMP[ ]+[0-9]+[.]*[0-9]{1}"[,]*|egrep -o [.0-9]+`
 	if [ $DEBUG -eq "1" ]
 		then
 		echo "bupmult = $cbupmult"
@@ -117,6 +124,21 @@ while read aline;
 		then
 		echo "cmaxdelay = $cmaxdelay "
 	fi
+	comega=`echo $aline | egrep -o "PushWin [0-9]+[,]*"|egrep -o [0-9]+`
+	if [ $DEBUG -eq "1" ]
+		then
+		echo "comega = $comega "
+	fi
+	caup=`echo $aline | egrep -o "ActiveUp [0-9]+[,]*"|egrep -o [0-9]+`
+	if [ $DEBUG -eq "1" ]
+		then
+		echo "cpiup = $caup "
+	fi
+	cpiup=`echo $aline | egrep -o "PassiveUp [0-9]+[,]*"|egrep -o [0-9]+`
+	if [ $DEBUG -eq "1" ]
+		then
+		echo "cpiup = $cpiup "
+	fi
 	sselect="R-"
 	sdelay="U"	
 	if [[ $cdelay = 1 ]]
@@ -136,7 +158,8 @@ while read aline;
 	fi
 	post=",\\"	
 	sdelay=$sselect""$sdelay"["$cmindelay","$cmaxdelay"]"
-	title="$cbupmult""Bs,Ts=""$crate""s,$sdelay"
+	title="$cbupmult""Bs,Ts=""$crate""s,$sdelay,\\{\\/Symbol w\\}=$comega,\\{\\/Symbol a\\}=$caup"
+	#,\\{\\/Symbol p\\}=$cpiup"
 	if [ $DEBUG -eq "1" ]
 		then
 		echo $title

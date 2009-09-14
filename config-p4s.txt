@@ -1,5 +1,5 @@
 ### Simulation seed
-SEED 305227729310
+SEED 8977891331
 ### MAX Simulation time
 CYCLE NETSIZE*CHUNKS*Ts
 
@@ -10,7 +10,7 @@ DEBUG 0
 NETSIZE 1000
 
 ### Number of chunks to transmit
-CHUNKS 1000
+CHUNKS 5000
 
 ### Nodes degree
 DEGREE 16
@@ -23,14 +23,13 @@ DELTAmax 250
 Bs 1000000
 
 ### Time in milliseconds to produce a new chunk
-Ts 500
+Ts 1000
 
 ## Source Bandwitdth
 BMs BMp
 
 ## Peers Bandwidth (Multiple of Bs)
-#BMb ((Ts*100)/((Ts-DELTAmax)))
-BMp 2.3
+BMp 1.5
 
 ## Playout Time in seconds
 PLAYT -1
@@ -52,7 +51,7 @@ DEVDELAY 0
 #  0 Random dummy
 #  1 Random smart
 #  2 Delay oriented with probability
-PPSEL 2
+PPSEL 1
 
 ## Dropping rate [0:1]
 ## Currently, this protocol does not implement any form of "message recovery"
@@ -74,8 +73,8 @@ PI_down 10
 ## Window size for either push or pull active message,
 ## the node either proposes OMEGA_push chunks in push
 ## or OMEGA_pull for pull
-OMEGA_push 1
-OMEGA_pull 1
+OMEGA_push 4
+OMEGA_pull 4
 
 ### Maximum number of push and pull attempts
 RHO_push 1
@@ -96,7 +95,7 @@ random.seed SEED
 network.size NETSIZE
 
 simulation.endtime CYCLE
-simulation.experiments 10
+simulation.experiments 1
 simulation.timebits 16
 simulation.logtime OBSERVER-STEP
 simulation.stdout p4s.util.PrintLogs
