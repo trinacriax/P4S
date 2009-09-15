@@ -31,11 +31,22 @@ public class NeighborElement {
     /**
      * Neighbor's buffer map
      */
-    private byte chunks[] = null;
+    private int chunks[] = null;
     /**
      * Neighbor may be banned to be queried
      */
     private boolean banned = false;
+    //XXX # di chunks pushed by or pulled from it
+    /*
+     * Last chunk receive from this node
+     */
+    private int chunk_in;
+
+    /*
+     * Last chunk sent to this node
+     */
+    private int chunk_out;
+
 
     /**
      * Constuctor
@@ -48,7 +59,7 @@ public class NeighborElement {
         this.rtt_delay = delay;
         this.last_contact = -1;
         this.contacts = 1;
-        this.chunks = new byte[num_chunks];
+        this.chunks = new int[num_chunks];
     }
 
     /**
@@ -152,8 +163,8 @@ public class NeighborElement {
      * @param value
      */
     public void setChunk(int chunkid, long value) {
-        byte val = (byte) value;
-        this.chunks[chunkid] = val;
+//        byte val = (byte) value;
+        this.chunks[chunkid] = (int)value;
     }
 
     /**
@@ -171,9 +182,9 @@ public class NeighborElement {
      */
     public void setChunks(int n_chunks) {
         if (this.chunks == null) {
-            this.chunks = new byte[n_chunks];
+            this.chunks = new int[n_chunks];
         } else {
-            byte cpchunk[] = new byte[n_chunks];
+            int cpchunk[] = new int[n_chunks];
             System.arraycopy(this.chunks, Math.min(this.chunks.length, n_chunks), cpchunk, 0, Math.min(this.chunks.length, n_chunks));
 
         }
@@ -190,7 +201,7 @@ public class NeighborElement {
             return 0;
         }
         int sel = 0;
-        byte val = (byte) value;
+        int val = (int) value;
         for (int k = 0; k < achunks.length; k++) {
             int chunkid = achunks[k];
             if (this.getChunk(chunkid) == val || this.getChunk(chunkid) == 0) {
@@ -206,10 +217,9 @@ public class NeighborElement {
      * @param value
      */
     public void setChunks(int achunks[], long value) {
-        byte val = (byte) value;
+//        byte val = (byte) value;
         for (int k = 0; k < achunks.length; k++) {
-            int chunkid = achunks[k];
-            this.setChunk(chunkid, val);
+            this.setChunk(achunks[k], value);
         }
     }
 }

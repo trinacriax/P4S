@@ -29,6 +29,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
      * @config
      */
     private static final String PAR_INITCAP = "capacity";
+    private static final String PAR_NEWCHUNK = "new_chunk";
     private static final String PAR_MINDELAY = "mindelay";
     private static final String PAR_MAXDELAY = "maxdelay";
     private static final String PAR_MUDELAY = "mudelay";
@@ -57,6 +58,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
     private final long min;
     private final long range;
     private final long max;
+    private final long new_chunk;
     private final int debug;
     protected static long[][] delays;
     private double prob[];
@@ -78,7 +80,8 @@ public class DelayedNeighbor implements Protocol, Linkable {
         current = null;
         prob = null;
         delays = null;
-        System.err.println("Init DelayedNeighbor: Len " + len + ", Select " + select + ", DelayDist " + delaydist + ", MinDelay " + min + ", MaxDelay " + max + ", Mean " + mu + ", Dev " + dev);
+        new_chunk = Configuration.getLong(prefix + "." + PAR_NEWCHUNK, 0);
+        System.err.println("Init DelayedNeighbor: Len " + len + ", Select " + select + ", DelayDist " + delaydist + ", MinDelay " + min + ", MaxDelay " + max + ", Mean " + mu + ", Dev " + dev + ", new chunk " + new_chunk);
     }
 
     public void populate() {
@@ -259,20 +262,20 @@ public class DelayedNeighbor implements Protocol, Linkable {
         return true;
     }
 
-    public long getMaxRTT(){
+    public long getMaxRTT() {
         long max = 0;
         for (int i = 0; i < neighbors.length; i++) {
-            if (neighbors[i] != null && delays[this.current.getIndex()][neighbors[i].getNeighbor().getIndex()]>max) {
+            if (neighbors[i] != null && delays[this.current.getIndex()][neighbors[i].getNeighbor().getIndex()] > max) {
                 max = delays[this.current.getIndex()][neighbors[i].getNeighbor().getIndex()];
             }
         }
         return max;
     }
 
-    public long getMinRTT(){
+    public long getMinRTT() {
         long min = -1;
         for (int i = 0; i < neighbors.length; i++) {
-            if (neighbors[i] != null && (delays[this.current.getIndex()][neighbors[i].getNeighbor().getIndex()]<min || min ==-1)) {
+            if (neighbors[i] != null && (delays[this.current.getIndex()][neighbors[i].getNeighbor().getIndex()] < min || min == -1)) {
                 min = delays[this.current.getIndex()][neighbors[i].getNeighbor().getIndex()];
             }
         }
@@ -345,9 +348,6 @@ public class DelayedNeighbor implements Protocol, Linkable {
         }
     }
 
-
-
-
     public NeighborElement getDelayNeighbor() {
         if (prob == null || prob.length < neighbors.length) {// fulfill array of probability
             this.computeProbabilities(neighbors);
@@ -390,13 +390,14 @@ public class DelayedNeighbor implements Protocol, Linkable {
      */
     public NeighborElement getDelayNeighbor(int chunks[], long value) {
         int val = (int) value;
-        NeighborElement[] copy_neighborz = this.getFilteredNeighborhood(chunks, val);
+        NeighborElement[] copy_neighborz = this.getFilteredNeighborhood(chunks, val,2);
         if (copy_neighborz == null) {
             return null;//no neighbors with these properties
         }        //compute probabilities; prob contains new values;
         computeProbabilities(copy_neighborz);
         NeighborElement candidate = null;//set candidate to null
         RandomRLC rlc = (RandomRLC) CommonState.r;//instance of random generator
+
         double randomv = rlc.nextDouble();//extract first value
         if (debug >= 8) {
             System.out.println("Extract this value " + randomv);
@@ -410,7 +411,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
             if (randomv <= 0) {//wehn i find the node with the given probability
                 candidate = copy_neighborz[id];//retrieve the peer
             }
-            id++;//add one to go ahead in the probability matrix            
+            id++;//add one to go ahead in the probability matrix                            
         }
         if (debug >= 10) {
             System.out.println("Return Candidate ID " + id + " -- " + candidate);
@@ -432,7 +433,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
         //filtering the array of neighbors with my criteria
         for (int i = 0; i < copy_neighbors.length; i++) {
             copy_neighbors[i] = null;
-            if (neighbors[i].getChunks(chunks, val) > 0 && neighbors[i].getContactTime() != CommonState.getTime() &&  !neighbors[i].getBanned()) {
+            if (neighbors[i].getChunks(chunks, val) > 0 && neighbors[i].getContactTime() != CommonState.getTime() && !neighbors[i].getBanned()) {
                 copy_neighbors[index++] = neighbors[i];
             }
         }
@@ -451,24 +452,54 @@ public class DelayedNeighbor implements Protocol, Linkable {
             return copy_neighbors;
         }
     }
-/**
- * Reset the information we have on a given chunk in the neighbors to initial state, we don't know nothing, therefore all nodes become eligible to be pulled.
- * @param chunkid
- */
 
-     public void flushNeighborhood(int chunkid){
-    for(int i = 0; i < neighbors.length;i++){
-        if(neighbors[i]!=null)
-            neighbors[i].setChunk(chunkid, 0);
-    }
+    public NeighborElement[] getFilteredNeighborhood(int chunks[], int val, int ts_slot) {
+        NeighborElement copy_neighbors[] = new NeighborElement[neighbors.length];
+        int index = 0;
+        long thresh = ts_slot * new_chunk;
+        //filtering the array of neighbors with my criteria
+        for (int i = 0; i < copy_neighbors.length; i++) {
+            copy_neighbors[i] = null;
+//            System.out.println("Comm "+CommonState.getTime()+ " contact "+neighbors[i].getContactTime()+" thre "+thresh);
+            if (neighbors[i].getChunks(chunks, val) > 0 && neighbors[i].getContactTime() != CommonState.getTime()  && !neighbors[i].getBanned()) {
+                if((CommonState.getTime()==0 || neighbors[i].getContactTime() <0|| (CommonState.getTime()-neighbors[i].getContactTime())>thresh)||(index ==0 && i+1 == copy_neighbors.length))
+                    copy_neighbors[index++] = neighbors[i];
+            }
+        }
+        if (index == 0)//no nodes satisfy the criteria
+        {
+            return null;
+        }
+        //resize the array
+        if (index < copy_neighbors.length) {
+            NeighborElement copy_neighborz[] = new NeighborElement[index];
+            for (int i = 0; i < copy_neighborz.length; i++) {
+                copy_neighborz[i] = copy_neighbors[i];
+            }
+            return copy_neighborz;
+        } else {
+            return copy_neighbors;
+        }
     }
 
-/**
- * Return a neighbors selected randomly among a set of neighbors which satisfy a given criteria
- * @param chunks
- * @param value
- * @return
- */
+    /**
+     * Reset the information we have on a given chunk in the neighbors to initial state, we don't know nothing, therefore all nodes become eligible to be pulled.
+     * @param chunkid
+     */
+    public void flushNeighborhood(int chunkid) {
+        for (int i = 0; i < neighbors.length; i++) {
+            if (neighbors[i] != null) {
+                neighbors[i].setChunk(chunkid, 0);
+            }
+        }
+    }
+
+    /**
+     * Return a neighbors selected randomly among a set of neighbors which satisfy a given criteria
+     * @param chunks
+     * @param value
+     * @return
+     */
     public NeighborElement getRNDSmartNeighbor(int chunks[], long value) {
         int val = (int) value;
         RandomRLC rlc = (RandomRLC) CommonState.r;

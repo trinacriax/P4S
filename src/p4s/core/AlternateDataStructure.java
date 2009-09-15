@@ -1425,8 +1425,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             System.out.println("\tNodo " + node.getID() + " push selection\n\t" + net);
         }
         NeighborElement candidate = net.getTargetNeighbor(chunks, Message.NOT_OWNED);
-        if (this.getDebug() >= 10) {
-            System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " (Source is " + this.getSource() + ") ");
+        if (this.getDebug() >= 8 && candidate!=null) {
+            System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " (Source is " + this.getSource() + ") CTO = "+candidate.getContactTime()+" CTN = "+CommonState.getTime());
         }
         if (candidate == null) {
             return null;
