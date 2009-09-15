@@ -4,13 +4,13 @@ SEED 115742048068
 CYCLE NETSIZE*CHUNKS*Ts
 
 ### Verbosity level
-DEBUG 0
+DEBUG 4
 
 ### Number of nodes in the network
 NETSIZE 1000
 
 ### Number of chunks to transmit
-CHUNKS 10000
+CHUNKS 1000
 
 ### Nodes degree
 DEGREE 16

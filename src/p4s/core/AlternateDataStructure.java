@@ -32,10 +32,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     protected int pull_window;
     /**Protocol ID for bandwidth mechanism*/
     protected int bandwidth;
-//    /**#of chunks received in push*/
-//    protected int chunkpush;
-//    /**#of chunks received in pull*/
-//    protected int chunkpull;
     /**Chunk's size in bits*/
     protected long chunk_size;
     /**Last chunk retrieved via pull*/
@@ -64,30 +60,24 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     protected int push_success_p;
     /**Passive Push failed*/
     protected int push_failed_p;
-
     /**Passive Pull propose */
     protected int pull_propose_p;
     /**Passive Pull success*/
     protected int pull_success_p;
     /**Passive Pull failed*/
     protected int pull_failed_p;
-
     /**Active Push propose */
     protected int push_propose_a;
     /**Active Push success */
     protected int push_success_a;
     /**Active Push failed */
     protected int push_failed_a;
-
     /**Active Pull propose */
     protected int pull_propose_a;
     /**Active Pull success */
     protected int pull_success_a;
     /**Active Pull failed*/
     protected int pull_failed_a;
-
-    /**Contains the chunk-id that the source will push*/
-//    private static LinkedList lastsrc;
     /**Total neightbor knowledge*/
     private int nk;
     protected long playout;
@@ -123,33 +113,33 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         ads.pulling = new Long("-1");
         ads.debug = new Integer("0");
 
-           /**Passive Push propose*/
-    push_propose_p = new Integer("0");
-    /**Passive Push successuful*/
-    push_success_p = new Integer("0");
-    /**Passive Push failed*/
-    push_failed_p = new Integer("0");
+        /**Passive Push propose*/
+        push_propose_p = new Integer("0");
+        /**Passive Push successuful*/
+        push_success_p = new Integer("0");
+        /**Passive Push failed*/
+        push_failed_p = new Integer("0");
 
-    /**Passive Pull propose */
-    pull_propose_p = new Integer("0");
-    /**Passive Pull success*/
-    pull_success_p = new Integer("0");
-    /**Passive Pull failed*/
-    pull_failed_p = new Integer("0");
+        /**Passive Pull propose */
+        pull_propose_p = new Integer("0");
+        /**Passive Pull success*/
+        pull_success_p = new Integer("0");
+        /**Passive Pull failed*/
+        pull_failed_p = new Integer("0");
 
-    /**Active Push propose */
-    push_propose_a = new Integer("0");
-    /**Active Push success */
-    push_success_a = new Integer("0");
-    /**Active Push failed */
-    push_failed_a = new Integer("0");
+        /**Active Push propose */
+        push_propose_a = new Integer("0");
+        /**Active Push success */
+        push_success_a = new Integer("0");
+        /**Active Push failed */
+        push_failed_a = new Integer("0");
 
-    /**Active Pull propose */
-    pull_propose_a = new Integer("0");
-    /**Active Pull success */
-    pull_success_a = new Integer("0");
-    /**Active Pull failed*/
-    pull_failed_a = new Integer("0");
+        /**Active Pull propose */
+        pull_propose_a = new Integer("0");
+        /**Active Pull success */
+        pull_success_a = new Integer("0");
+        /**Active Pull failed*/
+        pull_failed_a = new Integer("0");
 
         ads.chunk_size = new Integer("0");
         ads.push_window = new Integer("0");
@@ -172,7 +162,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         ads.peer_playout = new Long(0);
         ads.min_del = new Long("0");
         ads.max_del = new Long("0");
-        ads.pull_rounds= new Integer("0");
+        ads.pull_rounds = new Integer("0");
 //        ads._pull_rounds= null;
         ads.current = null;
 //        ads.lastsrc = new Integer("0");
@@ -194,32 +184,32 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.push_window = 0;
         this.debug = 0;
         this.bandwidth = 0;
-    push_propose_p = 0;
-    /**Passive Push successuful*/
-    push_success_p = 0;
-    /**Passive Push failed*/
-    push_failed_p = 0;
+        push_propose_p = 0;
+        /**Passive Push successuful*/
+        push_success_p = 0;
+        /**Passive Push failed*/
+        push_failed_p = 0;
 
-    /**Passive Pull propose */
-    pull_propose_p = 0;
-    /**Passive Pull success*/
-    pull_success_p = 0;
-    /**Passive Pull failed*/
-    pull_failed_p = 0;
+        /**Passive Pull propose */
+        pull_propose_p = 0;
+        /**Passive Pull success*/
+        pull_success_p = 0;
+        /**Passive Pull failed*/
+        pull_failed_p = 0;
 
-    /**Active Push propose */
-    push_propose_a = 0;
-    /**Active Push success */
-    push_success_a = 0;
-    /**Active Push failed */
-    push_failed_a = 0;
+        /**Active Push propose */
+        push_propose_a = 0;
+        /**Active Push success */
+        push_success_a = 0;
+        /**Active Push failed */
+        push_failed_a = 0;
 
-    /**Active Pull propose */
-    pull_propose_a = 0;
-    /**Active Pull success */
-    pull_success_a = 0;
-    /**Active Pull failed*/
-    pull_failed_a = 0;
+        /**Active Pull propose */
+        pull_propose_a = 0;
+        /**Active Pull success */
+        pull_success_a = 0;
+        /**Active Pull failed*/
+        pull_failed_a = 0;
         this.number_of_chunks = 0;
         this.cycle = -1;
         this.source = 0;
@@ -237,7 +227,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.playout = 0;
         this.nk = 0;
         this.new_chunk_delay = 0;
-        this.peer_playout = 0;        
+        this.peer_playout = 0;
         this.min_del = this.max_del = 0;
         this.current = null;
         this.pull_rounds = 0;
@@ -727,7 +717,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
 //    public int getChunkInPull() {
 //        return this.chunkpull;
 //    }
-
     /**
      * Imposta la sorgente della trasmissione
      * */
@@ -808,7 +797,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         return this.push_failed_a;
     }
 
-
     public void addActivePullSuccess() {
         this.pull_success_a++;
     }
@@ -832,7 +820,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     public int getActivePullFailed() {
         return this.pull_failed_a;
     }
-
 
     public void addPassivePushSuccess() {
         this.push_success_p++;
@@ -858,7 +845,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         return this.push_failed_p;
     }
 
-
     public void addPassivePullSuccess() {
         this.pull_success_p++;
     }
@@ -882,7 +868,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     public int getPassivePullFailed() {
         return this.pull_failed_p;
     }
-
 
     public void addTimeInPush(long timeinpush) {
         this.time_in_push += timeinpush;
@@ -925,65 +910,31 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.max_del = net.getMaxRTT();
     }
 
-    public void setPullRounds(int rounds){
+    public void setPullRounds(int rounds) {
         this.pull_rounds = rounds;
     }
 
-    public int getPullRounds(){
+    public int getPullRounds() {
         return this.pull_rounds;
     }
-    
-//    public void remPullRounds(int  chunk){
-//        this._pull_rounds[chunk]--;
-//    }
-//
-//    public int getPullRounds(int chunk){
-//        return (int)this._pull_rounds[chunk];
-//    }
-//
-//    public int getPullRounds(int chunks[]){
-//        int ok = 0;
-//        for(int i = 0; i < chunks.length; i++){
-//        if(this._pull_rounds[chunks[i]]==0){
-//            ok--;
-//              if(debug>=4)
-//                  System.out.println("\tNo more pull rounds for chunk " + chunks[i] + " = "+this._pull_rounds[chunks[i]]+" skipping...");
-//              this.skipChunk(chunks[i]);
-//        }
-//        }
-//        return ok;
-//    }
-//
-//    public void remPullRounds(int chunks[]) {
-//        for (int i = 0; i < chunks.length; i++) {
-//            this._pull_rounds[chunks[i]]--;
-//        }
-//    }
-
-//    public String getPullRounds(int chunks[]) {
-//        String output = "";
-//        for (int i = 0; i < chunks.length; i++) {
-//            output+="K: "+chunks[i]+", PR "+this._pull_rounds[chunks[i]]+"; ";
-//        }
-//        return output;
-//    }
 
     public boolean isPullable(int chunkid) {
         if (this.playout < 0) {
-            if (debug >= 4)
-                System.out.println("\tPlayout is set to infinity, " + chunkid + " will be pullable for ever :)");
+            if (debug >= 4) {
+                System.out.println("\tPlayout is set to infinity, " + chunkid + " will be pullable for ever.");
+            }
             return true;
         }
         long time_available = getDeadline(chunkid) - CommonState.getTime();
         if (debug >= 4) {
-                    System.out.print("\tTime available is " + time_available + " ("+getDeadline(chunkid)+"); ");
-                }
+            System.out.print("\tTime available is " + time_available + " (" + getDeadline(chunkid) + "); ");
+        }
         if (time_available < 0) {
             if (this.chunk_list[chunkid] == Message.NOT_OWNED) {
                 this.skipChunk(chunkid);
                 if (debug >= 4) {
-                    System.out.print("is lower than 0, no more time to retrieve "+ chunkid + " SKIP IT.");
-                    
+                    System.out.print("is lower than 0, no more time to retrieve " + chunkid + " SKIP IT.");
+
                 }
                 this.checkCompleted();
             }
@@ -992,15 +943,15 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             }
             return false;
         }
-        double uptime = Math.ceil((this.chunk_size*1.0 / (this.getUploadMax(this.current)*1.0))*Message.MILLISECONDI);
-        long time_needed = Math.round(this.max_del + uptime) ;//XXX to fix, nodes can learn the upload speed/time of its neighbors from history
-         if (debug >= 4) {
-                    System.out.print("Time needed to receive the chunk " + chunkid + " (Size "+this.chunk_size+", Upload "+this.getUploadMax(this.current)+") is " + time_needed+ "; ");
-                }
+        double uptime = Math.ceil((this.chunk_size * 1.0 / (this.getUploadMax(this.current) * 1.0)) * Message.MILLISECONDI);
+        long time_needed = Math.round(this.max_del + uptime);//XXX to fix, nodes can learn the upload speed/time of its neighbors from history
+        if (debug >= 4) {
+            System.out.print("Time needed to receive the chunk " + chunkid + " (Size " + this.chunk_size + ", Upload " + this.getUploadMax(this.current) + ") is " + time_needed + "; ");
+        }
         if (time_available >= time_needed) {
             if (debug >= 4) {
-                    System.out.println("so we have time to search it for pull");
-                }
+                System.out.println("so we have time to search it for pull");
+            }
             return true;
         } else {
             if (this.chunk_list[chunkid] == Message.NOT_OWNED) {
@@ -1126,11 +1077,15 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         return last;
     }
 
+    // = 1 TO BE PUSHED
+    // = 2 IN PUSH...
+    // = TIME -> PUSED
     public void enqueueChunk(int new_chunk) {
         this.chunk_list[new_chunk] = 1;
     }
 
     public int getFirstChunk() {
+
         int chunktopush = 0;
         while (chunktopush < this.chunk_list.length && this.chunk_list[chunktopush] != 1 && this.chunk_list[chunktopush] != 2) {
             chunktopush++;
@@ -1277,7 +1232,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         if (this.chunk_list[chunk] == Message.NOT_OWNED) {
             this.chunk_list[chunk] = Message.SKIPPED;
             if (debug >= 4) {
-            System.out.println("\tSkipping " + chunk+" is pullable? ");
+                System.out.println("\tSkipping " + chunk + " is pullable? ");
             }
             this.isPullable(chunk);
         }
@@ -1290,9 +1245,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             if (this.chunk_list[chunks[k]] == Message.NOT_OWNED) {
                 this.chunk_list[chunks[k]] = Message.SKIPPED;
                 if (debug >= 4) {
-                    System.out.println("\tSkipping " + chunks[k]+" is pullable? "+this.isPullable(chunks[k]));
+                    System.out.println("\tSkipping " + chunks[k] + " is pullable? " + this.isPullable(chunks[k]));
                 }
-                
+
             }
             this.checkCompleted();
         }
@@ -1390,7 +1345,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * Stampa le informazioni sul nodo
      * */
     public String toString(Node node) {
-        String result = "Nodo " + node.getID() + ", Time " + CommonState.getTime() +", Lista " + this.getAllChunks();
+        String result = "Nodo " + node.getID() + ", Time " + CommonState.getTime() + ", Lista " + this.getAllChunks();
         if (this.getAllChunks() == this.getNumberOfChunks()) {
             result += " >>> ha tutti i chunks.";
         } else {
@@ -1410,8 +1365,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
 
     public void flushNeighbors(int chunks[], Node node, int pid) {
         DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
-        for(int  k = 0; k< chunks.length;k++)
+        for (int k = 0; k < chunks.length; k++) {
             net.flushNeighborhood(chunks[k]);
+        }
     }
 
     /**

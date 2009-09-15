@@ -105,7 +105,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                 }                
                 //****************************************** S O U R C E    P U S H ******************************************\\
                 if (im.getChunks() != null) {
-                    int chunkpushed = im.getChunks()[0];                    
+                    int chunkpushed = im.getChunks()[0];
                     if (sender.getChunk(chunkpushed) >= Message.OWNED) {
                         if (sender.getDebug() >= 4) {
                             System.out.print("\tNode " + node.getID() + " connection released for the transmission of chunk " + chunkpushed + ", removing active up from " + sender.getActiveUp(node));
@@ -123,7 +123,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                         }
                     }
                 }
-                if (node.getIndex() == sender.getSource()) {                    
+                if (node.getIndex() == sender.getSource()) {
                     if (sender.getUpload(node) > sender.getUploadMax(node) || sender.getUpload(node) < 0) {
                         System.err.println(CommonState.getTime() + " ERRORE " + sender.getUpload(node) + " is greater than " + sender.getUploadMax(node)+" or is less than zero!");
                     }
@@ -596,7 +596,6 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                     sender = receiver = null;
                     return;
                 } else if (receiver.getPullAttempt() >= receiver.getPullRetry()) {//ha raggiunto il # di download attivi possibili
-
                     if (receiver.getDebug() >= 3) {
                         System.out.print("\t--- Il Node " + node.getID() + " has reached max number of PULL attempts " + receiver.getPullAttempt() + "/" + receiver.getPullRetry());
                     }

@@ -395,7 +395,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
             return null;//no neighbors with these properties
         }        //compute probabilities; prob contains new values;
         computeProbabilities(copy_neighborz);
-        NeighborElement candidate = null;//se candidate to null
+        NeighborElement candidate = null;//set candidate to null
         RandomRLC rlc = (RandomRLC) CommonState.r;//instance of random generator
         double randomv = rlc.nextDouble();//extract first value
         if (debug >= 8) {

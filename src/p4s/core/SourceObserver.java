@@ -35,7 +35,7 @@ public class SourceObserver implements Control {
         this.name = name;
         this.new_chunk = -1;
         pid = Configuration.getPid(name + "." + PAR_PROT);
-        System.err.println("#Source Observer is ready");
+        System.err.println("#Source Observer is ready "+name);
     }
 
     public boolean execute() {
