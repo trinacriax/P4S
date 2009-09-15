@@ -1,0 +1,25 @@
+#!/bin/bash
+E_BADARGS=65
+
+case $# in
+0|1)             # The vertical bar means "or" in this context.
+echo "Usage: `basename $0` dir_to_copy dest_dir"
+exit $E_BADARGS  # If 0 or 1 arg, then bail out.
+;;
+esac
+
+tot=`ls -1 $1/|wc -l`
+for i in `seq 1 $tot`
+do
+	filz=`ls -1rt $1|head -n $i|tail -n 1`
+	echo "File " $i " is " $filz 
+	namez=`basename $filz`
+	#config-p4s-0200001-time_21-12-55.gz
+	#EDOperation-Seed_1010013928963062295-N2000-C1000-config-p4s-010052-time_19-35-17.gz
+	config=`echo $namez|egrep -o config-p4s-[0-9]{3} | egrep -o [0-9]{3}|tail -n 1`
+	echo "Configurazione " $config
+	dest=$2/$config/data/
+	echo "Sara copiato in $dest"
+	cp $1/$filz $dest
+	echo "<<<<<<<<<<<<<<<<"
+done

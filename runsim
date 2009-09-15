@@ -1,0 +1,35 @@
+#!/bin/bash
+E_BADARGS=65
+
+case $# in 
+0)             # The vertical bar means "or" in this context.
+echo "Usage: `basename $0` config-dir"
+exit $E_BADARGS  # If 0 or 1 arg, then bail out.
+;;
+esac
+config="$1"
+num=`ls -1 $1/config*.txt|wc -l`
+java_cmd="java"
+if [ `which $java_cmd|wc -l` -eq "0" ] 
+then
+	java_cmd="java1.6"
+fi
+while [ $num -ne 0 ]
+do
+	cfg=`ls -1 $1/config*.txt|head -n 1`
+	if [ ${#cfg} -eq 0 ]
+		then
+		echo "No more file to simulate"
+		exit 1
+	fi
+	echo "File $cfg"
+	echo "Moving $cfg to local config dir."
+	mv $cfg config/
+	namez=`basename $cfg`
+	file="config/$namez"
+	filen=`echo $namez | sed -e 's/.txt$//'`	
+	filen=$filen".log"
+	echo "Simulating file $file ... $filen"
+	nohup $java_cmd -Xmx1024M -cp "jep-2.3.0.jar:djep-1.0.0.jar:peersim.jar:P4S.jar:bandwidth-aware.jar" peersim.Simulator $file 2>&1 > logs/$filen
+	num=`ls -1 $1/|wc -l`
+done

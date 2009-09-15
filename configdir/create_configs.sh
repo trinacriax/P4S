@@ -148,6 +148,9 @@ do
 #	echo "Net Size " ${CCPEERS[$a]}
 	for b in `seq 1 ${#CCCHUNKS[*]}` 
 	do	
+	for o in `seq 1 ${#CCPPSEL[*]}` 
+													do
+									#echo "Sel " ${CCPPSEL[$o]}
 		#echo "Bandwidth multiplicator " ${#CCBMULT[*]}
 		for q in `seq 1 ${#CCBMULT[*]}`
 		do
@@ -192,10 +195,7 @@ do
 												#echo " Omega_Push " ${CCOMEGAP[$m]} ", Omega_Pull " ${CCOMEGAPP[$n]}
 												#for n in `seq 1 $CCOMEGAPP_N` 
 												#do											
-													#echo "Omega_Pull " ${CCOMEGAPP[$n]}
-													for o in `seq 1 ${#CCPPSEL[*]}` 
-													do
-														#echo "Sel " ${CCPPSEL[$o]}
+													#echo "Omega_Pull " ${CCOMEGAPP[$n]}													
 														for p in `seq 1 ${#CCDDELAY[*]}` 
 														do
 															if [ ${CCDMAX[$d]} -lt ${CCTS[$f]} ]

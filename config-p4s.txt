@@ -1,5 +1,5 @@
 ### Simulation seed
-SEED 8977891331
+SEED 115742048068
 ### MAX Simulation time
 CYCLE NETSIZE*CHUNKS*Ts
 
@@ -10,7 +10,7 @@ DEBUG 0
 NETSIZE 1000
 
 ### Number of chunks to transmit
-CHUNKS 5000
+CHUNKS 10000
 
 ### Nodes degree
 DEGREE 16
@@ -29,7 +29,8 @@ Ts 1000
 BMs BMp
 
 ## Peers Bandwidth (Multiple of Bs)
-BMp 1.5
+#BMb ((Ts*100)/((Ts-DELTAmax)))
+BMp 1.6
 
 ## Playout Time in seconds
 PLAYT -1
@@ -51,7 +52,7 @@ DEVDELAY 0
 #  0 Random dummy
 #  1 Random smart
 #  2 Delay oriented with probability
-PPSEL 1
+PPSEL 2
 
 ## Dropping rate [0:1]
 ## Currently, this protocol does not implement any form of "message recovery"
@@ -149,11 +150,6 @@ init.bwi.active_download ALPHA_down
 init.bwi.passive_upload PI_up
 init.bwi.passive_download PI_down
 
-## the following two parameters indicate the source upload/download bandwidth
-## download is useless at the source, but it exists :)
-#init.bwi.srcup (Bs*BMs)/100
-#init.bwi.srcdw (Bs*BMs*10)/100
-
 ## Chunk distribution protocol initializer
 init.ii AlternateInitializer
 init.ii.protocol int
@@ -181,17 +177,6 @@ include.init rndlink bwi ii
 control.00 SourceObserver
 control.00.protocol int
 control.00.step Ts
-
-## Control collects statistics on the operation performed by
-## peers in the chunk distribution process
-control.04 OperationObserver
-control.04.protocol int
-control.04.step SAMPLE_STEP/5
-control.04.size NETSIZE
-control.04.chunks CHUNKS
-## Write results at the end of each experiment
-control.04.FINAL
-control.04.debug DEBUG
 
 ## Control collects statistics on the time in
 ## which peers receives chunks

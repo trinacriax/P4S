@@ -1,0 +1,11 @@
+#! /bin/bash
+PTH=$1
+for i in config/*.txt
+do
+	echo "File " $i
+	dir=`echo $i|egrep -o [0-9]+.txt|egrep -o [0-9]+`
+	echo "Making directory " $dir
+	mkdir $PTH/$dir
+	cp $i $PTH/$dir
+	mkdir $PTH/$dir/data
+done
