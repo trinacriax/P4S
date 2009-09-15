@@ -1,10 +1,10 @@
 ### Simulation seed
-SEED 115742048068
+SEED 23452111231
 ### MAX Simulation time
 CYCLE NETSIZE*CHUNKS*Ts
 
 ### Verbosity level
-DEBUG 4
+DEBUG 0
 
 ### Number of nodes in the network
 NETSIZE 1000
@@ -30,7 +30,7 @@ BMs BMp
 
 ## Peers Bandwidth (Multiple of Bs)
 #BMb ((Ts*100)/((Ts-DELTAmax)))
-BMp 1.6
+BMp 2.0
 
 ## Playout Time in seconds
 PLAYT -1
@@ -52,7 +52,7 @@ DEVDELAY 0
 #  0 Random dummy
 #  1 Random smart
 #  2 Delay oriented with probability
-PPSEL 2
+PPSEL 1
 
 ## Dropping rate [0:1]
 ## Currently, this protocol does not implement any form of "message recovery"
@@ -74,8 +74,8 @@ PI_down 10
 ## Window size for either push or pull active message,
 ## the node either proposes OMEGA_push chunks in push
 ## or OMEGA_pull for pull
-OMEGA_push 4
-OMEGA_pull 4
+OMEGA_push 1
+OMEGA_pull 1
 
 ### Maximum number of push and pull attempts
 RHO_push 1
@@ -111,6 +111,7 @@ protocol.link.devdelay DEVDELAY
 protocol.link.mindelay DELTAmin
 protocol.link.maxdelay DELTAmax
 protocol.link.debug DEBUG
+protocol.link.new_chunk Ts
 
 ## Protocol used for chunks distribution
 protocol.int Alternate
