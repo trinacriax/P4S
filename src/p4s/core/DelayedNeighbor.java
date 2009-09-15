@@ -418,14 +418,21 @@ public class DelayedNeighbor implements Protocol, Linkable {
         }
         return candidate;
     }
+/**
+     * Reset the information we have on a given chunk in the neighbors to initial state, we don't know nothing, therefore all nodes become eligible to be pulled.
+     * @param chunkid
+     */
+    public void flushNeighborhood(int chunkid) {
+        for (int i = 0; i < neighbors.length; i++) {
+            if (neighbors[i] != null) {
+                neighbors[i].setChunk(chunkid, 0);
+            }
+        }
+    }
 
     /**
      * Get a randomly selected neighbor without any kind of filtering
-     */
-    public NeighborElement getRNDNeighbor() {
-        RandomRLC rlc = (RandomRLC) CommonState.r;
-        return this.neighbors[rlc.nextInt(this.neighbors.length)];
-    }
+     */    
 
     public NeighborElement[] getFilteredNeighborhood(int chunks[], int val) {
         NeighborElement copy_neighbors[] = new NeighborElement[neighbors.length];
@@ -482,17 +489,12 @@ public class DelayedNeighbor implements Protocol, Linkable {
         }
     }
 
-    /**
-     * Reset the information we have on a given chunk in the neighbors to initial state, we don't know nothing, therefore all nodes become eligible to be pulled.
-     * @param chunkid
-     */
-    public void flushNeighborhood(int chunkid) {
-        for (int i = 0; i < neighbors.length; i++) {
-            if (neighbors[i] != null) {
-                neighbors[i].setChunk(chunkid, 0);
-            }
-        }
+
+    public NeighborElement getRNDNeighbor() {
+        RandomRLC rlc = (RandomRLC) CommonState.r;
+        return this.neighbors[rlc.nextInt(this.neighbors.length)];
     }
+    
 
     /**
      * Return a neighbors selected randomly among a set of neighbors which satisfy a given criteria
