@@ -17,7 +17,7 @@ DEGREE 16
 
 ### Message delay: min and max
 DELTAmin 10
-DELTAmax 250
+DELTAmax 500
 
 ## Bitrate streaming
 Bs 1000000
@@ -30,7 +30,7 @@ BMs BMp
 
 ## Peers Bandwidth (Multiple of Bs)
 #BMb ((Ts*100)/((Ts-DELTAmax)))
-BMp 2.0
+BMp 1.0
 
 ## Playout Time in seconds
 PLAYT -1
@@ -52,7 +52,7 @@ DEVDELAY 0
 #  0 Random dummy
 #  1 Random smart
 #  2 Delay oriented with probability
-PPSEL 1
+PPSEL 2
 
 ## Dropping rate [0:1]
 ## Currently, this protocol does not implement any form of "message recovery"
@@ -82,7 +82,7 @@ RHO_push 1
 RHO_pull 1
 
 ### Observer Step in milliseconds
-SAMPLE_STEP 10000
+SAMPLE_STEP 50000
 
 ## Time in millisecond needed for a node to switch between states:
 ## push -> pull and vice-versa
