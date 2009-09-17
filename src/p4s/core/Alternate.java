@@ -394,6 +394,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                         if (sender.getDebug() >= 4) {
                             System.out.println("\tNode " + node.getID() + " SWITCH to PUSHa (" + sender.getPushAttempt() + "/" + sender.getPushRetry() + ") at time " + CommonState.getTime() + " MexRX " + (CommonState.getTime() + delay));
                         }
+                        sender.getNeighbor(node, im.getSender(), pid).resetContactTime();
                         this.send(node, node, new P4SMessage(null, node, Message.SWITCH_PUSH), delay, pid);
                     } else {
                         NeighborElement ne = sender.getNeighbor(node,im.getSender(), pid);//the sender store the information of that peer which does not have the chunk

@@ -149,6 +149,14 @@ public class NeighborElement {
         this.last_contact = value;
     }
 
+
+    /**
+     * reset the contact time
+     */
+    public void resetContactTime() {
+        this.last_contact = 0;
+    }
+
     /**
      * return the last contact time
      * @return
@@ -156,6 +164,9 @@ public class NeighborElement {
     public long getContactTime() {
         return this.last_contact;
     }
+
+
+
 
     /**
      * Assign the given value to the given chunk
@@ -221,5 +232,30 @@ public class NeighborElement {
         for (int k = 0; k < achunks.length; k++) {
             this.setChunk(achunks[k], value);
         }
+    }
+
+    /**
+     * Set the last chunk pulled from this neighbor
+     * @param _chunkid chunkd pulled
+     */
+    public void setChunkIn(int _chunkid){
+        this.chunk_in = _chunkid;
+    }
+
+
+    public int getChunkIn(){
+        return this.chunk_in;
+    }
+
+    /**
+     * Set the last chunk pushed to this neighbor
+     * @param _chunkid chunk pushed
+     */
+    public void setChunkOut(int _chunkid){
+        this.chunk_in = _chunkid;
+    }
+
+    public int getChunkOut(){
+        return this.chunk_out;
     }
 }
