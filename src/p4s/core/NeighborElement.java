@@ -154,7 +154,7 @@ public class NeighborElement {
      * reset the contact time
      */
     public void resetContactTime() {
-        this.last_contact = 0;
+        this.last_contact = -1;
     }
 
     /**

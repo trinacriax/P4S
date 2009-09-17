@@ -391,7 +391,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
      */
     public NeighborElement getDelayNeighbor(int chunks[], long value) {
         int val = (int) value;
-        NeighborElement[] copy_neighborz = this.getFilteredNeighborhood(chunks, val,2.1);
+        NeighborElement[] copy_neighborz = this.getFilteredNeighborhood(chunks, val, 2.1);
         if (copy_neighborz == null) {
             return null;//no neighbors with these properties
         }        //compute probabilities; prob contains new values;
@@ -409,7 +409,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
                 System.out.println("\t(" + id + ") Val. " + randomv + ", Prob. " + prob[id] + " (" + copy_neighborz[id] + ") " + copy_neighborz[id].getChunks(chunks, val) + " (" + copy_neighborz[id].getBanned() + ") .");
             }
             randomv -= prob[id];//loop until reach the probability extracted
-            if (randomv <= 0) {//wehn i find the node with the given probability
+            if (randomv <= 0) {//when i find the node with the given probability
                 candidate = copy_neighborz[id];//retrieve the peer
             }
             id++;//add one to go ahead in the probability matrix                            
@@ -419,7 +419,8 @@ public class DelayedNeighbor implements Protocol, Linkable {
         }
         return candidate;
     }
-/**
+
+    /**
      * Reset the information we have on a given chunk in the neighbors to initial state, we don't know nothing, therefore all nodes become eligible to be pulled.
      * @param chunkid
      */
@@ -433,8 +434,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
 
     /**
      * Get a randomly selected neighbor without any kind of filtering
-     */    
-
+     */
     public NeighborElement[] getFilteredNeighborhood(int chunks[], int val) {
         NeighborElement copy_neighbors[] = new NeighborElement[neighbors.length];
         int index = 0;
@@ -464,15 +464,16 @@ public class DelayedNeighbor implements Protocol, Linkable {
     public NeighborElement[] getFilteredNeighborhood(int chunks[], int val, double ts_slot) {
         NeighborElement copy_neighbors[] = new NeighborElement[neighbors.length];
         int index = 0;
-        long thresh =Math.round(ts_slot * new_chunk);
+        long thresh = Math.round(ts_slot * new_chunk);
         //filtering the array of neighbors with my criteria
         for (int i = 0; i < copy_neighbors.length; i++) {
             copy_neighbors[i] = null;
 //            System.out.println("Comm "+CommonState.getTime()+ " contact "+neighbors[i].getContactTime()+" thre "+thresh);
-            if (neighbors[i].getChunks(chunks, val) > 0 && neighbors[i].getContactTime() != CommonState.getTime()  && !neighbors[i].getBanned()) {
+            if (neighbors[i].getChunks(chunks, val) > 0 && neighbors[i].getContactTime() != CommonState.getTime() && !neighbors[i].getBanned()) {
                 //if the node has to pull OR the current time is zero (first time) OR the target peer was never contacted OR it was contacted recently OR it is the last node available
-                if((val==Message.OWNED)|| CommonState.getTime()==0 || neighbors[i].getContactTime() <0|| (CommonState.getTime()-neighbors[i].getContactTime())>thresh||(index ==0 && i+1 == copy_neighbors.length))
+                if ((val == Message.OWNED) || CommonState.getTime() == 0 || neighbors[i].getContactTime() < 0 || (CommonState.getTime() - neighbors[i].getContactTime()) > thresh || (index == 0 && i + 1 == copy_neighbors.length)) {
                     copy_neighbors[index++] = neighbors[i];
+                }
             }
         }
         if (index == 0)//no nodes satisfy the criteria
@@ -491,12 +492,10 @@ public class DelayedNeighbor implements Protocol, Linkable {
         }
     }
 
-
     public NeighborElement getRNDNeighbor() {
         RandomRLC rlc = (RandomRLC) CommonState.r;
         return this.neighbors[rlc.nextInt(this.neighbors.length)];
     }
-    
 
     /**
      * Return a neighbors selected randomly among a set of neighbors which satisfy a given criteria

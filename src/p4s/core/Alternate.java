@@ -392,9 +392,12 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                         }
                         long delay = sender.getSwitchTime();
                         if (sender.getDebug() >= 4) {
-                            System.out.println("\tNode " + node.getID() + " SWITCH to PUSHa (" + sender.getPushAttempt() + "/" + sender.getPushRetry() + ") at time " + CommonState.getTime() + " MexRX " + (CommonState.getTime() + delay));
+                            System.out.println("\tNode " + node.getID() + " reset contact time of "+ im.getSender().getID());
                         }
                         sender.getNeighbor(node, im.getSender(), pid).resetContactTime();
+                        if (sender.getDebug() >= 4) {
+                            System.out.println("\tNode " + node.getID() + " SWITCH to PUSHa (" + sender.getPushAttempt() + "/" + sender.getPushRetry() + ") at time " + CommonState.getTime() + " MexRX " + (CommonState.getTime() + delay));
+                        }
                         this.send(node, node, new P4SMessage(null, node, Message.SWITCH_PUSH), delay, pid);
                     } else {
                         NeighborElement ne = sender.getNeighbor(node,im.getSender(), pid);//the sender store the information of that peer which does not have the chunk
