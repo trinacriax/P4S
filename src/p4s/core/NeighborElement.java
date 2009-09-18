@@ -191,7 +191,7 @@ public class NeighborElement {
      * Set the size of the buffermap
      * @param n_chunks
      */
-    public void setChunks(int n_chunks) {
+    public void setChunkListSize(int n_chunks) {
         if (this.chunks == null) {
             this.chunks = new int[n_chunks];
         } else {

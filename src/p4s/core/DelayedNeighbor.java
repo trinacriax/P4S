@@ -211,13 +211,13 @@ public class DelayedNeighbor implements Protocol, Linkable {
     }
 
     /**
-     * Se the buffermap for each chunk
+     * Set the buffermap for each chunk
      * @param chunkn
      */
-    public void setChunks(int chunkn) {
+    public void setChunkListSize(int chunkn) {
         for (int i = 0; i < neighbors.length; i++) {
             if (neighbors[i] != null) {
-                neighbors[i].setChunks(chunkn);
+                neighbors[i].setChunkListSize(chunkn);
             }
         }
     }

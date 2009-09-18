@@ -106,6 +106,8 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                 //****************************************** S O U R C E    P U S H ******************************************\\
                 if (im.getChunks() != null) {
                     int chunkpushed = im.getChunks()[0];
+                    NeighborElement ne = sender.getNeighbor(node,im.getSender(), pid);//the sender store the information of that peer which does not have the chunk
+                    ne.setChunk(chunkpushed, Message.OWNED);
                     if (sender.getChunk(chunkpushed) >= Message.OWNED) {
                         if (sender.getDebug() >= 4) {
                             System.out.print("\tNode " + node.getID() + " connection released for the transmission of chunk " + chunkpushed + ", removing active up from " + sender.getActiveUp(node));
@@ -399,9 +401,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                             System.out.println("\tNode " + node.getID() + " SWITCH to PUSHa (" + sender.getPushAttempt() + "/" + sender.getPushRetry() + ") at time " + CommonState.getTime() + " MexRX " + (CommonState.getTime() + delay));
                         }
                         this.send(node, node, new P4SMessage(null, node, Message.SWITCH_PUSH), delay, pid);
-                    } else {
-                        NeighborElement ne = sender.getNeighbor(node,im.getSender(), pid);//the sender store the information of that peer which does not have the chunk
-                        ne.setChunk(chunktopush, Message.OWNED);
+                    } else {                        
                         long delay = this.send(node, im.getSender(), new P4SMessage(chunktopush, node, Message.START_PUSH), pid);
                         if (sender.getDebug() >= 4) {
                             System.out.println("\tNode " + node.getID() + " sends START_PUSH m:" + chunktopush + " to " + im.getSender().getID() + " S " + CommonState.getTime() + " --> " + (CommonState.getTime() + delay) + " (" + eedelay + ")");

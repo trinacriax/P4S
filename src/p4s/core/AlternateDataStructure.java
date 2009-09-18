@@ -1382,7 +1382,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         if (net.getCurrent() == null) {
             net.setCurrent(node);
             this.setRTTDelays(node, pid);
-            net.setChunks(this.number_of_chunks);
+            net.setChunkListSize(this.number_of_chunks);
             this.setRTTDelays(node, pid);
             if (net.getNeighbor(Network.get(this.source)) != null) {
                 net.setBannedPeer(Network.get(this.getSource()));
@@ -1415,7 +1415,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         if (net.getCurrent() == null) {
             net.setCurrent(node);
             this.setRTTDelays(node, pid);
-            net.setChunks(this.number_of_chunks);
+            net.setChunkListSize(this.number_of_chunks);
             this.setRTTDelays(node, pid);
             if (net.getNeighbor(Network.get(this.source)) != null) {
                 net.setBannedPeer(Network.get(this.getSource()));
@@ -1448,7 +1448,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         if (net.getCurrent() == null) {
             net.setCurrent(node);
             this.setRTTDelays(node, pid);
-            net.setChunks(this.number_of_chunks);
+            net.setChunkListSize(this.number_of_chunks);
             this.setRTTDelays(node, pid);
             if (net.getNeighbor(Network.get(this.source)) != null) {
                 net.setBannedPeer(Network.get(this.getSource()));
