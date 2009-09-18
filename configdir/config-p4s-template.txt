@@ -1,5 +1,6 @@
 ### Simulation seed
 SEED CCSEED
+
 ### MAX Simulation time
 CYCLE NETSIZE*CHUNKS*Ts
 
@@ -96,7 +97,7 @@ random.seed SEED
 network.size NETSIZE
 
 simulation.endtime CYCLE
-simulation.experiments 10
+simulation.experiments 3
 simulation.timebits 16
 simulation.logtime OBSERVER-STEP
 simulation.stdout p4s.util.PrintLogs
@@ -182,17 +183,6 @@ include.init rndlink bwi ii
 control.00 SourceObserver
 control.00.protocol int
 control.00.step Ts
-
-## Control collects statistics on the operation performed by
-## peers in the chunk distribution process
-control.04 OperationObserver
-control.04.protocol int
-control.04.step SAMPLE_STEP/5
-control.04.size NETSIZE
-control.04.chunks CHUNKS
-## Write results at the end of each experiment
-control.04.FINAL
-control.04.debug DEBUG
 
 ## Control collects statistics on the time in
 ## which peers receives chunks

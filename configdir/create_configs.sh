@@ -148,28 +148,34 @@ do
 #	echo "Net Size " ${CCPEERS[$a]}
 	for b in `seq 1 ${#CCCHUNKS[*]}` 
 	do	
-	for o in `seq 1 ${#CCPPSEL[*]}` 
-													do
-									#echo "Sel " ${CCPPSEL[$o]}
+		
+		for f in `seq 1 ${#CCTS[*]}`		
+		do	
+		
+		for p in `seq 1 ${#CCDDELAY[*]}` 
+		do
+		for o in `seq 1 ${#CCPPSEL[*]}` 
+		do
+		#echo "Sel " ${CCPPSEL[$o]}
 		#echo "Bandwidth multiplicator " ${#CCBMULT[*]}
 		for q in `seq 1 ${#CCBMULT[*]}`
 		do
 			#echo "Chunk Size " ${#CCCHUNKS[*]}
 			for c in `seq 1 ${#CCDEGREE[*]}`
 			do
+								
+				#echo "Delay Range [" ${#CCDMIN[*]}" : " ${#CCDMAX[*]}"]"
+				for e in `seq 1 ${#CCBS[*]}` 
+				do
 				#echo "DEGREE " ${#CCDEGREE[*]}
 				for d in `seq 1 ${#CCDMIN[*]}` 
 				do
-					#echo "Delay Range [" ${#CCDMIN[*]}" : " ${#CCDMAX[*]}"]"
-					for e in `seq 1 ${#CCBS[*]}` 
-					do
-						#echo "Bs " ${#CCBS[*]}
-						for f in `seq 1 ${#CCTS[*]}`
-						do
+				
 							#echo "Ts " ${CCTS[$f]}
 							for ff in `seq 1 ${#CCPLAYT[*]}`
 							do
 							#echo "PLAYT " ${#CCPLAYT[*]}
+							
 							for af in `seq 1 ${#CCPULLR[*]}`
                                         	        do
 							for g in `seq 1 ${#CCALPHAUP[*]}` 
@@ -196,8 +202,8 @@ do
 												#for n in `seq 1 $CCOMEGAPP_N` 
 												#do											
 													#echo "Omega_Pull " ${CCOMEGAPP[$n]}													
-														for p in `seq 1 ${#CCDDELAY[*]}` 
-														do
+														
+														
 															if [ ${CCDMAX[$d]} -lt ${CCTS[$f]} ]
 															then
 																let CONFIGID=$CONFIGID+1
@@ -233,13 +239,14 @@ do
 																uno=`echo "scale=1; $dif"|bc`;
 																due=`echo "scale=1; $dif"|bc|xargs printf "%1.1f"`;
 																dif=`echo "scale=2; $due-$uno"|bc`;
-																#echo "uno $uno due $due dif $dif";
+																echo -n "uno $uno due $due dif $dif ";
 																if [[ $dif > -1 ]]; 
 																then 
 																	dif=$due; 
 																else 
 																	dif=`echo "scale=2; 0.1+$due"|bc`
 																fi
+																echo -n " BS = $dif ";
 																`sed "s/CCBMULT/$dif/g" $OUTT> $OUTF`
 																`cp $OUTF $OUTT`
 																`sed "s/CCDEGREE/${CCDEGREE[$c]}/g" $OUTT> $OUTF`

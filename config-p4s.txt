@@ -1,16 +1,17 @@
 ### Simulation seed
-SEED 23452111231
+SEED 1187894213647
+
 ### MAX Simulation time
 CYCLE NETSIZE*CHUNKS*Ts
 
 ### Verbosity level
-DEBUG 0
+DEBUG 8
 
 ### Number of nodes in the network
-NETSIZE 1000
+NETSIZE 100
 
 ### Number of chunks to transmit
-CHUNKS 1000
+CHUNKS 100
 
 ### Nodes degree
 DEGREE 16
@@ -30,7 +31,7 @@ BMs BMp
 
 ## Peers Bandwidth (Multiple of Bs)
 #BMb ((Ts*100)/((Ts-DELTAmax)))
-BMp 1.0
+BMp 2.0
 
 ## Playout Time in seconds
 PLAYT -1
