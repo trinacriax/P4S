@@ -471,7 +471,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
 //            System.out.println("Comm "+CommonState.getTime()+ " contact "+neighbors[i].getContactTime()+" thre "+thresh);
             if (neighbors[i].getChunks(chunks, val) > 0 && neighbors[i].getContactTime() != CommonState.getTime() && !neighbors[i].getBanned()) {
                 //if the node has to pull OR the current time is zero (first time) OR the target peer was never contacted OR it was contacted recently OR it is the last node available
-                if ((val == Message.OWNED) || CommonState.getTime() == 0 || neighbors[i].getContactTime() < 0 || (CommonState.getTime() - neighbors[i].getContactTime()) > thresh || (index == 0 && i + 1 == copy_neighbors.length)) {
+                if ((val == Message.OWNED) || CommonState.getTime() == 0 || neighbors[i].getContactTime() < 0 || ((CommonState.getTime() - neighbors[i].getContactTime()) > thresh)) {
                     copy_neighbors[index++] = neighbors[i];
                 }
             }
