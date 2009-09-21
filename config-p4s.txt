@@ -5,13 +5,13 @@ SEED 1187894213647
 CYCLE NETSIZE*CHUNKS*Ts
 
 ### Verbosity level
-DEBUG 8
+DEBUG 0
 
 ### Number of nodes in the network
-NETSIZE 100
+NETSIZE 1000
 
 ### Number of chunks to transmit
-CHUNKS 100
+CHUNKS 500
 
 ### Nodes degree
 DEGREE 16
@@ -53,7 +53,7 @@ DEVDELAY 0
 #  0 Random dummy
 #  1 Random smart
 #  2 Delay oriented with probability
-PPSEL 2
+PPSEL 0
 
 ## Dropping rate [0:1]
 ## Currently, this protocol does not implement any form of "message recovery"
@@ -83,7 +83,7 @@ RHO_push 1
 RHO_pull 1
 
 ### Observer Step in milliseconds
-SAMPLE_STEP 50000
+SAMPLE_STEP 20000
 
 ## Time in millisecond needed for a node to switch between states:
 ## push -> pull and vice-versa
