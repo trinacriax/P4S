@@ -112,6 +112,7 @@ protocol.link.devdelay DEVDELAY
 protocol.link.mindelay DELTAmin
 protocol.link.maxdelay DELTAmax
 protocol.link.debug DEBUG
+protocol.link.new_chunk Ts
 
 ## Protocol used for chunks distribution
 protocol.int Alternate
@@ -138,9 +139,6 @@ init.bwi.protocol bwp
 init.bwi.debug DEBUG
 
 ## CDF of bandwidth.core.distribution
-## separeted by commas:
-## 128000,180000,290000
-## 0.3,0.7,1
 init.bwi.uploadBw Bs
 init.bwi.downloadBw Bs*10
 init.bwi.bms BMs
@@ -150,11 +148,6 @@ init.bwi.active_upload ALPHA_up
 init.bwi.active_download ALPHA_down
 init.bwi.passive_upload PI_up
 init.bwi.passive_download PI_down
-
-## the following two parameters indicate the source upload/download bandwidth
-## download is useless at the source, but it exists :)
-#init.bwi.srcup (Bs*BMs)/100
-#init.bwi.srcdw (Bs*BMs*10)/100
 
 ## Chunk distribution protocol initializer
 init.ii AlternateInitializer

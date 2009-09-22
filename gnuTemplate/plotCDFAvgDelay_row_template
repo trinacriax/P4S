@@ -1,5 +1,5 @@
 "CCFILE" index CCID using ($1/1000):2 notitle with line ls CPID,\\
 
-"CCFILE" index CCID using ($1/1000):2 every 100 title "CCTITLE" with point ls CPID,\\
+"CCFILE" index CCID using ($1/1000):2 every 1000 title "CCTITLE" with point ls CPID,\\
 
-"CCFILE" index CCID using ($1/1000):2:($3/1000) every 100 notitle with xerrorbars 1 EEOL
+"CCFILE" index CCID using ($1/1000):2:($3/1000) every 1000 notitle with xerrorbars 1 EEOL
