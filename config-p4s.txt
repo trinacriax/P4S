@@ -11,7 +11,11 @@ DEBUG 0
 NETSIZE 1000
 
 ### Number of chunks to transmit
+<<<<<<< .mine
+CHUNKS 2000
+=======
 CHUNKS 500
+>>>>>>> .r651
 
 ### Nodes degree
 DEGREE 16
@@ -53,7 +57,11 @@ DEVDELAY 0
 #  0 Random dummy
 #  1 Random smart
 #  2 Delay oriented with probability
+<<<<<<< .mine
+PPSEL 1
+=======
 PPSEL 0
+>>>>>>> .r651
 
 ## Dropping rate [0:1]
 ## Currently, this protocol does not implement any form of "message recovery"
@@ -63,8 +71,8 @@ DROP 0
 ## Maximum number of active connections in upload and download
 ## Active means that the node issues either a push or pull to a target node
 ## push for upload and pull for download.
-ALPHA_up 4
-ALPHA_down 4
+ALPHA_up 1
+ALPHA_down 1
 
 ## Maximum number of passice connections in upload and download
 ## Passive means that the node is the target node which receives either a push or pull request
