@@ -5,7 +5,7 @@ SEED 1187894213647
 CYCLE NETSIZE*CHUNKS*Ts
 
 ### Verbosity level
-DEBUG 0
+DEBUG 10
 
 ### Number of nodes in the network
 NETSIZE 1000
@@ -192,22 +192,25 @@ neighborsknow 0
 }
 
 ## Initializers order
-include.init rndlink bwi ii
+include.init bwi rndlink  ii
 
 
 #- - - - - - C O N T R O L S - - - - -  -#
-## Control that produces chunks at the source
+## Streaming rate: Source side that produces a chunk every Ts
 control.00 SourceObserver
-control.00.protocol int
-control.00.step Ts
+{
+protocol int
+step Ts
+}
 
-## Control collects statistics on the time in
-## which peers receives chunks
+## Control collects statistics on the time in which peers receives chunks
 control.08 ChunksObserver
-control.08.protocol int
-control.08.step SAMPLE_STEP
-control.08.size NETSIZE
-control.08.chunks CHUNKS
+{
+protocol int
+step SAMPLE_STEP
+size NETSIZE
+chunks CHUNKS
 ## Write results at the end of each experiment
-control.08.FINAL
-control.08.debug DEBUG
+FINAL
+debug DEBUG
+}
