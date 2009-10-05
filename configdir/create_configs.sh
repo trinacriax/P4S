@@ -148,25 +148,24 @@ do
 #	echo "Net Size " ${CCPEERS[$a]}
 	for b in `seq 1 ${#CCCHUNKS[*]}` 
 	do	
-		
+		#echo "Delay Range [" ${#CCDMIN[*]}" : " ${#CCDMAX[*]}"]"
+		for e in `seq 1 ${#CCBS[*]}` 
+		do
 		for f in `seq 1 ${#CCTS[*]}`		
-		do	
-		
+		do			
 		for p in `seq 1 ${#CCDDELAY[*]}` 
-		do
-		for o in `seq 1 ${#CCPPSEL[*]}` 
-		do
+		do		
 		#echo "Sel " ${CCPPSEL[$o]}
 		#echo "Bandwidth multiplicator " ${#CCBMULT[*]}
+		for o in `seq 1 ${#CCPPSEL[*]}` 
+		do
 		for q in `seq 1 ${#CCBMULT[*]}`
 		do
 			#echo "Chunk Size " ${#CCCHUNKS[*]}
 			for c in `seq 1 ${#CCDEGREE[*]}`
 			do
 								
-				#echo "Delay Range [" ${#CCDMIN[*]}" : " ${#CCDMAX[*]}"]"
-				for e in `seq 1 ${#CCBS[*]}` 
-				do
+				
 				#echo "DEGREE " ${#CCDEGREE[*]}
 				for d in `seq 1 ${#CCDMIN[*]}` 
 				do

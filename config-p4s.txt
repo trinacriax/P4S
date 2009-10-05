@@ -105,25 +105,31 @@ simulation.stdout p4s.util.PrintLogs
 
 ## Overlay network used
 protocol.link p4s.core.DelayedNeighbor
-protocol.link.capacity DEGREE
-protocol.link.delay DDELAY
-protocol.link.select PPSEL
-protocol.link.mudelay MUDELAY
-protocol.link.devdelay DEVDELAY
-protocol.link.mindelay DELTAmin
-protocol.link.maxdelay DELTAmax
-protocol.link.debug DEBUG
-protocol.link.new_chunk Ts
+{
+    capacity DEGREE
+    delay DDELAY
+    select PPSEL
+    mudelay MUDELAY
+    devdelay DEVDELAY
+    mindelay DELTAmin
+    maxdelay DELTAmax
+    debug DEBUG
+    new_chunk Ts
+}
 
 ## Protocol used for chunks distribution
 protocol.int Alternate
-protocol.int.linkable link
-protocol.int.transport urt
+{
+    linkable link
+    transport urt
+}
 
 ## Transport protocol used
 protocol.urt UniformRandomTransportP4S
-protocol.urt.mindelay DELTAmin
-protocol.urt.maxdelay DELTAmax
+{
+mindelay DELTAmin
+maxdelay DELTAmax
+}
 
 ## Bandwidth protocol used
 protocol.bwp bandwidth.core.BandwidthAwareProtocol
@@ -131,49 +137,63 @@ protocol.bwp bandwidth.core.BandwidthAwareProtocol
 #- - - - - - I N I T I A L I Z E R S - - - - -  -#
 ## Overlay network initializer
 init.rndlink WireKOutUnd
-init.rndlink.k DEGREE
-init.rndlink.protocol link
+{
+    k DEGREE
+    protocol link
+}
 
 ## Bandwidth protocol initializer
 init.bwi bandwidth.core.BandwidthAwareInitializer
-init.bwi.protocol bwp
-init.bwi.debug DEBUG
-
-## CDF of bandwidth.core.distribution
-## separeted by commas:
-## 128000,180000,290000
-## 0.3,0.7,1
-init.bwi.uploadBw Bs
-init.bwi.downloadBw Bs*10
-init.bwi.bms BMs
-init.bwi.bmp BMp
-init.bwi.bandwidthPr 1 #0.3,0.7,1
-init.bwi.active_upload ALPHA_up
-init.bwi.active_download ALPHA_down
-init.bwi.passive_upload PI_up
-init.bwi.passive_download PI_down
+{
+    protocol bwp
+    debug DEBUG
+    ## Base uplink value, e.g., it could be 1Mbit/s
+    uplink Bs
+    downlink Bs*10
+    ## Source bandwidth, as uplink multiplicator. If absent is equato to maximum BMp.
+    bms BMs
+    ## Peers' upload bandwidth, as uplink multiplicator.
+    ## e.g. "bmp 1.1 1.5 2.0" means that some peers will have 1.1Mb, other 1.5Mb and 2.0Mb of uplink"
+    bmp BMp
+    ## Set the bandwidth distribution over peers.
+    ## e.g. "bdist 0.3,0.7,1.0" means that 30% of peer will have 1.1Mb, 40% will ahve 1.5 while 30% will have 2.0Mb.
+    bdist 1
+    ## Active connections are those started by node.
+    ## Involving upload bandwidth
+    active_upload ALPHA_up
+    ## Involving download bandwidth
+    active_download ALPHA_down
+    ## Passive connections are those received by other nodes.
+    ## Involving upload bandwidth
+    passive_upload PI_up
+    ## Involving download bandwidth
+    passive_download PI_down
+}
 
 ## Chunk distribution protocol initializer
 init.ii AlternateInitializer
-init.ii.protocol int
-init.ii.bandwidth bwp
-init.ii.chunks CHUNKS
-init.ii.chunk_size Bs*Ts/1000
-init.ii.push_retry RHO_push
-init.ii.pull_retry RHO_pull
-init.ii.switchtime SWITCHTIME
-init.ii.new_chunk Ts
-init.ii.debug DEBUG
-init.ii.push_window OMEGA_push
-init.ii.pull_window OMEGA_pull
-init.ii.playout PLAYT
-init.ii.pull_rounds PULLROUNDS
+{
+protocol int
+bandwidth bwp
+chunks CHUNKS
+chunk_size Bs*Ts/1000
+push_retry RHO_push
+pull_retry RHO_pull
+switchtime SWITCHTIME
+new_chunk Ts
+debug DEBUG
+push_window OMEGA_push
+pull_window OMEGA_pull
+playout PLAYT
+pull_rounds PULLROUNDS
 ## 0 - no knowledge on neighbors buffer states
 ## 1 - total knowledge on neighbors buffer state
-init.ii.neighborsknow 0
+neighborsknow 0
+}
 
 ## Initializers order
 include.init rndlink bwi ii
+
 
 #- - - - - - C O N T R O L S - - - - -  -#
 ## Control that produces chunks at the source
