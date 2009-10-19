@@ -102,7 +102,7 @@ simulation.endtime CYCLE
 simulation.experiments 30
 simulation.timebits 16
 simulation.logtime OBSERVER-STEP
-simulation.stdout p4s.util.PrintLogs
+#simulation.stdout p4s.util.PrintLogs
 
 ## Overlay network used
 protocol.link p4s.core.DelayedNeighbor
