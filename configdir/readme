@@ -1,0 +1,49 @@
+etwork size to load 1
+Network size [1] 1000 
+Number of Chunks to load 1
+Number of Chunks [1] 5000
+Neighbor size to load 1
+Neighbor size [1] 16
+RTT to load  2
+Min delay [1] 10
+Max delay [1] 250
+Min delay [2] 10
+Max delay [2] 500
+Streaming rate Bs to load 1
+Bs [1] 1000000
+Playout time to load 1
+PLAYT [1] -1
+Pull rounds to load 1
+PULLROUND [1] 0
+Chunks Time Ts to load 2
+Chunks Time Ts [1] 1000
+Chunks Time Ts [2] 500
+Bandiwdth to load 4
+Bw Step is: 0.5
+Bandwidth multi [1] .25
+Bandwidth multi [2] .5
+Bandwidth multi [3] 1.0
+Bandwidth multi [4] 1.5
+Bandwidth multi [5] 2.0
+#Combination for connections to load 2
+#Act up [1] 1
+#Act dw [1] 1
+#Pas up [1] 1
+#Pas dw [1] 10
+#Act up [2] 4
+#Act dw [2] 4
+#Pas up [2] 1
+#Pas dw [2] 10
+Omega Push and Pull to load 2
+#Omega push [1] 1
+#Omega pull [1] 1
+#Omega push [2] 4
+#Omega pull [2] 4
+#Push Attempts 1
+#Pull Attempts 1
+RTT delay type to load 1
+#Delay type[1] 0
+Selection type 2
+Selection type [1] 1
+Selection type [2] 2
+
