@@ -85,6 +85,7 @@ RHO_pull 1
 
 ### Observer Step in milliseconds
 SAMPLE_STEP 20000
+BAND_STEP 1000
 
 ## Time in millisecond needed for a node to switch between states:
 ## push -> pull and vice-versa
@@ -127,8 +128,8 @@ protocol.int Alternate
 ## Transport protocol used
 protocol.urt UniformRandomTransportP4S
 {
-mindelay DELTAmin
-maxdelay DELTAmax
+    mindelay DELTAmin
+    maxdelay DELTAmax
 }
 
 ## Bandwidth protocol used
@@ -142,53 +143,26 @@ init.rndlink WireKOutUnd
     protocol link
 }
 
-## Bandwidth protocol initializer
-init.bwi bandwidth.core.BandwidthAwareInitializer
-{
-    protocol bwp
-    debug DEBUG
-    ## Base uplink value, e.g., it could be 1Mbit/s
-    uplink Bs
-    downlink Bs*10
-    ## Source bandwidth, as uplink multiplicator. If absent is equato to maximum BMp.
-    bms BMs
-    ## Peers' upload bandwidth, as uplink multiplicator.
-    ## e.g. "bmp 1.1 1.5 2.0" means that some peers will have 1.1Mb, other 1.5Mb and 2.0Mb of uplink"
-    bmp BMp
-    ## Set the bandwidth distribution over peers.
-    ## e.g. "bdist 0.3,0.7,1.0" means that 30% of peer will have 1.1Mb, 40% will ahve 1.5 while 30% will have 2.0Mb.
-    bdist 1
-    ## Active connections are those started by node.
-    ## Involving upload bandwidth
-    active_upload ALPHA_up
-    ## Involving download bandwidth
-    active_download ALPHA_down
-    ## Passive connections are those received by other nodes.
-    ## Involving upload bandwidth
-    passive_upload PI_up
-    ## Involving download bandwidth
-    passive_download PI_down
-}
 
 ## Chunk distribution protocol initializer
 init.ii AlternateInitializer
 {
-protocol int
-bandwidth bwp
-chunks CHUNKS
-chunk_size Bs*Ts/1000
-push_retry RHO_push
-pull_retry RHO_pull
-switchtime SWITCHTIME
-new_chunk Ts
-debug DEBUG
-push_window OMEGA_push
-pull_window OMEGA_pull
-playout PLAYT
-pull_rounds PULLROUNDS
-## 0 - no knowledge on neighbors buffer states
-## 1 - total knowledge on neighbors buffer state
-neighborsknow 0
+    protocol int
+    bandwidth bwp
+    chunks CHUNKS
+    chunk_size Bs*Ts/1000
+    push_retry RHO_push
+    pull_retry RHO_pull
+    switchtime SWITCHTIME
+    new_chunk Ts
+    debug DEBUG
+    push_window OMEGA_push
+    pull_window OMEGA_pull
+    playout PLAYT
+    pull_rounds PULLROUNDS
+    ## 0 - no knowledge on neighbors buffer states
+    ## 1 - total knowledge on neighbors buffer state
+    neighborsknow 0
 }
 
 ## Initializers order
@@ -197,20 +171,36 @@ include.init bwi rndlink  ii
 
 #- - - - - - C O N T R O L S - - - - -  -#
 ## Streaming rate: Source side that produces a chunk every Ts
-control.00 SourceObserver
+control.StreaminServer SourceObserver
 {
-protocol int
-step Ts
+    protocol int
+    step Ts
 }
 
 ## Control collects statistics on the time in which peers receives chunks
-control.08 ChunksObserver
+control.PeersController ChunksObserver
 {
-protocol int
-step SAMPLE_STEP
-size NETSIZE
-chunks CHUNKS
-## Write results at the end of each experiment
-FINAL
-debug DEBUG
+    protocol int
+    step SAMPLE_STEP
+    size NETSIZE
+    chunks CHUNKS
+    ## Write results at the end of each experiment
+    FINAL
+    debug DEBUG
+}
+
+
+control.UploadControl VectorObserver
+{
+  protocol bwp
+  getter getUpload
+  step BAND_STEP
+}
+
+
+control.DownloadControl VectorObserver
+{
+  protocol bwp
+  getter getDownload
+  step BAND_STEP
 }

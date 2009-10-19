@@ -1,5 +1,5 @@
 #!/bin/bash
-CONFIGID=10100
+CONFIGID=10200
 echo -n "Network size to load "
 read CCPEERS_N
 for j in `seq 1 $CCPEERS_N` 
