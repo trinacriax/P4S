@@ -195,14 +195,15 @@ END{
 																system(sprintf ("cp %s %s",outf,outt))
 																banda=(1.0*ts[g])/(ts[g]-dmax[c]);
 																#print "1Banda "banda
-																banda=(((banda*10.0)+1)/10.0)+bmp[h];
+																banda=(((banda*10.0)+2)/10.0)+bmp[h];
 																#print "2Banda "banda
-																banda=sprintf("%.2f",banda);
+																banda=sprintf("%.1f",banda);
 																#print "3Banda "banda
-																system(sprintf ("sed \"s/CCBMULT/%d/g\" %s > %s", banda,outt,outf))
+																#printf ("sed -e \"s/CCBMULT/%.1f/g\" %s > %s", banda,outt,outf)
+																system(sprintf ("sed \"s/CCBMULT/%.2f/g\" %s > %s", banda,outt,outf))
 																system(sprintf ("cp %s %s",outf,outt))
 																system(sprintf ("sed \"s/CCALPHAUP/%d/g\" %s > %s", au[i],outt,outf))
-																printf("a[%d]=%d",i,au[i]);
+																#printf("a[%d]=%d",i,au[i]);
 																system(sprintf ("cp %s %s",outf,outt))
 																system(sprintf ("sed \"s/CCALPHADW/%d/g\" %s > %s", ad[i],outt,outf))
 																system(sprintf ("cp %s %s",outf,outt))
@@ -223,7 +224,7 @@ END{
 																system(sprintf ("sed \"s/CCRHOP1/%d/g\" %s > %s", pushat[p],outt,outf))
 																system(sprintf ("cp %s %s",outf,outt))
 																system(sprintf ("sed \"s/CCRHOP2/%d/g\" %s > %s", pullat[r],outt,outf))
-																system(sprintf ("rm -f %s",outt))
+																system(sprintf ("rm -f %s",outt))																
 																}
 															}
 														}
@@ -240,4 +241,5 @@ END{
 			}
 		}
 	}
+	system(sprintf ("mv config-p4s-0* ./config/"))
 }
