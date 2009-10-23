@@ -6,9 +6,8 @@ import peersim.core.*;
 import peersim.config.Configuration;
 
 /**
- * This class is similar to IdleProtocol, but it implements some
- * randomized GET methods and allows to remove some neighbors,
- * providing a dynamic neighborhood
+ * This class store the links between nodes and allow also several peer selection strategies.<p>
+ * Nodes can be added and removed, and this could be used as a data structure for a neighborhood protocol.
  *
  * @author ax
  */
@@ -47,33 +46,64 @@ public class DelayedNeighbor implements Protocol, Linkable {
 // --------------------------------------------------------------------------
 // Fields
 // --------------------------------------------------------------------------
-    /** Neighbors */
+    /** Neighbors list*/
     protected NeighborElement[] neighbors;
+    /** Current node    */
     protected Node current;
     /** Actual number of neighbors in the array */
     protected int len;
+    /**
+     * RTT delay distribution.
+     */
     private final int delaydist;
+    /**
+     * Peer selection algorithm
+     */
     private final int select;
+    /**
+     * Mean RTT time, depends on RTT distribution
+     */
     private final double mu;
+    /**
+     * Deviation of the RTT time, depends on RTT distribution
+     */
     private final double dev;
+    /**
+     * Minimum RTT value
+     */
     private final long min;
+    /**
+     * Range value between max and min.
+     */
     private final long range;
-    private final long max;
+    /**
+     * Time to produce a new chunk.
+     */
     private final long new_chunk;
+    /**
+     * Level of verbosity.
+     */
     private final int debug;
+    /**
+     * matrix of RTT delays between nodes. It could be modified to dynamically change during simulation time.
+     */
     protected static long[][] delays;
+    /**
+     * Probability assigned to neighbors.
+     */
     private double prob[];
 
-// --------------------------------------------------------------------------
-// Initialization
-// --------------------------------------------------------------------------
+/**
+ * Constructor
+ * @param prefix name assigned in the configuration file.
+ */
     public DelayedNeighbor(String prefix) {
         neighbors = new NeighborElement[Configuration.getInt(prefix + "." + PAR_INITCAP, DEFAULT_INITIAL_CAPACITY)];
         select = Configuration.getInt(prefix + "." + PAR_SELECT, 0);
         debug = Configuration.getInt(prefix + "." + PAR_DEBUG, 0);
         len = 0;
         min = Configuration.getLong(prefix + "." + PAR_MINDELAY, 0);
-        max = Configuration.getLong(prefix + "." + PAR_MAXDELAY, 0);
+        long max = Configuration.getLong(prefix + "." + PAR_MAXDELAY, 0);
         range = max - min + 1;
         delaydist = Configuration.getInt(prefix + "." + PAR_DELAY, 0);
         mu = Configuration.getDouble(prefix + "." + PAR_MUDELAY, 0) - min;
@@ -84,6 +114,9 @@ public class DelayedNeighbor implements Protocol, Linkable {
         new_chunk = Configuration.getLong(prefix + "." + PAR_NEWCHUNK, 0);
         System.err.println("Init DelayedNeighbor: Len " + len + ", Select " + select + ", DelayDist " + delaydist + ", MinDelay " + min + ", MaxDelay " + max + ", Mean " + mu + ", Dev " + dev + ", new chunk " + new_chunk);
     }
+    /**
+     * Populates the array of RTT delay in according to RTT distribution and the value given.
+     */
 
     public void populate() {
         this.delays = new long[Network.size()][Network.size()];
@@ -101,12 +134,12 @@ public class DelayedNeighbor implements Protocol, Linkable {
                     } else if (delaydist == 1) {//gaussian
                         long val = min + (long) (rlc.NextGaussian(mu, dev));
                         val = (val < min ? min : val);
-                        val = (val < max ? val : max);
+                        val = (val < (min+range) ? val : (min+range));
                         delays[i][j] = delays[j][i] = val;
                     } else if (delaydist == 2) {//trunc exponential
                         long val = min + rlc.trunc_exp(mu, range);
                         val = val < min ? min : val;
-                        val = val < max ? val : max;
+                        val = val < (min+range) ? val : (min+range);
                         delays[i][j] = delays[j][i] = val;
                     }
                 }
@@ -114,6 +147,9 @@ public class DelayedNeighbor implements Protocol, Linkable {
         }
     }
 
+    /**
+     * Populates the array of RTT delay in according to RTT distribution and the value given, after peers arrival/departure.
+     */
     public void repopulate() {
         long[][] tmpDelay = new long[Network.size()][Network.size()];
         for (int i = 0; i < tmpDelay.length; i++) {
@@ -135,12 +171,12 @@ public class DelayedNeighbor implements Protocol, Linkable {
                     } else if (delaydist == 1) {//gaussian
                         long val = (long) (rlc.NextGaussian(mu, dev));
                         val = val < min ? min : val;
-                        val = val < max ? val : max;
+                        val = val < (min+range) ? val : (min+range);
                         tmpDelay[i][j] = tmpDelay[j][i] = val;
                     } else if (delaydist == 2) {//trunc exponential
                         long val = min + rlc.trunc_exp(mu, range, rlc.nextLong());
                         val = val < min ? min : val;
-                        val = val < max ? val : max;
+                        val = val < (min+range) ? val : (min+range);
                         tmpDelay[i][j] = tmpDelay[j][i] = val;
                         if (debug >= 8) {
                             System.out.println("[" + i + "," + j + "]=" + tmpDelay[i][j] + " (" + val + ")");
@@ -151,15 +187,6 @@ public class DelayedNeighbor implements Protocol, Linkable {
         }
         delays = tmpDelay;
         tmpDelay = null;
-//        if (debug >= 8) {
-//            for (int k = 0; k < delays.length; k++) {
-//                System.out.print(k + "]]] ");
-//                for (int v = 0; v < delays[k].length; v++) {
-//                    System.out.print(delays[k][v] + ";");
-//                }
-//                System.out.println("[[[ " + delays[k].length);
-//            }
-//        }
     }
 
 //--------------------------------------------------------------------------
@@ -168,7 +195,7 @@ public class DelayedNeighbor implements Protocol, Linkable {
         try {
             rn = (DelayedNeighbor) super.clone();
         } catch (CloneNotSupportedException e) {
-        } // never happens
+        } // never 
         rn.neighbors = new NeighborElement[neighbors.length];
         System.arraycopy(neighbors, 0, rn.neighbors, 0, len);
         rn.len = len;
@@ -176,9 +203,11 @@ public class DelayedNeighbor implements Protocol, Linkable {
         rn.prob = null;
         return rn;
     }
-// --------------------------------------------------------------------------
-// Methods
-// --------------------------------------------------------------------------
+/**
+ * Check whether the current node has this node as neighbor or not.
+ * @param node neighbor to check
+ * @return true if it has this node as neighbor, false otherwise.
+ */
 
     public boolean contains(Node n) {
         for (int i = 0; i < len; i++) {
@@ -189,6 +218,10 @@ public class DelayedNeighbor implements Protocol, Linkable {
         return false;
     }
 
+    /**
+     * Set the current node instance in this class.
+     * @param current node on which this instance belongs to.
+     */
     public void setCurrent(Node current) {
         this.current = current;
         this.pack();
@@ -206,13 +239,17 @@ public class DelayedNeighbor implements Protocol, Linkable {
         }
     }
 
+    /**
+     * Get the current node.
+     * @return Current node.
+     */
     public Node getCurrent() {
         return this.current;
     }
 
     /**
      * Set the buffermap for each chunk
-     * @param chunkn
+     * @param chunkn number of chunks to increase the buffer map size.
      */
     public void setChunkListSize(int chunkn) {
         for (int i = 0; i < neighbors.length; i++) {
@@ -223,8 +260,8 @@ public class DelayedNeighbor implements Protocol, Linkable {
     }
 
     /**
-     * Banning a given peer
-     * @param target
+     * Banning a given peer.
+     * @param target peer to ban.
      */
     public void setBannedPeer(Node target) {
         NeighborElement ne = this.getNeighbor(target);
@@ -237,7 +274,11 @@ public class DelayedNeighbor implements Protocol, Linkable {
     }
 
 // --------------------------------------------------------------------------
-    /** Adds given node if it is not already in the network.*/
+    /**
+     * Adds given node if it is not already in the network.
+     * @param n Node to add in the neighbor.
+     * @return True if the node is added, false otherwise.
+     */
     public boolean addNeighbor(Node n) {
         for (int i = 0; i < len; i++) {
             if (neighbors[i].getNeighbor() == n) {
@@ -263,6 +304,10 @@ public class DelayedNeighbor implements Protocol, Linkable {
         return true;
     }
 
+    /**
+     * Get the maximum RTT delay among node and it's all neighbors.
+     * @return Maximum RTT delay among node and it's all neighbors.
+     */
     public long getMaxRTT() {
         long max = 0;
         for (int i = 0; i < neighbors.length; i++) {
@@ -272,6 +317,10 @@ public class DelayedNeighbor implements Protocol, Linkable {
         }
         return max;
     }
+    /**
+     * Get the minimum RTT delay among node and it's all neighbors.
+     * @return minimum RTT delay among node and it's all neighbors.
+     */
 
     public long getMinRTT() {
         long min = -1;
@@ -284,10 +333,20 @@ public class DelayedNeighbor implements Protocol, Linkable {
     }
 
 // --------------------------------------------------------------------------
-    /**Get the i-th neighbor*/
+    /**
+     * Get the i-th neighbor in the neighbors list.
+     * @param i I-th position of the neighbor.
+     * @return the i-th node.
+     */
     public Node getNeighbor(int i) {
         return neighbors[i].getNeighbor();
     }
+
+     /**
+     * Get the nd-th neighbor in the neighbors list as a Node.
+     * @param nd I-th position of the neighbor.
+     * @return the neighbor element associated to the node.
+     */
 
     public NeighborElement getNeighbor(Node nd) {
         for (int i = 0; i < neighbors.length; i++) {
@@ -298,13 +357,15 @@ public class DelayedNeighbor implements Protocol, Linkable {
         return null;
     }
 
+    /**
+     *Get the target neighbor in according to the peer selection algorithm.
+     * @return target neighbor to contact.
+     */
     public NeighborElement getTargetNeighbor() {
-//        System.out.println("Select "+select);
         if (select == RND_DUMMY) {
             return getRNDNeighbor();
         } else if (select == RND_SMART) {
             return getRNDNeighbor();
-//            return getRNDSmartNeighbor();
         } else if (select == DELAY_ORIENTED) {
             return getDelayNeighbor();
         }
