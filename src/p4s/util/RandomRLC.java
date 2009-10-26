@@ -1,14 +1,12 @@
 package p4s.util;
 
-/**
- * Class used to generate random numbers with many kind of distribution
- *
- *
- */
 import java.math.*;
 import peersim.config.*;
 import peersim.util.ExtendedRandom;
 
+/**
+ * Class used to generate random numbers with many kind of distribution.
+ */
 public class RandomRLC extends ExtendedRandom {
 
     private static final double c_0 = 2.515517;
@@ -314,14 +312,14 @@ public class RandomRLC extends ExtendedRandom {
         prob = (RATIO.multiply(new BigDecimal(seed))).doubleValue();
 //        System.out.println("P "+prob);
         /* len =  - 8*mean*(log(*seed)-21.4875626); */
-        len = -prob*mean * Math.log(prob);
+        len = -prob * mean * Math.log(prob);
 //        System.out.println("L "+len);
-        len = (len > length ) ? length : len/prob;
+        len = (len > length) ? length : len / prob;
 //        System.out.println("L2 "+len);
-        return ((long) len == 0 ? 1 : (long)len);
+        return ((long) len == 0 ? 1 : (long) len);
     }
 
-        public long trunc_exp(double mean, long length) {
+    public long trunc_exp(double mean, long length) {
         double len, prob;
 
         //seed = rnd32(seed);
@@ -329,11 +327,11 @@ public class RandomRLC extends ExtendedRandom {
         prob = (RATIO.multiply(new BigDecimal(this.nextLong()))).doubleValue();
 //        System.out.println("P "+prob);
         /* len =  - 8*mean*(log(*seed)-21.4875626); */
-        len = -1*mean * Math.log(prob);
+        len = -1 * mean * Math.log(prob);
 //        System.out.println("L "+len);
-        len = (len > length ) ? length : len;
+        len = (len > length) ? length : len;
 //        System.out.println("L2 "+len);
-        return ((long) len == 0 ? 1 : (long)len);
+        return ((long) len == 0 ? 1 : (long) len);
     }
 
     /** Box muller transform
@@ -368,8 +366,7 @@ public class RandomRLC extends ExtendedRandom {
 //
 //        return mu + (this.CumulativeGaussian(this.uniform_0_1(this.nextLong())) * sigma < 10 ? 10 : this.CumulativeGaussian(this.uniform_0_1(this.nextLong())) * sigma);
 //    }
-
-    public double NextGaussian(double mu, double sigma ) {
+    public double NextGaussian(double mu, double sigma) {
 
         return mu + this.CumulativeGaussian(this.uniform_0_1(this.nextLong())) * sigma;
 

@@ -3,7 +3,10 @@ package p4s.util;
 import java.io.*;
 import java.util.zip.GZIPOutputStream;
 import peersim.core.*;
-
+/**
+ * Print the log info on a file.
+ * @author Alessandro Russo <russo@disi.unitn.it>
+ */
 public class PrintLogs extends PrintStream {
 
     private String dirname;

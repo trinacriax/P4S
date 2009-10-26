@@ -5,14 +5,13 @@ import peersim.config.*;
 import peersim.core.*;
 import peersim.edsim.*;
 
+/**
+ * Initialize the alternate protocol using parameter given in the configuration file.
+ *
+ * @author Alessandro Russo
+ * @version 1.0
+ */
 public class AlternateInitializer implements Control {
-
-    /**
-     * Initialize the alternate protocol using parameter given in the configuration file.
-     * 
-     * @author Alessandro Russo
-     * @version 1.0
-     */
 
     // ------------------------------------------------------------------------
     // Constants
@@ -20,7 +19,7 @@ public class AlternateInitializer implements Control {
     private static final String PAR_PROT = "protocol";
     private static final String PAR_BANDWIDTH = "bandwidth";
     private static final String PAR_CHUNKS = "chunks";
-    private static final String PAR_CHUNK_SIZE = "chunk_size";   
+    private static final String PAR_CHUNK_SIZE = "chunk_size";
     private static final String PAR_PUSH_RETRY = "push_retry";
     private static final String PAR_PULL_RETRY = "pull_retry";
     private static final String PAR_SWITCH_TIME = "switchtime";
@@ -34,10 +33,10 @@ public class AlternateInitializer implements Control {
     // ------------------------------------------------------------------------
     // Fields
     // ------------------------------------------------------------------------         
-    private final int number_of_chunks;    
+    private final int number_of_chunks;
     private final int pid;
     private final int neigh;
-    private final long chunk_size;    
+    private final long chunk_size;
     private final int debug;
     private int bandwidthp;
     private long new_chunk;
@@ -53,31 +52,35 @@ public class AlternateInitializer implements Control {
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
-
     /**
      * Creates a new instance and read parameters from the config file.
+     * @param prefix String representing the name of the initializer in the configuration file.
      */
     public AlternateInitializer(String prefix) {
         number_of_chunks = Configuration.getInt(prefix + "." + PAR_CHUNKS);
         pid = Configuration.getPid(prefix + "." + PAR_PROT);
-        neigh = Configuration.getInt(prefix+"."+PAR_NEIGH_KNOW,0);
+        neigh = Configuration.getInt(prefix + "." + PAR_NEIGH_KNOW, 0);
         chunk_size = Configuration.getLong(prefix + "." + PAR_CHUNK_SIZE, 0);
         push_retry = Configuration.getInt(prefix + "." + PAR_PUSH_RETRY, 1);
         pull_retry = Configuration.getInt(prefix + "." + PAR_PULL_RETRY, 1);
         switchtime = Configuration.getLong(prefix + "." + PAR_SWITCH_TIME, 1);
-        new_chunk =  Configuration.getLong(prefix + "." + PAR_NEW_CHUNK, -1);
+        new_chunk = Configuration.getLong(prefix + "." + PAR_NEW_CHUNK, -1);
         push_window = Configuration.getInt(prefix + "." + PAR_PUSH_WINDOW, 1);
         pull_window = Configuration.getInt(prefix + "." + PAR_PULL_WINDOW, 1);
         playout = Configuration.getInt(prefix + "." + PAR_PLAYOUT, 0);
         debug = Configuration.getInt(prefix + "." + PAR_DEBUG);
         bandwidthp = Configuration.getPid(prefix + "." + PAR_BANDWIDTH);
-        pull_rounds =Configuration.getInt(prefix + "." + PAR_PULL_ROUNDS);
+        pull_rounds = Configuration.getInt(prefix + "." + PAR_PULL_ROUNDS);
 
     }
 
     // ------------------------------------------------------------------------
     // Methods
     // ------------------------------------------------------------------------
+    /**
+     * Initilizes the data structure of the protocol.
+     * @return False if all is done without problems.
+     */
     public boolean execute() {
         System.err.print("- >> Alternate Initializer: Start...");
         Node source = Network.get(Network.size() - 1);//the source is always the last node.
@@ -104,7 +107,7 @@ public class AlternateInitializer implements Control {
         }
         AlternateDataSkeleton prot = (AlternateDataSkeleton) source.getProtocol(pid);
         prot.setCycle(Message.PUSH_CYCLE);
-        DelayedNeighbor dn = (DelayedNeighbor)source.getProtocol(FastConfig.getLinkable(pid));
+        DelayedNeighbor dn = (DelayedNeighbor) source.getProtocol(FastConfig.getLinkable(pid));
         dn.populate();
         EDSimulator.add(0, new P4SMessage(null, source, Message.SWITCH_PUSH, 0L), source, pid);
         System.err.print("finished\n");

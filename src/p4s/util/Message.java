@@ -1,132 +1,97 @@
 package p4s.util;
 
+/**
+ * This interface contains all the main constants used to define the protocol and the corresponding error codes.
+ * @author Alessandro Russo <russo@disi.unitn.it>
+ */
 public interface Message {
-	/**
-	 * COSTANTI PER LA GESTIONE DEI CICLI DEL NODO
-	 */
-		public final int PUSH_CYCLE = 0;
-		public final int PULL_CYCLE = 1;
 
-
-
-
-
-	/**
-	 * 
-	 * INTERLEAVE ED MESSAGE CODE
-	 * 
-	 * */
-	/**
-	 * Messaggio di PUSH
-	 * */
-	public final int PUSH = 3;	
-	/**
-	 * Messaggio di PULL
-	 * */
-	public final int PULL = 4;
-	/**
-	 * Messaggio di inizio trasmissione PUSH
-	 * */
-	public final int START_PUSH = 6;
-	/**
-	 * Messaggio di inizio trasmissione PULL
-	 * */
-	public final int START_PULL = 7;
-	/**
-	 * Messaggio di fine trasmissione PUSH
-	 * */
-	public final int FINISH_PUSH = 8 ;
-	/**
-	 * Messaggio di fine trasmissione PULL
-	 * */
-	public final int FINISH_PULL = 10;
-	/**
-	 * Messaggio di OK per il PUSH
-	 * */
-	public final int OK_PUSH = 12;
-	/**
-	 * Messaggio di OK per il PULL
-	 * */
-	public final int OK_PULL = 14;
-	/**
-	 * Messaggio di chunk non disponibile
-	 * 
-	 * Nella fase di Pull sul chunk ID, se il 
-	 * ricevente non ha quel chunk richiesto 
-	 * risponde con questo messaggio
-	 * */
-	public final int NO_CHUNK_UNAVAILABLE = 16;
-	/**
-	 * Messaggio di chunk già posseduto
-	 * 
-	 * Nella fase di push, se il ricevente ha 
-	 * già quel chunk risponde con questo
-	 * messaggio
-	 * */
-	public final int NO_CHUNK_OWNED = 18;
-
-
-        public final int CONNECTION_RELEASE = 19;
-
-	/**
-	 * Messaggio di nodo in pulling
-	 * 
-	 * Nella fase di pull, se il nodo è già
-	 * occupato con un altro nodo, e non può
-	 * soddisfare le richieste del sender 
-	 * perché ha tutta la banda occupata
-	 * risponde con questo messaggio 
-	 * */
-	public final int IN_PULLING = 20;
-	
-	public final int NO_UPLOAD_BANDWIDTH_PUSH = 26;
-	public final int NO_UPLOAD_BANDWIDTH_PULL = 28;
-	
-	public final int NO_DOWNLOAD_BANDWIDTH_PUSH = 30;
-	public final int NO_DOWNLOAD_BANDWIDTH_PULL = 32;
-
-	public final int SWITCH_PUSH = 80;
-	
-	public final int SWITCH_PULL = 90;
-
-
-
-
-/**
- *  
- * COSTANTE PER IL CALCOLO DEL DELAY IN MILLISECONDI
- * 
- * */	
-	public final int MILLISECONDI = 1000;	
-	
-	
-
-/**
- * 
- * COSTANTI PER LA GESTIONE DELLA LISTA DI CHUNKS
- * 
- * */
-	public final long OWNED = -1 ;
-	public final long IN_DOWNLOAD = -2;
-	public final long NOT_OWNED = -3;
-        public final long SKIPPED = -5;
-        
-
-
-    
-	/**
-	 * 
-	 * COSTANTI PER IDENTIFICAZIONE TIPO CONNESSIONE
-	 * 
-	 * */
-//
-//	public final int UPLINK = 1011;
-//	public final int DOWNLINK = 2011;
-
-	
-//	public final String LIST = "listofchunk";
-//	public final String NULL = "empty";
-	
-        //fattore divisore per banda minima
-//        public final double mini = 4;
+    /**
+     * Constant representing the PUSH cycle
+     */
+    public final int PUSH_CYCLE = 0;
+    /**
+     * Constant representing the PULL cycle
+     */
+    public final int PULL_CYCLE = 1;
+    /**
+     * Offering a PUSH
+     * */
+    public final int PUSH = 3;
+    /**
+     * Requesting a PULL
+     * */
+    public final int PULL = 4;
+    /**
+     * Starting PUSH
+     * */
+    public final int START_PUSH = 6;
+    /**
+     * Starting PULL
+     * */
+    public final int START_PULL = 7;
+    /**
+     * Finish PUSH
+     * */
+    public final int FINISH_PUSH = 8;
+    /**
+     * Finish PULL
+     * */
+    public final int FINISH_PULL = 10;
+    /**
+     * Accept PUSH
+     * */
+    public final int OK_PUSH = 12;
+    /**
+     * Accept PULL
+     * */
+    public final int OK_PULL = 14;
+    /**
+     * The chunk is not available at the node. Issued by pull request.
+     * */
+    public final int NO_CHUNK_UNAVAILABLE = 16;
+    /**
+     * The chunk is already owned. Issued by a push offer.
+     * */
+    public final int NO_CHUNK_OWNED = 18;
+    /**
+     * The pulled node is satisfying another PULL. It refuses the transmission.
+     * */
+    public final int IN_PULLING = 20;
+    /**
+     * The node pulled does not have enough upload bandwidth to satisfy the pull request.
+     */
+    public final int NO_UPLOAD_BANDWIDTH_PULL = 28;
+    /**
+     * The node pushed does not have enough download bandwidth to receive the push.
+     */
+    public final int NO_DOWNLOAD_BANDWIDTH_PUSH = 30;
+    /**
+     * Switching to PUSH phase.
+     */
+    public final int SWITCH_PUSH = 80;
+    /**
+     * Switching to PULL phase.
+     */
+    public final int SWITCH_PULL = 90;
+    /**
+     * Time unit in ms.
+     * */
+    public final int TIME_UNIT = 1000;
+    /**
+     * Chunk with normalized value greater than this was received.
+     * */
+    public final long OWNED = -1;
+    /**
+     *  Chunk with this normalized value is in download.
+     */
+    public final long IN_DOWNLOAD = -2;
+    /**
+     *  Chunk with this normalized value is not owned.
+     */
+    public final long NOT_OWNED = -3;
+    /**
+     *  Chunk with this normalized value was skipped.
+     */
+    public final long SKIPPED = -5;
 }

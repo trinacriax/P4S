@@ -1,12 +1,3 @@
-/**
- * This class implements the core protocol ALTERNATE: each node alternates push and pull states.
- * In PUSH each node pushes the latest chunk it possesses to a target peer selected randomly.
- * In PULL each node pulls the oldes chunk not owned to a target peer selected randomly.
- * No signaling a part from push/pull proposes.
- *
- * @author Alessandro Russo
- * @version 1.1
- */
 package p4s.core;
 
 import p4s.transport.*;
@@ -17,6 +8,15 @@ import peersim.cdsim.*;
 import peersim.edsim.*;
 import bandwidth.core.*;
 
+/**
+ * This class implements the core protocol ALTERNATE: each node alternates push and pull states.
+ * In PUSH each node pushes the latest chunk it possesses to a target peer selected randomly.
+ * In PULL each node pulls the oldes chunk not owned to a target peer selected randomly.
+ * No signaling a part from push/pull proposes.
+ *
+ * @author Alessandro Russo
+ * @version 1.1
+ */
 public class Alternate extends AlternateDataStructure implements CDProtocol, EDProtocol {
 
     private static Alternate sender;
@@ -41,11 +41,12 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     /**
-     * This method simulates a message from a {@peersim.core.Node} source to a receiver {@peersim.core.Node}
-     * @param Node src Sender node
-     * @param Node dest Receiver node
-     * @param Object msg Message to deliver
-     * @param int pid Protocol identifier
+     * This method simulates a message from a {@link peersim.core.Node} source to a receiver {@link peersim.core.Node}
+     * @param src Sender node
+     * @param dest Receiver node
+     * @param msg Message to deliver
+     * @param pid Protocol identifier
+     * @return delay time for message transmission.
      */
     public long send(Node src, Node dest, Object msg, int pid) {
         long delay = DelayedNeighbor.delays[src.getIndex()][dest.getIndex()];
@@ -214,7 +215,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                 Node peer = null;
                 long delay = 0;
                 //****************************************** P U S H   G E N E R I C   N O D E ******************************************\\
-                int chunks_push[] = sender.getLast(sender.getPushWindow());
+                int chunks_push[] = sender.getLatest(sender.getPushWindow());
                 if (sender.getDebug() >= 4) {
                     String chunkstring = "\tNode " + node.getID() + ": ";
                     for (int k = 0; k < chunks_push.length; k++) {
@@ -329,7 +330,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exOkPush(Node node, int pid, P4SMessage im) {
-        
+
         sender = receiver = null;
         sender = ((Alternate) (node.getProtocol(pid)));
         receiver = ((Alternate) (im.getSender().getProtocol(pid)));
@@ -433,7 +434,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exStartPush(Node node, int pid, P4SMessage im) {
-        
+
         sender = receiver = null;
         receiver = ((Alternate) (node.getProtocol(pid)));
         long chunktopush = im.getChunks()[0];
@@ -447,7 +448,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exFinishPush(Node node, int pid, P4SMessage im) {
-        
+
         sender = receiver = null;
         sender = ((Alternate) (im.getSender().getProtocol(pid)));
         receiver = ((Alternate) (node.getProtocol(pid)));
@@ -476,7 +477,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exNoChunkOwned(Node node, int pid, P4SMessage im) {
-        
+
         sender = receiver = null;
         sender = (Alternate) (node.getProtocol(pid));
         NeighborElement ne = sender.getNeighbor(node, im.getSender(), pid);
@@ -499,7 +500,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exNoDownloadBandwidtPush(Node node, int pid, P4SMessage im) {
-        
+
         sender = receiver = null;
         sender = ((Alternate) (node.getProtocol(pid)));
         if (sender.getDebug() >= 3) {
@@ -518,7 +519,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exSwitchPull(Node node, int pid, P4SMessage im) {
-        
+
         sender = receiver = null;
         receiver = ((Alternate) (node.getProtocol(pid)));
         if (receiver.getDebug() >= 2) {
@@ -685,7 +686,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exPull(Node node, int pid, P4SMessage im) {
-        
+
         sender = receiver = null;
         sender = (Alternate) (node.getProtocol(pid));
         sender.addPassivePullPropose();
@@ -743,7 +744,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exOkPull(Node node, int pid, P4SMessage im) {
-        
+
         sender = receiver = null;
         sender = ((Alternate) (im.getSender().getProtocol(pid)));
         receiver = ((Alternate) (node.getProtocol(pid)));
@@ -823,7 +824,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exStartPull(Node node, int pid, P4SMessage im) {
-        
+
         sender = receiver = null;
         receiver = ((Alternate) (node.getProtocol(pid)));
         if (receiver.getDebug() >= 2) {
@@ -834,7 +835,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exFinishPull(Node node, int pid, P4SMessage im) {
-        
+
         sender = receiver = null;
         sender = ((Alternate) (im.getSender().getProtocol(pid)));
         receiver = ((Alternate) (node.getProtocol(pid)));
@@ -859,7 +860,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exNoChunkUnavailable(Node node, int pid, P4SMessage im) {
-        
+
         sender = receiver = null;
         receiver = ((Alternate) (node.getProtocol(pid)));
         receiver.addActivePullFailed();
@@ -888,7 +889,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exInPulling(Node node, int pid, P4SMessage im) {
-        
+
         sender = receiver = null;
         receiver = ((Alternate) (node.getProtocol(pid)));
         receiver.addActivePullFailed();
@@ -911,7 +912,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exNoUploadBandwidthPull(Node node, int pid, P4SMessage im) {
-        
+
         sender = receiver = null;
         receiver = (Alternate) (node.getProtocol(pid));
         receiver.addActivePullFailed();

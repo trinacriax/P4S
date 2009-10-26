@@ -6,8 +6,8 @@ import peersim.core.*;
 import p4s.util.*;
 
 /**
- * This class is a useful and common data structure
- * that may be used for all kinds of protocols.
+ * This class is a generic data structure for push/pull protocols.
+ * It consists in several fields and methods which reflect the protocol state.
  *
  */
 public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
@@ -22,13 +22,13 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     protected int cycle;
     /**Debug level */
     protected int debug;
-    /**# of chunks transmitted correctly via push*/
+    /** Number of chunks transmitted correctly via push*/
     protected int success_upload;
-    /**# of chunks transmitted correctly via pull*/
+    /** Number of chunks transmitted correctly via pull*/
     protected int success_download;
-    /**# of chunks offered in push*/
+    /** Number of chunks offered in push*/
     protected int push_window;
-    /**# of chunks offered in pull*/
+    /** Number of chunks offered in pull*/
     protected int pull_window;
     /**Protocol ID for bandwidth mechanism*/
     protected int bandwidth;
@@ -40,9 +40,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     protected long pulling;
     /**Time in which node completes its chunk-list*/
     protected long completed;
-    /**Max # of push attempts */
+    /**Max number of push attempts */
     protected int max_push_attempts;
-    /**Max # of pull attempts */
+    /**Max number of pull attempts */
     protected int max_pull_attempts;
     /**Current push attempts */
     protected int push_attempts;
@@ -80,15 +80,14 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     protected int pull_failed_a;
     /**Total neightbor knowledge*/
     private int nk;
+    /**Playout delay. Infinite is -1, otherwise time in ms.*/
     protected long playout;
-    protected long peer_playout;
     /**Time to emerge new chunk*/
     private long new_chunk_delay;
     private long min_del;
     private long max_del;
     private Node current;
     private int pull_rounds;
-//    private byte _pull_rounds[];
 
     public AlternateDataStructure(String prefix) {
         super();
@@ -107,65 +106,61 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         } // never happens
         ads.chunk_list = null;// new long[1];
         ads.bandwidth = new Integer(0);
-        ads.number_of_chunks = new Integer("0");
-        ads.last_chunk_pulled = new Integer("-1");
-        ads.completed = new Long("0");
-        ads.pulling = new Long("-1");
-        ads.debug = new Integer("0");
+        ads.number_of_chunks = new Integer(0);
+        ads.last_chunk_pulled = new Integer(-1);
+        ads.completed = new Long(0);
+        ads.pulling = new Long(-1);
+        ads.debug = new Integer(0);
 
         /**Passive Push propose*/
-        push_propose_p = new Integer("0");
+        push_propose_p = new Integer(0);
         /**Passive Push successuful*/
-        push_success_p = new Integer("0");
+        push_success_p = new Integer(0);
         /**Passive Push failed*/
-        push_failed_p = new Integer("0");
+        push_failed_p = new Integer(0);
 
         /**Passive Pull propose */
-        pull_propose_p = new Integer("0");
+        pull_propose_p = new Integer(0);
         /**Passive Pull success*/
-        pull_success_p = new Integer("0");
+        pull_success_p = new Integer(0);
         /**Passive Pull failed*/
-        pull_failed_p = new Integer("0");
+        pull_failed_p = new Integer(0);
 
         /**Active Push propose */
-        push_propose_a = new Integer("0");
+        push_propose_a = new Integer(0);
         /**Active Push success */
-        push_success_a = new Integer("0");
+        push_success_a = new Integer(0);
         /**Active Push failed */
-        push_failed_a = new Integer("0");
+        push_failed_a = new Integer(0);
 
         /**Active Pull propose */
-        pull_propose_a = new Integer("0");
+        pull_propose_a = new Integer(0);
         /**Active Pull success */
-        pull_success_a = new Integer("0");
+        pull_success_a = new Integer(0);
         /**Active Pull failed*/
-        pull_failed_a = new Integer("0");
+        pull_failed_a = new Integer(0);
 
-        ads.chunk_size = new Integer("0");
-        ads.push_window = new Integer("0");
-        ads.cycle = new Integer("0");
-        ads.source = new Integer("0");
-        ads.success_upload = new Integer("0");
-        ads.success_download = new Integer("0");
-//        ads.chunkpush = new Integer("0");
-//        ads.chunkpull = new Integer("0");
-        ads.max_push_attempts = new Integer("0");
-        ads.max_pull_attempts = new Integer("0");
-        ads.push_attempts = new Integer("0");
-        ads.pull_attempts = new Integer("0");
-        ads.time_in_push = new Long("0");
-        ads.time_in_pull = new Long("0");
-        ads.switchtime = new Long("0");
-        ads.playout = new Long("0");
-        ads.nk = new Integer("0");
+        ads.chunk_size = new Integer(0);
+        ads.push_window = new Integer(0);
+        ads.cycle = new Integer(0);
+        ads.source = new Integer(0);
+        ads.success_upload = new Integer(0);
+        ads.success_download = new Integer(0);
+
+        ads.max_push_attempts = new Integer(0);
+        ads.max_pull_attempts = new Integer(0);
+        ads.push_attempts = new Integer(0);
+        ads.pull_attempts = new Integer(0);
+        ads.time_in_push = new Long(0);
+        ads.time_in_pull = new Long(0);
+        ads.switchtime = new Long(0);
+        ads.playout = new Long(0);
+        ads.nk = new Integer(0);
         ads.new_chunk_delay = new Long(0);
-        ads.peer_playout = new Long(0);
-        ads.min_del = new Long("0");
-        ads.max_del = new Long("0");
-        ads.pull_rounds = new Integer("0");
-//        ads._pull_rounds= null;
+        ads.min_del = new Long(0);
+        ads.max_del = new Long(0);
+        ads.pull_rounds = new Integer(0);
         ads.current = null;
-//        ads.lastsrc = new Integer("0");
         return ads;
     }
 
@@ -213,8 +208,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.number_of_chunks = 0;
         this.cycle = -1;
         this.source = 0;
-//        this.chunkpush = 0;
-//        this.chunkpull = 0;
         this.max_push_attempts = 0;
         this.max_pull_attempts = 0;
         this.push_attempts = 0;
@@ -227,11 +220,9 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         this.playout = 0;
         this.nk = 0;
         this.new_chunk_delay = 0;
-        this.peer_playout = 0;
         this.min_del = this.max_del = 0;
         this.current = null;
         this.pull_rounds = 0;
-//        this._pull_rounds = null;
     }
 
     /**
@@ -241,26 +232,19 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      * */
     public void Initialize(int items) {
         this.resetAll();
-//        this.lastsrc = new LinkedList();
         this.chunk_list = new long[items];
-//        this.lastsrc = new LinkedList();
-//        this._pull_rounds = new byte[items];
         for (int i = 0; i < items; i++) {
             this.chunk_list[i] = Message.NOT_OWNED;
-//            this._pull_rounds [i]=pull_rounds;
         }
     }
 
     /**
      *
-     * Set the cycle of the current node {@link interleave.util.Message}
-     * @param cycle The cycle node will switch in
+     * Set the cycle of the current node {@link p4s.util.Message}.
+     * @param _cycle The cycle node will switch in.
      *
      */
     public void setCycle(int _cycle) {
-        if (this.peer_playout == 0) {
-            this.updatePlayoutTime();
-        }
         this.cycle = _cycle;
         this.checkpull();
         if (this.cycle == Message.PULL_CYCLE && this.last_chunk_pulled != -1) {
@@ -272,17 +256,79 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     }
 
     /**
-     * The current cycle of the ndoe
-     * @return an integer tha identify the state, see (@link interleave.util.Message)
-     *
-     *
+     * The current cycle of the node.
+     * @return an integer tha identify the state, see (@link interleave.util.Message).
      */
     public int getCycle() {
         return this.cycle;
     }
 
     /**
-     * Set the time to produce a new chunk
+     * Set the source node
+     * @param _source
+     */
+    public void setSource(int _source) {
+        this.source = _source;
+    }
+
+    /**
+     * Get the source node.
+     * @return Source node.
+     */
+    public int getSource() {
+        return this.source;
+    }
+
+    /**
+     * Set the number of chunks that compose the streaming session.
+     * @param _number_of_chunks chunks of the whole session.
+     */
+    public void setNumberOfChunks(int _number_of_chunks) {
+        this.number_of_chunks = _number_of_chunks;
+    }
+
+    /**
+     * Get the total number of chunks that compose the session.
+     * @return Chunks that compose the session.
+     */
+    public int getNumberOfChunks() {
+        return this.number_of_chunks;
+    }
+
+    /**
+     * Set the time in which node has completed to receive chunks.
+     * @param value Time in which node finishes to receive chunks.
+     */
+    public void setCompleted(long value) {
+        this.completed = value;
+    }
+
+    /**
+     * Set the node as completed.
+     * @return The time in which the node has completed to receive chunks, negative value if it is still working to retrieve chunks.
+     */
+    public long getCompleted() {
+        return this.completed;
+    }
+
+    /**
+     * Set the chunk size.
+     * @param chunk_size Chunk size in bits.
+     */
+    public void setChunkSize(long chunk_size) {
+        this.chunk_size = chunk_size;
+    }
+
+    /**
+     * Get the chunk size in bits.
+     * @return Chunk size in bits.
+     */
+    public long getChunkSize() {
+        return this.chunk_size;
+    }
+
+    /**
+     * Set the time to produce a new chunk.
      * @param delay time in ms
      */
     public void setNewChunkDelay(long delay) {
@@ -300,8 +346,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     /**
      *
      * Set bandwidth protocol
-     * @param bw the protocol identifier (PID) of the protocol that
-     * implements the bandwidth mechanism
+     * @param bw the protocol identifier (PID) of
+     * the protocol that implements the bandwidth mechanism
      *
      */
     public void setBandwidth(int bw) {
@@ -321,7 +367,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     /**
      *
      * Time needs by the node to switch its state,
-     * @param long time in ms
+     * @param time switch time in ms
      *
      */
     public void setSwitchTime(long time) {
@@ -331,7 +377,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     /**
      *
      * Return the time needs by the node to switch its state
-     * @returnt the time in ms
+     * @return the time in ms
      *
      */
     public long getSwitchTime() {
@@ -348,7 +394,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
 
     /**
      * Get the debug level
-     * @retunr value the level of verbosity 0 up to 10
+     * @return value the level of verbosity 0 up to 10
      */
     public int getDebug() {
         return this.debug;
@@ -395,35 +441,36 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     }
 
     /**
-     * Add one to the number of push attempts
+     * Add a push attempt
      */
     public void addPushAttempt() {
         this.push_attempts++;
     }
 
     /**
-     * Add one to the number of push attempts
+     * Get the current number of push attempts
+     * @return number of push attempts
      */
     public int getPushAttempt() {
         return this.push_attempts;
     }
 
     /**
-     * Remove one to the number of push attempts
+     * Remove a push attempt
      */
     public void remPushAttempt() {
         this.push_attempts--;
     }
 
     /**
-     * Reset the number of push attempts
+     * Reset the number of push attempt
      */
     public void resetPushAttempt() {
         this.push_attempts = 0;
     }
 
     /**
-     * Add one to the number of pull attempts
+     * Add a pull attempt
      */
     public void addPullAttempt() {
         this.pull_attempts++;
@@ -431,13 +478,14 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
 
     /**
      * Get the number of pull attempts
+     * @return number of pull attempts
      */
     public int getPullAttempt() {
         return this.pull_attempts;
     }
 
     /**
-     * Remove one to the number of pull attempts
+     * Remove a pull attempt
      */
     public void remPullAttempt() {
         this.pull_attempts--;
@@ -451,7 +499,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     }
 
     /**
-     * Return the time spent in push transmission by the node
+     * Return the time spent in push by the node
      * @return the time spent in push
      * */
     public long getTimePush() {
@@ -459,7 +507,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
     }
 
     /**
-     * Return the time spent in pull transmission by the node
+     * Return the time spent in pull by the node
      * @return the time spent in pull
      * */
     public long getTimePull() {
@@ -468,7 +516,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
 
     /**
      * Set the number of chunks the node proposes in push
-     * @param int window size for the number of chunks proposed in push
+     * @param window number of chunks offered in push
      * */
     public void setPushWindow(int window) {
         this.push_window = window;
@@ -484,7 +532,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
 
     /**
      * Set the number of chunks the node proposes in pull
-     * @param int window size for the number of chunks proposed in pull
+     * @param window number of chunks requested in pull
      **/
     public void setPullWindow(int window) {
         this.pull_window = window;
@@ -498,15 +546,934 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         return this.pull_window;
     }
 
+    /**
+     * Get the RTT delay between nodes
+     * @param from Current node
+     * @param to Neighbor node
+     * @return RTT delay between nodes.
+     */
     public long getRTTDelay(Node from, Node to) {
         long delay = DelayedNeighbor.delays[from.getIndex()][to.getIndex()];
         return delay;
     }
 
     /**
-     * Return the number of active uploads
-     * @return the number of active uploads
-     **/
+     * Add one to success uploads
+     * */
+    public void addSuccessUpload() {
+        this.success_upload++;
+    }
+
+    /**
+     * Add one to success uploads
+     * @return number of successful upload
+     * */
+    public int getSuccessUpload() {
+        return this.success_upload;
+    }
+
+    /**
+     * Reset number of success uploads.
+     */
+    public void resetSuccessUpload() {
+        this.success_upload = 0;
+    }
+
+    /**
+     * Add a success download.
+     */
+    public void addSuccessDownload() {
+        this.success_download++;
+    }
+
+    /**
+     * Get the number of success downloads
+     * @return success downloads
+     */
+    public int getSuccessDownload() {
+        return this.success_download;
+    }
+
+    /**
+     * Reset the number of success downloads.
+     */
+    public void resetSuccessDownload() {
+        this.success_download = 0;
+    }
+
+    /**
+     * Add a push success
+     */
+    public void addActivePushSuccess() {
+        this.push_success_a++;
+    }
+
+    /**
+     * Get the number of active successful push
+     * @return Number of active successful push
+     */
+    public int getActivePushSuccess() {
+        return this.push_success_a;
+    }
+
+    /**
+     * Add a active push propose.
+     */
+    public void addActivePushPropose() {
+        this.push_propose_a++;
+    }
+
+    /**
+     * Get the number of active push proposes.
+     * @return Number of active push proposes.
+     */
+    public int getActivePushPropose() {
+        return this.push_propose_a;
+    }
+
+    /**
+     * Add an active failed push.
+     */
+    public void addActivePushFailed() {
+        this.push_failed_a++;
+    }
+
+    /**
+     * Get the number of active failed push
+     * @return Failed active push.
+     */
+    public int getActivePushFailed() {
+        return this.push_failed_a;
+    }
+
+    /**
+     * Add a successful active pull.
+     */
+    public void addActivePullSuccess() {
+        this.pull_success_a++;
+    }
+
+    /**
+     * Get the number of successful active pull.
+     * @return Successful active pull.
+     */
+    public int getActivePullSuccess() {
+        return this.pull_success_a;
+    }
+
+    /**
+     * Add an active pull request
+     */
+    public void addActivePullPropose() {
+        this.pull_propose_a++;
+    }
+
+    /**
+     * Add an active pull request.
+     * @return Number active pull request.
+     */
+    public int getActivePullRequest() {
+        return this.pull_propose_a;
+    }
+
+    /**
+     * Add an active failed pull.
+     */
+    public void addActivePullFailed() {
+        this.pull_failed_a++;
+    }
+
+    /**
+     * Get the number of active pull failed.
+     * @return failed active pull.
+     */
+    public int getActivePullFailed() {
+        return this.pull_failed_a;
+    }
+
+    /**
+     * Add a passive successful push.
+     */
+    public void addPassivePushSuccess() {
+        this.push_success_p++;
+    }
+
+    /**
+     * Get passive successful push.
+     * @return Passive successful push.
+     */
+    public int getPassivePushSuccess() {
+        return this.push_success_p;
+    }
+
+    /**
+     * Add a passive push propose.
+     */
+    public void addPassivePushPropose() {
+        this.push_propose_p++;
+    }
+
+    /**
+     * Get the passive push proposes.
+     * @return Passive push proposes.
+     */
+    public int getPassivePushPropose() {
+        return this.push_propose_p;
+    }
+
+    /**
+     * Add a passive push failed.
+     */
+    public void addPassivePushFailed() {
+        this.push_failed_p++;
+    }
+
+    /**
+     * Get the passive failed pushes.
+     * @return Passive failed pushes.
+     */
+    public int getPassivePushFailed() {
+        return this.push_failed_p;
+    }
+
+    /**
+     * Add a passive pull success.
+     */
+    public void addPassivePullSuccess() {
+        this.pull_success_p++;
+    }
+
+    /**
+     * Get the passive successful pull.
+     * @return Number of passive succesful pull.
+     */
+    public int getPassivePullSuccess() {
+        return this.pull_success_p;
+    }
+
+    /**
+     * Add a passive pull propose.
+     */
+    public void addPassivePullPropose() {
+        this.pull_propose_p++;
+    }
+
+    /**
+     * Get the passive pull request.
+     * @return number of passive pull request.
+     */
+    public int getPassivePullRequest() {
+        return this.pull_propose_p;
+    }
+
+    /**
+     * Add a passive failed pull.
+     */
+    public void addPassivePullFailed() {
+        this.pull_failed_p++;
+    }
+
+    /**
+     * Get the passive failed pull.
+     * @return Passive failed pull.
+     */
+    public int getPassivePullFailed() {
+        return this.pull_failed_p;
+    }
+
+    /**
+     * Add time spent in push.
+     * @param timeinpush time spent in push.
+     */
+    public void addTimeInPush(long timeinpush) {
+        this.time_in_push += timeinpush;
+    }
+
+    /**
+     * Add time spent in pull.
+     * @param timeinpull time spent in pull.
+     */
+    public void addTimeInPull(long timeinpull) {
+        this.time_in_pull += timeinpull;
+    }
+
+    /**
+     * Set the playout time of the node.
+     * @param time_sec node plyout time in ms, -1 is infinite.
+     */
+    public void setPlayoutTime(int time_sec) {
+        this.playout = new Long(time_sec);
+    }
+
+    /**
+     * Get the playout time.
+     * @return Playout time of the node.
+     */
+    public long getPlayoutTime() {
+        return this.playout;
+    }
+
+    /**
+     * Compute the deadline for a chunk.
+     * @param chunkid Chunk of interest.
+     * @return Deadline for the given chunk.
+     */
+    public long getDeadline(int chunkid) {
+        if (this.playout == -1) {
+            return -1;
+        } else {
+            return this.playout + this.new_chunk_delay * chunkid;
+        }
+
+    }
+
+    /**
+     * Se the max e min RTT delays.
+     * @param node current node.
+     * @param pid Protocol id.
+     */
+    public void setRTTDelays(Node node, int pid) {
+        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
+        this.min_del = net.getMinRTT();
+        this.max_del = net.getMaxRTT();
+    }
+
+    /**
+     * Set the number of pull rounds for the pullable set.
+     * When a node is unsuccessful pulled for a given set of chunks,
+     * this set is marked as missed in that node.
+     * This neighbor, however, may receive the some chunks of the set later,
+     * so it can be pulled for those chunks marked in the past after several pull rounds.
+     * @param rounds
+     */
+    public void setPullRounds(int rounds) {
+        this.pull_rounds = rounds;
+    }
+
+    /**
+     * Get the pull rounds.
+     * @return Number of pull to re-add a node in the set of candidates.
+     */
+    public int getPullRounds() {
+        return this.pull_rounds;
+    }
+
+    /**
+     * Check whether the chunk is pullable or its deadline is too close, thus it will be discarded.
+     * @param chunkid Chunk identier to check.
+     * @return True if there is enough time to pull the chunk, false otherwise.
+     */
+    public boolean isPullable(int chunkid) {
+        if (this.playout < 0) {
+            if (debug >= 4) {
+                System.out.println("\tPlayout is set to infinity, " + chunkid + " will be pullable for ever.");
+            }
+            return true;
+        }
+        long time_available = getDeadline(chunkid) - CommonState.getTime();
+        if (debug >= 4) {
+            System.out.print("\tTime available is " + time_available + " (" + getDeadline(chunkid) + "); ");
+        }
+        if (time_available < 0 && this.playout != -1) {
+            if (this.chunk_list[chunkid] == Message.NOT_OWNED) {
+                this.skipChunk(chunkid);
+                if (debug >= 4) {
+                    System.out.print("is lower than 0, no more time to retrieve " + chunkid + " SKIP IT.");
+
+                }
+                this.checkCompleted();
+            }
+            if (debug >= 4) {
+                System.out.println(current.getID() + " It is strange: at time " + CommonState.getTime() + " tries to pull chunk " + chunkid +
+                        " with deadline " + time_available + ". It should be already marked as skipped! Playout " + this.playout + ".");
+            }
+            return false;
+        }
+        double uptime = Math.ceil((this.chunk_size * 1.0 / (this.getUploadMax(this.current) * 1.0)) * Message.TIME_UNIT);
+        long time_needed = Math.round(this.max_del + uptime);//XXX to up[date, nodes can learn the upload speed/time of its neighbors from history
+        if (debug >= 4) {
+            System.out.print("Time needed to receive the chunk " + chunkid + " (Size " + this.chunk_size + ", Upload " + this.getUploadMax(this.current) + ") is " + time_needed + "; ");
+        }
+        if (time_available >= time_needed) {
+            if (debug >= 4) {
+                System.out.println("so we have time to search it for pull");
+            }
+            return true;
+        } else {
+            if (this.chunk_list[chunkid] == Message.NOT_OWNED) {
+                this.skipChunk(chunkid);
+                if (debug >= 4) {
+                    System.out.println("we have no more time to retrieve it, SKIP");
+                }
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Set lastpull to the chunk just received in pull
+     * @param _lastpull last chunk pulled.
+     */
+    public void setLastpull(long _lastpull) {
+        this.checkpull();
+        if (_lastpull < this.getLatest() || _lastpull < this.last_chunk_pulled) {
+            this.addChunk((int) _lastpull, Message.PULL_CYCLE);
+        } else if (this.last_chunk_pulled == -1) {
+            this.last_chunk_pulled = (int) _lastpull;
+        } else if (this.last_chunk_pulled < _lastpull) {
+            this.addChunk(this.last_chunk_pulled, Message.PULL_CYCLE);
+            this.last_chunk_pulled = (int) _lastpull;
+        }
+        if (this.last_chunk_pulled == (this.getNumberOfChunks() - 1)) {
+            this.addChunk(this.last_chunk_pulled, Message.PULL_CYCLE);
+            this.last_chunk_pulled = -1;
+
+        }
+        return;
+    }
+
+    /**
+     * Check the last pull, eventually add it in the list.
+     */
+    public void checkpull() {
+        if (this.last_chunk_pulled != -1 && this.last_chunk_pulled < this.getLatest()) {
+            int tmp = this.last_chunk_pulled;
+            this.last_chunk_pulled = -1;
+            this.addChunk(tmp, Message.PULL_CYCLE);
+        }
+    }
+
+    /**
+     * Get the last chunk pulled.
+     * @return last chunk pulled.
+     */
+    public int getLastpull() {
+        return this.last_chunk_pulled;
+    }
+
+    /**
+     * Check whether the node is already satistying a pull or not.
+     * @return The time in which has started the pull, -1  if it is idle.
+     */
+    public long isPulling() {
+        return this.pulling;
+    }
+
+    /**
+     * Set pulling state
+     */
+    public void setPulling() {
+        this.pulling = CommonState.getTime();
+    }
+
+    /**
+     * ReSet pulling state
+     */
+    public void resetPulling() {
+        this.pulling = -1;
+    }
+
+    /**
+     * Set the chunk in download.
+     * @param index Chunk identifier to set in download.
+     */
+    public void setInDown(long index) {
+        if (this.chunk_list[(int) (index)] == Message.NOT_OWNED) {
+            this.chunk_list[(int) (index)] = Message.IN_DOWNLOAD;
+        }
+    }
+
+    /**
+     * Reset the state of the chunk in download, as not owned.
+     * @param index Chunk identifier to set.
+     */
+    public void resetInDown(long index) {
+        if (this.chunk_list[(int) (index)] == Message.IN_DOWNLOAD) {
+            this.chunk_list[(int) (index)] = Message.NOT_OWNED;
+        }
+    }
+
+    /**
+     * Print the bitmap representing the chunks of the node.
+     * @return A string which represents the node bitmap.
+     */
+    public String bitmap() {
+        String res = "";
+        for (int i = 0; i < this.chunk_list.length; i++) {
+            res += (this.normalize(this.chunk_list[i]) > Message.OWNED ? "1" : (this.chunk_list[i] == Message.IN_DOWNLOAD) ? "!" : "0") + (i % 10 == 9 ? "," : "");
+        }
+        return res;
+    }
+
+    /**
+     * Get the latest chunk owned.
+     * @return latest chunk owned.
+     */
+    public int getLatest() {
+        int last = -1;
+        for (int i = this.chunk_list.length - 1; i >= 0; i--) {
+            if (normalize(this.chunk_list[i]) > Message.OWNED) {
+                return i;
+            }
+        }
+        return last;
+    }
+
+    /**
+     * Source enqueues new chunks that will be pushed. Each chunk assumes the following values: 1 means that it has to be pushed,
+     * 2 means that the source is pushing that chunk while a value greater than 2 is the time in which the source has transmitted that chunk.
+     * @param new_chunk
+     */
+    public void enqueueChunk(int new_chunk) {
+        this.chunk_list[new_chunk] = 1;
+    }
+
+    /**
+     * Get the first chunk that the source has to push.
+     * @return The chunk to be pushed.
+     */
+    public int getFirstChunk() {
+
+        int chunktopush = 0;
+        while (chunktopush < this.chunk_list.length && this.chunk_list[chunktopush] != 1 && this.chunk_list[chunktopush] != 2) {
+            chunktopush++;
+        }
+        if ((chunktopush + 1 == this.chunk_list.length && this.chunk_list[chunktopush] != 1) || chunktopush >= this.chunk_list.length) {
+            chunktopush = -1;
+        }
+
+        if (debug > 3) {
+            System.out.println("chunk to push is " + chunktopush);
+        }
+        return chunktopush;
+    }
+
+    /**
+     * Mark the chunk as pushed.
+     * @param value chunk to mark.
+     */
+    public void markChunk(int value) {
+        if (value + 1 == this.number_of_chunks) {
+            if (debug > 3) {
+                System.out.println("Setting node as completed " + value);
+            }
+            this.setCompleted(CommonState.getTime());
+        }
+        if (this.chunk_list[value] == 2) {
+            if (debug > 3) {
+                System.out.print("Setting chunk as transmitted " + value);
+            }
+            if (debug > 3) {
+                System.out.println(" >> removing " + value);
+            }
+            this.chunk_list[value] = CommonState.getTime();
+        }
+    }
+
+    /**
+     * Unmark the chunk, it has to be pushed.
+     * @param value chunk id to unmark.
+     */
+    public void unmarkChunk(int value) {
+        if (this.chunk_list[value] == 2) {
+            if (debug > 3) {
+                System.out.print("Setting chunk as not-transmitted " + value);
+            }
+            this.chunk_list[value] = 1;
+            System.out.println(", now is " + this.chunk_list[value]);
+        }
+    }
+
+    /**
+     * Get a window of latest chunks.
+     * @param win_size window size of latest chunk.
+     * @return an array of latest with a size less or equal than win_size.
+     */
+    public int[] getLatest(int win_size) {
+        if (this.getOwnedChunks() < win_size) {
+            win_size = this.getOwnedChunks();
+        }
+        int result[] = new int[win_size];
+        int index = 0;
+        int count = 0;
+        while (win_size > 0 && count < this.chunk_list.length) {
+            int id = (this.chunk_list.length - count - 1);
+            if (this.chunk_list[id] != Message.IN_DOWNLOAD && this.chunk_list[id] != Message.NOT_OWNED && this.last_chunk_pulled != id) {
+                result[index++] = id;
+                win_size--;
+            }
+            count++;
+        }
+        if (win_size > 0) {
+            int temp[] = new int[result.length - win_size];
+            System.arraycopy(result, 0, temp, 0, temp.length);
+            result = temp;
+        }
+        return result;
+    }
+
+    /**
+     * Normalize the value of the chunk.
+     * @param chunktime
+     * @return time normalized, otherwise error code {@link Message}/
+     */
+    public long normalize(long chunktime) {
+        if (chunktime != Message.OWNED && chunktime != Message.NOT_OWNED && chunktime != Message.IN_DOWNLOAD) {
+            return Math.abs(chunktime);
+        } else {
+            return chunktime;
+        }
+    }
+
+    /**
+     * 
+     * Il metodo restituisce il chunk con l'identificativo passato se posseduto
+     * dal nodo, se il chunk è in download restituisce la costante
+     * {@code Message.CHUNK_IN_DOWNLOAD}, altrimenti restituisce null;
+     * 
+     * @param index chunk id
+     * @return long time at which the node received this chunk
+     */
+    public long getChunk(int index) {
+        return normalize(this.chunk_list[index]);
+    }
+
+    /**
+     * Get the number of chunks owned among a given set of given identifier.
+     * @param index set of chunks identifiers.
+     * @return number of chunks owned.
+     */
+    public int getChunks(int[] index) {
+        int owned = 0;
+        for (int i = 0; i < index.length; i++) {
+            if (this.getChunk(index[i]) > Message.OWNED) {
+                owned++;
+            }
+        }
+        return owned;
+    }
+
+    /**
+     * Check whether the node has completed to retrieve chunks or not.
+     */
+    public void checkCompleted() {
+        if (this.getAllChunks() == this.getNumberOfChunks() && this.getCompleted() == 0) {
+            this.setCompleted(CommonState.getTime());
+        }
+    }
+
+    /**
+     * Add a given chunk with a given method.
+     * @param chunk chunk identifier to add
+     * @param method operation used to retrieve the chunk.
+     * @return True if the node misses the chunk, false otherwise.
+     */
+    public boolean addChunk(int chunk, int method) {
+        if ((this.chunk_list[chunk] == Message.NOT_OWNED) || (this.chunk_list[chunk] == Message.IN_DOWNLOAD)) {
+            this.chunk_list[chunk] = CommonState.getTime();
+            if (method == Message.PULL_CYCLE) {
+                this.chunk_list[chunk] *= -1;
+            } else {
+                this.checkpull();
+            }
+        }
+        this.checkCompleted();
+        return true;
+    }
+
+    /**
+     * Skip the given chunk.
+     * @param chunkid Chunk identifier to skip.
+     * @return True if it was skipped without problems, false otherwise.
+     */
+    public boolean skipChunk(int chunkid) {
+        if (this.chunk_list[chunkid] == Message.NOT_OWNED) {
+            this.chunk_list[chunkid] = Message.SKIPPED;
+            if (debug >= 4) {
+                System.out.println("\tSkipping " + chunkid + " is pullable? ");
+            }
+            this.isPullable(chunkid);
+        }
+        this.checkCompleted();
+        return true;
+    }
+
+    /**
+     * Skip a set of chunks.
+     * @param chunkids Chunks identifiers to skip.
+     * @return True if they were skipped without problems, false otherwise.
+     */
+    public boolean skipChunks(int chunkids[]) {
+        for (int k = 0; k < chunkids.length; k++) {
+            if (this.chunk_list[chunkids[k]] == Message.NOT_OWNED) {
+                this.chunk_list[chunkids[k]] = Message.SKIPPED;
+                if (debug >= 4) {
+                    System.out.println("\tSkipping " + chunkids[k] + " is pullable? " + this.isPullable(chunkids[k]));
+                }
+            }
+            this.checkCompleted();
+        }
+        return true;
+    }
+
+    /**
+     * Get the numebr of chunks owned by the current node.
+     * @return number of chunks owned.
+     */
+    public int getOwnedChunks() {
+        int size = 0;
+        for (int i = 0; i < this.chunk_list.length; i++) {
+            if (normalize(this.chunk_list[i]) > Message.OWNED) {
+                size++;
+            }
+        }
+        return size;
+    }
+
+    /**
+     * Get the number of chunks owned plus those skipped.
+     * @return chunk list sise.
+     */
+    public int getAllChunks() {
+        int size = 0;
+        for (int i = 0; i < this.chunk_list.length; i++) {
+            if (normalize(this.chunk_list[i]) > Message.OWNED || this.chunk_list[i] == Message.SKIPPED) {
+                size++;
+            }
+        }
+        return size;
+    }
+
+    /**
+     * Get the numebr of skipped chunks.
+     * @return Skipped chunks.
+     */
+    public int getSkipped() {
+        int size = 0;
+        for (int i = 0; i < this.chunk_list.length; i++) {
+            if (this.chunk_list[i] == Message.SKIPPED) {
+                size++;
+            }
+        }
+        return size;
+    }
+
+    /**
+     * Get the least chunk missed by the current node.
+     * @return Chunk idenfier of the least missed chunk.
+     */
+    public int getLeast() {
+        int least = -1;
+        int max_chunk = this.getLatest();
+        for (int i = 0; i < this.chunk_list.length && i < max_chunk; i++) {
+            if (this.chunk_list[i] == Message.NOT_OWNED && !this.isPullable(i)) {
+                this.chunk_list[i] = Message.SKIPPED;
+            } else if (this.chunk_list[i] == Message.NOT_OWNED) {
+                return i;
+            }
+        }
+        return least;
+    }
+
+    /**
+     * Get a window of least missed chunks.
+     * @param win_size window size of missed chunks.
+     * @return an array of least missed chunks, of size less or equal than win_size.
+     */
+    public int[] getLeast(int win_size) {
+        int result[] = new int[win_size];
+        int index = 0;
+        int max_chunk = this.getLatest();
+        if (max_chunk == -1) {
+            result[index++] = 0;
+            win_size--;
+        } else {
+            for (int i = 0; i < this.chunk_list.length && i < max_chunk && win_size > 0; i++) {
+                if (this.chunk_list[i] == Message.NOT_OWNED && !this.isPullable(i)) {
+                    System.out.println("Here");
+                    this.chunk_list[i] = Message.SKIPPED;
+                } else if (this.chunk_list[i] == Message.NOT_OWNED) {// && i != this.last_chunk_pulled) {
+                    result[index++] = i;
+                    win_size--;
+                }
+            }
+        }
+        if (win_size > 0) {
+            int temp[] = new int[result.length - win_size];
+            System.arraycopy(result, 0, temp, 0, temp.length);
+            result = temp;
+        }
+        if (result.length == 0) {
+            return null;
+        } else {
+            return result;
+        }
+    }
+
+    /**
+     * Printable version of node state.
+     * @param node Curren node
+     * @return State of the node.
+     */
+    public String toString(Node node) {
+        String result = "Nodo " + node.getID() + ", Time " + CommonState.getTime() + ", Lista " + this.getAllChunks();
+        if (this.getAllChunks() == this.getNumberOfChunks()) {
+            result += " >>> ha tutti i chunks.";
+        } else {
+            result += ".";
+        }
+        return result;
+    }
+
+    /**
+     * Set the current node in this protocol.
+     * @param _current Set the current node.
+     */
+    public void setCurrent(Node _current) {
+        this.current = _current;
+    }
+
+    /**
+     * Reset the information we have on a given chunk for a given neighbor to  the initial state.
+     * @param chunk_id chunk identifer to reset
+     * @param node neighbor to reset
+     * @param pid corresponding protocol identifier.
+     */
+    public void flushNeighbors(int chunk_id, Node node, int pid) {
+        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
+        net.flushNeighborhood(chunk_id);
+    }
+
+    /**
+     * Reset the information we have on a set of chunks for a given neighbor to the initial state.
+     * @param chunks_id chunk identifer to reset
+     * @param node neighbor to reset
+     * @param pid corresponding protocol identifier.
+     */
+    public void flushNeighbors(int chunks_id[], Node node, int pid) {
+        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
+        for (int k = 0; k < chunks_id.length; k++) {
+            net.flushNeighborhood(chunks_id[k]);
+        }
+    }
+
+    /**
+     * Given a neighbor, returns the NeighborElement associated
+     * @param node current node
+     * @param target neighbor needed
+     * @param pid protocol id
+     * @return The NeighborElement instance associated to target node
+     */
+    public NeighborElement getNeighbor(Node node, Node target, int pid) {
+        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
+        if (net.getCurrent() == null) {
+            net.setCurrent(node);
+            this.setRTTDelays(node, pid);
+            net.setChunkListSize(this.number_of_chunks);
+            this.setRTTDelays(node, pid);
+            if (net.getNeighbor(Network.get(this.source)) != null) {
+                net.setBannedPeer(Network.get(this.getSource()));
+            }
+        }
+        if (this.getDebug() >= 10) {
+            System.out.println("\tNodo " + node.getID() + "\n\t" + net);
+        }//No knowledge about the neighborhood
+        NeighborElement candidate = net.getNeighbor(target);
+        if (this.getDebug() >= 10) {
+            System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " (Source is " + this.getSource() + ") ");
+        }
+        if (candidate != null) {
+            return candidate;
+        }
+        return null;
+    }
+
+//XXX FEATURE TO ADD: chose to perform push or pull before peer selection or not.
+    /***
+     * Return a target node to push, in according to the peer selection policies,
+     * selecting the target peer among a subset of peers which don't have at least one of the pushed chunks
+     * @param chunks array of chunks to push
+     * @param node current node
+     * @param pid procol id
+     * @return Target node
+     */
+    public Node getTargetNeighborPush(int chunks[], Node node, int pid) {
+        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
+        if (net.getCurrent() == null) {
+            net.setCurrent(node);
+            this.setRTTDelays(node, pid);
+            net.setChunkListSize(this.number_of_chunks);
+            this.setRTTDelays(node, pid);
+            if (net.getNeighbor(Network.get(this.source)) != null) {
+                net.setBannedPeer(Network.get(this.getSource()));
+            }
+        }
+        if (this.getDebug() >= 10) {
+            System.out.println("\tNodo " + node.getID() + " push selection\n\t" + net);
+        }
+        NeighborElement candidate = net.getTargetNeighbor(chunks, Message.NOT_OWNED);
+        if (this.getDebug() >= 8 && candidate != null) {
+            System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " (Source is " + this.getSource() + ") CTO = " + candidate.getContactTime() + " CTN = " + CommonState.getTime());
+        }
+        if (candidate == null) {
+            return null;
+        }
+        candidate.setContactTime(CommonState.getTime());
+        return candidate.getNeighbor();
+    }
+
+    /***
+     * Return a target node to pull, in according to the peer selection policies,
+     * selecting the target peer among a subset of peers which have at least one of the desired chunks
+     * @param chunks array of chunks needed
+     * @param node current node
+     * @param pid procol id
+     * @return Target node
+     */
+    public Node getTargetNeighborPull(int chunks[], Node node, int pid) {
+        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
+        if (net.getCurrent() == null) {
+            net.setCurrent(node);
+            this.setRTTDelays(node, pid);
+            net.setChunkListSize(this.number_of_chunks);
+            this.setRTTDelays(node, pid);
+            if (net.getNeighbor(Network.get(this.source)) != null) {
+                net.setBannedPeer(Network.get(this.getSource()));
+            }
+        }
+        if (this.getDebug() >= 10) {
+            System.out.println("\tNodo " + node.getID() + " pull selection\n\t" + net);
+        }//No knowledge about the neighborhood
+        NeighborElement candidate = net.getTargetNeighbor(chunks, Message.OWNED);
+        if (this.getDebug() >= 10) {
+            System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " (Source is " + this.getSource() + ") ");
+        }
+        if (candidate == null) {
+            return null;
+        }
+        return candidate.getNeighbor();
+    }
+
+    /**
+     * Return a printable version of the node's neighborhood
+     * @param node current node
+     * @param pid protocol id
+     * @return string containing the neighborhood
+     */
+    public String getNeighborhood(Node node, int pid) {
+        Linkable linkable = (Linkable) node.getProtocol(FastConfig.getLinkable(pid));
+        String results = "Node " + node.getID() + ": " + linkable.degree() + " [ ";
+        for (int i = 0; i < linkable.degree(); i++) {
+            results += linkable.getNeighbor(i).getID() + ", ";
+        }
+        results += " ]";
+        return results;
+    }
+
+    /*****************************************************************************************************
+     * BANDWIDTH METHODS
+     *****************************************************************************************************/
+    //XXX we could define a class which provides such functionalities, or set an class field which directly access to the protocol.
     public int getActiveUpload(Node node) {
         BandwidthAwareProtocol bap = (BandwidthAwareProtocol) node.getProtocol(this.bandwidth);
         return bap.getActiveUpload();
@@ -607,9 +1574,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         bap.resetPassiveDw();
     }
 
-    /**
-     * Restituisce la banda minima in upload
-     * */
     public long getUploadMin(Node node) {
         return ((BandwidthAwareProtocol) node.getProtocol(this.getBandwidth())).getUploadMin();
     }
@@ -618,9 +1582,6 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         return ((BandwidthAwareProtocol) node.getProtocol(this.getBandwidth())).getUploadMax();
     }
 
-    /**
-     * Restituisce la banda minima in download
-     * */
     public long getDownloadMin(Node node) {
         return ((BandwidthAwareProtocol) node.getProtocol(this.getBandwidth())).getUploadMin();
     }
@@ -629,865 +1590,15 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
         return ((BandwidthAwareProtocol) node.getProtocol(this.getBandwidth())).getUploadMax();
     }
 
-    /**
-     * Restiuisce la banda attuale in upload
-     * */
     public long getUpload(Node node) {
         return ((BandwidthAwareProtocol) node.getProtocol(this.getBandwidth())).getUpload();
     }
 
-    /**
-     * Restituisce la banda attuale in download
-     * */
     public long getDownload(Node node) {
         return ((BandwidthAwareProtocol) node.getProtocol(this.getBandwidth())).getDownload();
     }
 
     public String getBwInfo(Node node) {
         return ((BandwidthAwareProtocol) node.getProtocol(this.getBandwidth())).toString();
-    }
-
-    /**
-     * Add one to success uploads
-     * */
-    public void addSuccessUpload() {
-        this.success_upload++;
-    }
-
-    /**
-     * Add one to success uploads
-     * */
-    public int getSuccessUpload() {
-        return this.success_upload;
-    }
-
-    /**
-     * Reset il numero di upload finiti con successo
-     * */
-    public void resetSuccessUpload() {
-        this.success_upload = 0;
-    }
-
-    /**
-     * Aggiunge 1 al numero di download finiti con successo
-     * */
-    public void addSuccessDownload() {
-        this.success_download++;
-    }
-
-    /**
-     * Restituisce il numero di download finiti con successo
-     * */
-    public int getSuccessDownload() {
-        return this.success_download;
-    }
-
-    /**
-     * Reset il numero di download finiti con successo
-     * */
-    public void resetSuccessDownload() {
-        this.success_download = 0;
-    }
-
-//    /**
-//     * Aggiunge 1 al numero di chunk ottenuti mediante push
-//     * */
-//    public void addChunkInPush() {
-//        this.chunkpush++;
-//    }
-//
-//    /**
-//     * Restituisce il numero di chunk ottenuti in push
-//     * */
-//    public int getChunkInPush() {
-//        return this.chunkpush;
-//    }
-//
-//    /**
-//     * Aggiunge 1 al numero di chunk ottenuti in pull
-//     * */
-//    public void addChunkInPull() {
-////        System.out.println("\nADDCHUNKPULL");
-//        this.chunkpull++;
-//    }
-//
-//    /**
-//     * Restituisce il numero di chunk ottenuti in pull
-//     * */
-//    public int getChunkInPull() {
-//        return this.chunkpull;
-//    }
-    /**
-     * Imposta la sorgente della trasmissione
-     * */
-    public void setSource(int _source) {
-        this.source = _source;
-    }
-
-    /**
-     * Restituisce la sorgente della trasmissione
-     * */
-    public int getSource() {
-        return this.source;
-    }
-
-    /**
-     * Imposta il numero totale di chunks della trasmissione
-     * */
-    public void setNumberOfChunks(int _number_of_chunks) {
-        this.number_of_chunks = _number_of_chunks;
-    }
-
-    /**
-     * Restituisce il numero totale di chunks della trasmissione
-     * */
-    public int getNumberOfChunks() {
-        return this.number_of_chunks;
-    }
-
-    /**
-     * Imposta il tempo in cui il nodo ha completato la ricezione di tutti i chunks
-     * */
-    public void setCompleted(long value) {
-        this.completed = value;
-    }
-
-    /**
-     * Restituisce il tempo in chui il nodo ha completato la ricezione di tutti i chunks
-     * */
-    public long getCompleted() {
-        return this.completed;
-    }
-
-    /**
-     * Imposta la dimensione in bit del chunk
-     * */
-    public void setChunkSize(long chunk_size) {
-        this.chunk_size = chunk_size;
-    }
-
-    /**
-     * Restituisce la dimensione del chunk
-     * */
-    public long getChunkSize() {
-        return this.chunk_size;
-    }
-
-    public void addActivePushSuccess() {
-        this.push_success_a++;
-    }
-
-    public int getActivePushSuccess() {
-        return this.push_success_a;
-    }
-
-    public void addActivePushPropose() {
-        this.push_propose_a++;
-    }
-
-    public int getActivePushPropose() {
-        return this.push_propose_a;
-    }
-
-    public void addActivePushFailed() {
-        this.push_failed_a++;
-    }
-
-    public int getActivePushFailed() {
-        return this.push_failed_a;
-    }
-
-    public void addActivePullSuccess() {
-        this.pull_success_a++;
-    }
-
-    public int getActivePullSuccess() {
-        return this.pull_success_a;
-    }
-
-    public void addActivePullPropose() {
-        this.pull_propose_a++;
-    }
-
-    public int getActivePullPropose() {
-        return this.pull_propose_a;
-    }
-
-    public void addActivePullFailed() {
-        this.pull_failed_a++;
-    }
-
-    public int getActivePullFailed() {
-        return this.pull_failed_a;
-    }
-
-    public void addPassivePushSuccess() {
-        this.push_success_p++;
-    }
-
-    public int getPassivePushSuccess() {
-        return this.push_success_p;
-    }
-
-    public void addPassivePushPropose() {
-        this.push_propose_p++;
-    }
-
-    public int getPassivePushPropose() {
-        return this.push_propose_p;
-    }
-
-    public void addPassivePushFailed() {
-        this.push_failed_p++;
-    }
-
-    public int getPassivePushFailed() {
-        return this.push_failed_p;
-    }
-
-    public void addPassivePullSuccess() {
-        this.pull_success_p++;
-    }
-
-    public int getPassivePullSuccess() {
-        return this.pull_success_p;
-    }
-
-    public void addPassivePullPropose() {
-        this.pull_propose_p++;
-    }
-
-    public int getPassivePullPropose() {
-        return this.pull_propose_p;
-    }
-
-    public void addPassivePullFailed() {
-        this.pull_failed_p++;
-    }
-
-    public int getPassivePullFailed() {
-        return this.pull_failed_p;
-    }
-
-    public void addTimeInPush(long timeinpush) {
-        this.time_in_push += timeinpush;
-    }
-
-    public void addTimeInPull(long timeinpull) {
-        this.time_in_pull += timeinpull;
-    }
-
-//    public String getConnections() {
-//        String result = "]] " + this.getSize();// + " : " + this.bitmap();
-//        return result;
-//    }
-    public void setPlayoutTime(int time_sec) {
-        this.playout = new Long(time_sec);
-    }
-
-    public void updatePlayoutTime() {
-        if (this.peer_playout == 0) {
-            this.peer_playout = this.playout * Message.MILLISECONDI + CommonState.getTime();
-        }
-    }
-
-    public long getPlayoutTime() {
-        return this.playout;
-    }
-
-    public long getPeerPlayout() {
-        return this.peer_playout;
-    }
-
-    public long getDeadline(int chunkid) {
-        return this.peer_playout + this.new_chunk_delay * chunkid;
-
-    }
-
-    public void setRTTDelays(Node node, int pid) {
-        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
-        this.min_del = net.getMinRTT();
-        this.max_del = net.getMaxRTT();
-    }
-
-    public void setPullRounds(int rounds) {
-        this.pull_rounds = rounds;
-    }
-
-    public int getPullRounds() {
-        return this.pull_rounds;
-    }
-
-    public boolean isPullable(int chunkid) {
-        if (this.playout < 0) {
-            if (debug >= 4) {
-                System.out.println("\tPlayout is set to infinity, " + chunkid + " will be pullable for ever.");
-            }
-            return true;
-        }
-        long time_available = getDeadline(chunkid) - CommonState.getTime();
-        if (debug >= 4) {
-            System.out.print("\tTime available is " + time_available + " (" + getDeadline(chunkid) + "); ");
-        }
-        if (time_available < 0) {
-            if (this.chunk_list[chunkid] == Message.NOT_OWNED) {
-                this.skipChunk(chunkid);
-                if (debug >= 4) {
-                    System.out.print("is lower than 0, no more time to retrieve " + chunkid + " SKIP IT.");
-
-                }
-                this.checkCompleted();
-            }
-            if (debug >= 4) {
-                System.out.println(current.getID() + " It is strange: at time " + CommonState.getTime() + " tries to pull chunk " + chunkid + " with deadline " + time_available + ". It should be already marked as skipped! " + this.peer_playout);
-            }
-            return false;
-        }
-        double uptime = Math.ceil((this.chunk_size * 1.0 / (this.getUploadMax(this.current) * 1.0)) * Message.MILLISECONDI);
-        long time_needed = Math.round(this.max_del + uptime);//XXX to fix, nodes can learn the upload speed/time of its neighbors from history
-        if (debug >= 4) {
-            System.out.print("Time needed to receive the chunk " + chunkid + " (Size " + this.chunk_size + ", Upload " + this.getUploadMax(this.current) + ") is " + time_needed + "; ");
-        }
-        if (time_available >= time_needed) {
-            if (debug >= 4) {
-                System.out.println("so we have time to search it for pull");
-            }
-            return true;
-        } else {
-            if (this.chunk_list[chunkid] == Message.NOT_OWNED) {
-                this.skipChunk(chunkid);
-                if (debug >= 4) {
-                    System.out.println("we have no more time to retrieve it, SKIP");
-                }
-            }
-            return false;
-        }
-    }
-
-    /**
-     * 
-     * Set lastpull to the chunk just received in pull
-     * 
-     */
-    public void setLastpull(long _lastpull) {
-        this.checkpull();
-        if (_lastpull < this.getLast() || _lastpull < this.last_chunk_pulled) {
-            this.addChunk((int) _lastpull, Message.PULL_CYCLE);
-        } else if (this.last_chunk_pulled == -1) {
-            this.last_chunk_pulled = (int) _lastpull;
-        } else if (this.last_chunk_pulled < _lastpull) {
-            this.addChunk(this.last_chunk_pulled, Message.PULL_CYCLE);
-            this.last_chunk_pulled = (int) _lastpull;
-        }
-        if (this.last_chunk_pulled == (this.getNumberOfChunks() - 1)) {
-            this.addChunk(this.last_chunk_pulled, Message.PULL_CYCLE);
-            this.last_chunk_pulled = -1;
-
-        }
-        return;
-    }
-
-    public void checkpull() {
-        if (this.last_chunk_pulled != -1 && this.last_chunk_pulled < this.getLast()) {
-            int tmp = this.last_chunk_pulled;
-            this.last_chunk_pulled = -1;
-            this.addChunk(tmp, Message.PULL_CYCLE);
-        }
-    }
-
-    /**
-     * 
-     * Il metodo restituisce i chunks ricevuti nell'ultimo pull
-     * 
-     */
-    public int getLastpull() {
-        return this.last_chunk_pulled;
-    }
-
-    /**
-     * 
-     * Se il nodo sta servendo un altro nodo in pull, restituisce true,
-     * altrimenti false
-     * 
-     */
-    public long isPulling() {
-        return this.pulling;
-    }
-
-    /**
-     * Set pulling state
-     */
-    public void setPulling() {
-        this.pulling = CommonState.getTime();
-    }
-
-    /**
-     * ReSet pulling state
-     */
-    public void resetPulling() {
-        this.pulling = -1;
-    }
-
-    /**
-     * Set a chunk in download
-     */
-    public void setInDown(String chunk) {
-        long index = Long.parseLong(chunk.substring(chunk.indexOf(":") + 1,
-                chunk.length()));
-        this.chunk_list[(int) (index)] = Message.IN_DOWNLOAD;
-    }
-
-    /**
-     * Set a chunk in download
-     */
-    public void setInDown(long index) {
-        if (this.chunk_list[(int) (index)] == Message.NOT_OWNED) {
-            this.chunk_list[(int) (index)] = Message.IN_DOWNLOAD;
-        }
-    }
-
-    public void resetInDown(long index) {
-        if (this.chunk_list[(int) (index)] == Message.IN_DOWNLOAD) {
-            this.chunk_list[(int) (index)] = Message.NOT_OWNED;
-        }
-    }
-
-    public String bitmap() {
-        String res = "";
-        for (int i = 0; i < this.chunk_list.length; i++) {
-            res += (this.normalize(this.chunk_list[i]) > Message.OWNED ? "1" : (this.chunk_list[i] == Message.IN_DOWNLOAD) ? "!" : "0") + (i % 10 == 9 ? "," : "");
-        }
-        return res;
-    }
-
-    /**
-     * 
-     * Il metodo restituisce l'ultimo chunk che il nodo possiede il lista se la
-     * lista è vuota restituisce -1; Non vengono presi in considerazione i
-     * chunks in download
-     * 
-     */
-    public int getLast() {
-        int last = -1;
-        for (int i = this.chunk_list.length - 1; i >= 0; i--) {
-            if (normalize(this.chunk_list[i]) > Message.OWNED) {
-                return i;
-            }
-        }
-        return last;
-    }
-
-    // = 1 TO BE PUSHED
-    // = 2 IN PUSH...
-    // = TIME -> PUSED
-    public void enqueueChunk(int new_chunk) {
-        this.chunk_list[new_chunk] = 1;
-    }
-
-    public int getFirstChunk() {
-
-        int chunktopush = 0;
-        while (chunktopush < this.chunk_list.length && this.chunk_list[chunktopush] != 1 && this.chunk_list[chunktopush] != 2) {
-            chunktopush++;
-        }
-        if ((chunktopush + 1 == this.chunk_list.length && this.chunk_list[chunktopush] != 1) || chunktopush >= this.chunk_list.length) {
-            chunktopush = -1;
-        }
-
-        if (debug > 3) {
-            System.out.println("chunk to push is " + chunktopush);
-        }
-        return chunktopush;
-    }
-
-    public void markChunk(int value) {
-        if (value + 1 == this.number_of_chunks) {
-            if (debug > 3) {
-                System.out.println("Setting node as completed " + value);
-            }
-            this.setCompleted(CommonState.getTime());
-        }
-        if (this.chunk_list[value] == 2) {
-            if (debug > 3) {
-                System.out.print("Setting chunk as transmitted " + value);
-            }
-            if (debug > 3) {
-                System.out.println(" >> removing " + value);
-            }
-            this.chunk_list[value] = CommonState.getTime();
-        }
-    }
-
-    public void unmarkChunk(int value) {
-        if (this.chunk_list[value] == 2) {
-            if (debug > 3) {
-                System.out.print("Setting chunk as not-transmitted " + value);
-            }
-            this.chunk_list[value] = 1;
-            System.out.println(", now is " + this.chunk_list[value]);
-        }
-    }
-
-    /**
-     * 
-     * Il metodo restituisce gli ultimi chunks posseduti dal nodo
-     * @param elements numero di chunk con id più alto posseduti dal nodo
-     * 
-     * @return array di interi di dimensione minore o uguale ad @elements contenente gli id più alti
-     * 
-     * */
-    public int[] getLast(int elements) {
-        if (this.getOwnedChunks() < elements) {
-            elements = this.getOwnedChunks();
-        }
-        int result[] = new int[elements];
-        int index = 0;
-        int count = 0;
-        while (elements > 0 && count < this.chunk_list.length) {
-            int id = (this.chunk_list.length - count - 1);
-            if (this.chunk_list[id] != Message.IN_DOWNLOAD && this.chunk_list[id] != Message.NOT_OWNED && this.last_chunk_pulled != id) {
-                result[index++] = id;
-                elements--;
-            }
-            count++;
-        }
-        if (elements > 0) {
-            int temp[] = new int[result.length - elements];
-            System.arraycopy(result, 0, temp, 0, temp.length);
-            result = temp;
-        }
-        return result;
-    }
-
-    public long normalize(long chunktime) {
-        if (chunktime != Message.OWNED && chunktime != Message.NOT_OWNED && chunktime != Message.IN_DOWNLOAD) {
-            return Math.abs(chunktime);
-        } else {
-            return chunktime;
-        }
-    }
-
-    /**
-     * 
-     * Il metodo restituisce il chunk con l'identificativo passato se posseduto
-     * dal nodo, se il chunk è in download restituisce la costante
-     * {@value Message.CHUNK_IN_DOWNLOAD}, altrimenti restituisce null;
-     * 
-     * @param index chunk id
-     * @return long time at which the node received this chunk
-     */
-    public long getChunk(int index) {
-        return normalize(this.chunk_list[index]);
-    }
-
-    public int getChunks(int[] index) {
-        int owned = 0;
-        for (int i = 0; i < index.length; i++) {
-            if (this.getChunk(index[i]) > Message.OWNED) {
-                owned++;
-            }
-        }
-        return owned;
-    }
-
-    public void checkCompleted() {
-        if (this.getAllChunks() == this.getNumberOfChunks() && this.getCompleted() == 0) {
-            this.setCompleted(CommonState.getTime());
-        }
-    }
-
-    /**
-     * 
-     * Il metodo aggiunge un chunk alla lista di chunks che il nodo
-     * possiede, restituisce vero se il chunk non si possedeva già, false se il
-     * chunk si possedeva
-     * 
-     * @param chunk indice del chunks
-     * @param method metodo in cui riceve il chunk
-     * @return true se il chunk viene aggiungo, false se si possedeva già
-     * 
-     */
-    public boolean addChunk(int chunk, int method) {
-//        System.out.print("ADDing "+chunk+ "  "+this.chunk_list[chunk]);
-        if ((this.chunk_list[chunk] == Message.NOT_OWNED) || (this.chunk_list[chunk] == Message.IN_DOWNLOAD)) {
-            this.chunk_list[chunk] = CommonState.getTime();
-            if (method == Message.PULL_CYCLE) {
-//                System.out.print("in pull :) "+this.getSuccessPull());
-                this.chunk_list[chunk] *= -1;
-//                this.addActivePullSuccess();
-//                System.out.println(" >> "+this.getSuccessPull());
-//                System.out.println(" >> "+this.getSuccessPull());
-            } else {
-//                System.out.print("in push :) "+this.getChunkInPush());
-//                this.addPassivePushSuccess();
-                this.checkpull();
-//                System.out.println(" >> "+this.getChunkInPush());
-            }
-        }
-        this.checkCompleted();
-        return true;
-    }
-
-    public boolean skipChunk(int chunk) {
-        if (this.chunk_list[chunk] == Message.NOT_OWNED) {
-            this.chunk_list[chunk] = Message.SKIPPED;
-            if (debug >= 4) {
-                System.out.println("\tSkipping " + chunk + " is pullable? ");
-            }
-            this.isPullable(chunk);
-        }
-        this.checkCompleted();
-        return true;
-    }
-
-    public boolean skipChunks(int chunks[]) {
-        for (int k = 0; k < chunks.length; k++) {
-            if (this.chunk_list[chunks[k]] == Message.NOT_OWNED) {
-                this.chunk_list[chunks[k]] = Message.SKIPPED;
-                if (debug >= 4) {
-                    System.out.println("\tSkipping " + chunks[k] + " is pullable? " + this.isPullable(chunks[k]));
-                }
-
-            }
-            this.checkCompleted();
-        }
-        return true;
-    }
-
-    /**
-     * 
-     * Restituisce il numero di chunk posseduti dal nodo, sono esclusi i chunks
-     * in Download
-     * 
-     */
-    public int getOwnedChunks() {
-        int size = 0;
-        for (int i = 0; i < this.chunk_list.length; i++) {
-//            System.out.println(normalize(chunk_list[i]) + " i "+i);
-            if (normalize(this.chunk_list[i]) > Message.OWNED) {
-                size++;
-            }
-        }
-        return size;
-    }
-
-    public int getAllChunks() {
-        int size = 0;
-        for (int i = 0; i < this.chunk_list.length; i++) {
-//            System.out.println(normalize(chunk_list[i]) + " i "+i);
-            if (normalize(this.chunk_list[i]) > Message.OWNED || this.chunk_list[i] == Message.SKIPPED) {
-                size++;
-            }
-        }
-        return size;
-    }
-
-    public int getSkipped() {
-        int size = 0;
-        for (int i = 0; i < this.chunk_list.length; i++) {
-//            System.out.println(normalize(chunk_list[i]) + " i "+i);
-            if (this.chunk_list[i] == Message.SKIPPED) {
-                size++;
-            }
-        }
-        return size;
-    }
-
-    public int getLeast() {
-        int least = -1;
-        int max_chunk = this.getLast();
-        for (int i = 0; i < this.chunk_list.length && i < max_chunk; i++) {
-            if (this.chunk_list[i] == Message.NOT_OWNED && !this.isPullable(i)) {
-                this.chunk_list[i] = Message.SKIPPED;
-            } else if (this.chunk_list[i] == Message.NOT_OWNED) {
-                return i;
-            }
-        }
-        return least;
-    }
-
-    /**
-     * 
-     * Restituisce il chunk con id minore non posseduto Se il nodo possiede
-     * tutti i chunks restituisce null;
-     */
-    public int[] getLeast(int elements) {
-        int result[] = new int[elements];
-        int index = 0;
-        int max_chunk = this.getLast();
-        if (max_chunk == -1) {
-            result[index++] = 0;
-            elements--;
-        } else {
-            for (int i = 0; i < this.chunk_list.length && i < max_chunk && elements > 0; i++) {
-                if (this.chunk_list[i] == Message.NOT_OWNED && !this.isPullable(i)) {
-                    System.out.println("Here");
-                    this.chunk_list[i] = Message.SKIPPED;
-                } else if (this.chunk_list[i] == Message.NOT_OWNED) {// && i != this.last_chunk_pulled) {
-                    result[index++] = i;
-                    elements--;
-                }
-            }
-        }
-        if (elements > 0) {
-            int temp[] = new int[result.length - elements];
-            System.arraycopy(result, 0, temp, 0, temp.length);
-            result = temp;
-        }
-        if (result.length == 0) {
-            return null;
-        } else {
-            return result;
-        }
-    }
-
-    /**
-     * Stampa le informazioni sul nodo
-     * */
-    public String toString(Node node) {
-        String result = "Nodo " + node.getID() + ", Time " + CommonState.getTime() + ", Lista " + this.getAllChunks();
-        if (this.getAllChunks() == this.getNumberOfChunks()) {
-            result += " >>> ha tutti i chunks.";
-        } else {
-            result += ".";
-        }
-        return result;
-    }
-
-    public void setCurrent(Node ac) {
-        this.current = ac;
-    }
-
-    public void flushNeighbors(int chunk, Node node, int pid) {
-        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
-        net.flushNeighborhood(chunk);
-    }
-
-    public void flushNeighbors(int chunks[], Node node, int pid) {
-        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
-        for (int k = 0; k < chunks.length; k++) {
-            net.flushNeighborhood(chunks[k]);
-        }
-    }
-
-    /**
-     * Given a neighbor, returns the NeighborElement associated
-     * @param node current node
-     * @param target neighbor needed
-     * @param pid protocol id
-     * @return The NeighborElement instance associated to target node
-     */
-    public NeighborElement getNeighbor(Node node, Node target, int pid) {
-        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
-        if (net.getCurrent() == null) {
-            net.setCurrent(node);
-            this.setRTTDelays(node, pid);
-            net.setChunkListSize(this.number_of_chunks);
-            this.setRTTDelays(node, pid);
-            if (net.getNeighbor(Network.get(this.source)) != null) {
-                net.setBannedPeer(Network.get(this.getSource()));
-            }
-        }
-        if (this.getDebug() >= 10) {
-            System.out.println("\tNodo " + node.getID() + "\n\t" + net);
-        }//No knowledge about the neighborhood
-        NeighborElement candidate = net.getNeighbor(target);
-        if (this.getDebug() >= 10) {
-            System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " (Source is " + this.getSource() + ") ");
-        }
-        if (candidate != null) {
-            return candidate;
-        }
-        return null;
-    }
-
-//XXX e` da capire se nel push conviene fare prima il peer selection e poi il piece o viceversa.
-    /***
-     * Return a target node to push, in according to the peer selection policies,
-     * selecting the target peer among a subset of peers which don't have at least one of the pushed chunks
-     * @param chunks array of chunks to push
-     * @param node current node
-     * @param pid procol id
-     * @return Target node
-     */
-    public Node getTargetNeighborPush(int chunks[], Node node, int pid) {
-        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
-        if (net.getCurrent() == null) {
-            net.setCurrent(node);
-            this.setRTTDelays(node, pid);
-            net.setChunkListSize(this.number_of_chunks);
-            this.setRTTDelays(node, pid);
-            if (net.getNeighbor(Network.get(this.source)) != null) {
-                net.setBannedPeer(Network.get(this.getSource()));
-            }
-        }
-        if (this.getDebug() >= 10) {
-            System.out.println("\tNodo " + node.getID() + " push selection\n\t" + net);
-        }
-        NeighborElement candidate = net.getTargetNeighbor(chunks, Message.NOT_OWNED);
-        if (this.getDebug() >= 8 && candidate!=null) {
-            System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " (Source is " + this.getSource() + ") CTO = "+candidate.getContactTime()+" CTN = "+CommonState.getTime());
-        }
-        if (candidate == null) {
-            return null;
-        }
-        candidate.setContactTime(CommonState.getTime());
-        return candidate.getNeighbor();
-    }
-
-    /***
-     * Return a target node to pull, in according to the peer selection policies,
-     * selecting the target peer among a subset of peers which have at least one of the desired chunks
-     * @param chunks array of chunks needed
-     * @param node current node
-     * @param pid procol id
-     * @return Target node
-     */
-    public Node getTargetNeighborPull(int chunks[], Node node, int pid) {
-        DelayedNeighbor net = (DelayedNeighbor) node.getProtocol(FastConfig.getLinkable(pid));
-        if (net.getCurrent() == null) {
-            net.setCurrent(node);
-            this.setRTTDelays(node, pid);
-            net.setChunkListSize(this.number_of_chunks);
-            this.setRTTDelays(node, pid);
-            if (net.getNeighbor(Network.get(this.source)) != null) {
-                net.setBannedPeer(Network.get(this.getSource()));
-            }
-        }
-        if (this.getDebug() >= 10) {
-            System.out.println("\tNodo " + node.getID() + " pull selection\n\t" + net);
-        }//No knowledge about the neighborhood
-        NeighborElement candidate = net.getTargetNeighbor(chunks, Message.OWNED);
-        if (this.getDebug() >= 10) {
-            System.out.println("\tNodo " + node.getID() + " selects candidate " + candidate + " (Source is " + this.getSource() + ") ");
-        }
-        if (candidate == null) {
-            return null;
-        }
-        return candidate.getNeighbor();
-    }
-
-    /**
-     * Return a printable version of the node's neighborhood
-     * @param node current node
-     * @param pid protocol id
-     * @return string containing the neighborhood
-     */
-    public String getNeighborhood(Node node, int pid) {
-        Linkable linkable = (Linkable) node.getProtocol(FastConfig.getLinkable(pid));
-        String results = "Node " + node.getID() + ": " + linkable.degree() + " [ ";
-        for (int i = 0; i < linkable.degree(); i++) {
-            results += linkable.getNeighbor(i).getID() + ", ";
-        }
-        results += " ]";
-        return results;
-    }
-
-    /**
-     * Restituisce per ogni chunk, il tempo in cui è stato ricevuto
-     * */
-    public long getChunkInfo(long id) {
-        int idi = (int) id;
-        return this.chunk_list[idi];
     }
 }

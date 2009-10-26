@@ -46,7 +46,7 @@ public class NeighborElement {
     private int chunk_out;
 
     /**
-     * Constuctor
+     * Constuctor which buffer map size.
      * @param neighbor Node neighbor
      * @param delay RTT delay
      * @param num_chunks number of chunks in the buffer map
@@ -60,7 +60,7 @@ public class NeighborElement {
     }
 
     /**
-     * Constuctor
+     * Constuctor.
      * @param neighbor Node neighbor
      * @param delay RTT delay
      */
@@ -104,15 +104,15 @@ public class NeighborElement {
 
     /**
      * Return the RTT delay.
-     * @return.
+     * @return RTT delay.
      */
     public long getDelay() {
         return this.rtt_delay;
     }
 
     /**
-     * Set the RTT delay.
-     * @param delay.
+     * Set the RTT delay to this neighbor.
+     * @param delay RTT delay.
      */
     public void setDelay(long delay) {
         this.rtt_delay = delay;
@@ -120,7 +120,7 @@ public class NeighborElement {
 
     /**
      * Get the number of times the current node contacts this neighbor.
-     * @return.
+     * @return Number of time this node was contacted.
      */
     public int getContacts() {
         return this.contacts;
@@ -137,6 +137,7 @@ public class NeighborElement {
     /**
      * Printable version of the NeighborElement.
      * @return printable version of neighbor element.
+     * 
      */
     public String toString() {
         return "Node " + this.neighbor.getIndex() + " delay " + this.rtt_delay;
@@ -144,7 +145,7 @@ public class NeighborElement {
 
     /**
      * Set the last time in which the neighbor was contacted by the current node.
-     * @param Last time the neighbor was contacted.
+     * @param value Last time the neighbor was contacted.
      */
     public void setContactTime(long value) {
         this.addContact();
@@ -178,7 +179,7 @@ public class NeighborElement {
 
     /**
      * Return the value of the given chunk in the corresponding neighbor.
-     *@param chunkid Chunk identifier.
+     * @param chunkid Chunk identifier.
      * @return the state of the chunk (owned or not).
      */
     public int getChunk(int chunkid) {
