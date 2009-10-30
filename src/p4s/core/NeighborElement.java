@@ -30,7 +30,7 @@ public class NeighborElement {
     /**
      * Neighbor's buffer map
      */
-    private int chunks[] = null;
+    private byte chunks[] = null;
     /**
      * Neighbor may be banned to be queried
      */
@@ -56,7 +56,7 @@ public class NeighborElement {
         this.rtt_delay = delay;
         this.last_contact = -1;
         this.contacts = 1;
-        this.chunks = new int[num_chunks];
+        this.chunks = new byte[num_chunks];
     }
 
     /**
@@ -174,7 +174,7 @@ public class NeighborElement {
      * @param value State of the chunk (owned or not).
      */
     public void setChunk(int chunkid, long value) {
-        this.chunks[chunkid] = (int) value;
+        this.chunks[chunkid] = (byte) value;
     }
 
     /**
@@ -192,7 +192,7 @@ public class NeighborElement {
      */
     public void setChunkListSize(int n_chunks) {
         if (this.chunks == null) {
-            this.chunks = new int[n_chunks];
+            this.chunks = new byte[n_chunks];
         } else {
             int cpchunk[] = new int[n_chunks];
             System.arraycopy(this.chunks, Math.min(this.chunks.length, n_chunks), cpchunk, 0, Math.min(this.chunks.length, n_chunks));

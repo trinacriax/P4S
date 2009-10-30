@@ -1042,8 +1042,8 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
             chunktopush = -1;
         }
 
-        if (debug > 3) {
-            System.out.println("chunk to push is " + chunktopush);
+        if (debug >= 3) {
+            System.out.println("chunk to push is " + chunktopush+ " ["+this.chunk_list[chunktopush]+"]");
         }
         return chunktopush;
     }

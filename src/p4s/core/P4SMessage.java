@@ -1,5 +1,6 @@
-package p4s.util;
+package p4s.core;
 
+import p4s.util.*;
 import peersim.core.Node;
 import java.lang.reflect.*;
 

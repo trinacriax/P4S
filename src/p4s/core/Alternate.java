@@ -37,6 +37,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
      * The frequency of execution of this method is defined by a
      * {@link peersim.edsim.CDScheduler} component in the configuration.
      */
+    @Override
     public void nextCycle(Node node, int pid) {
     }
 
@@ -57,11 +58,22 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
 
     /**
      * It is simply a shortcut to add event with a given delay in the queue of the simulator.
+     * @param src sender node
+     * @param dest receiver node
+     * @param msg message to deliver
+     * @param delay end to end delay
+     * @param pid protocol identifier
      */
     public void send(Node src, Node dest, Object msg, long delay, int pid) {
         ((TransportP4S) src.getProtocol(FastConfig.getTransport(pid))).sendControl(src, dest, msg, delay, pid);
     }
 
+    /**
+     * Execute the SWITCH_PUSH PHASE. Node offers a PUSH.
+     * @param node Node which receive the message.
+     * @param pid protocol identifer.
+     * @param im message received.
+     */
     public void exSwitchPush(Node node, int pid, P4SMessage im) {
         //**************************** PUSH STATE ****************************\\       
         receiver = null;
@@ -268,6 +280,12 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
         }
     }
 
+    /**
+     * Execute the PUSH PHASE. Node receives an offer for a PUSH.
+     * @param node Node which receive the message.
+     * @param pid protocol identifer.
+     * @param im message received.
+     */
     public void exPush(Node node, int pid, P4SMessage im) {
         sender = receiver = null;
         receiver = (Alternate) (node.getProtocol(pid));
@@ -329,8 +347,13 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
         return;
     }
 
+    /**
+     * Execute the OK_PUSH PHASE. Node receives OK for the push offered before.
+     * @param node Node which receive the message.
+     * @param pid protocol identifer.
+     * @param im message received.
+     */
     public void exOkPush(Node node, int pid, P4SMessage im) {
-
         sender = receiver = null;
         sender = ((Alternate) (node.getProtocol(pid)));
         receiver = ((Alternate) (im.getSender().getProtocol(pid)));
@@ -433,8 +456,13 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
         return;
     }
 
+    /**
+     * Execute the START PUSH PHASE. Node starts to receive data from the push.
+     * @param node Node which receive the message.
+     * @param pid protocol identifer.
+     * @param im message received.
+     */
     public void exStartPush(Node node, int pid, P4SMessage im) {
-
         sender = receiver = null;
         receiver = ((Alternate) (node.getProtocol(pid)));
         long chunktopush = im.getChunks()[0];
@@ -447,8 +475,13 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
         return;
     }
 
+    /**
+     * Execute the FINISH_PUSH PHASE. Node receives the last packet of the data.
+     * @param node Node which receive the message.
+     * @param pid protocol identifer.
+     * @param im message received.
+     */
     public void exFinishPush(Node node, int pid, P4SMessage im) {
-
         sender = receiver = null;
         sender = ((Alternate) (im.getSender().getProtocol(pid)));
         receiver = ((Alternate) (node.getProtocol(pid)));
@@ -476,8 +509,14 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
         return;
     }
 
+    /**
+     * Execute the NO CHUNK OWNED. Node receives a negative answer for those chunks proposed,
+     * because they are already owned by the target node.
+     * @param node Node which receive the message.
+     * @param pid protocol identifer.
+     * @param im message received.
+     */
     public void exNoChunkOwned(Node node, int pid, P4SMessage im) {
-
         sender = receiver = null;
         sender = (Alternate) (node.getProtocol(pid));
         NeighborElement ne = sender.getNeighbor(node, im.getSender(), pid);
@@ -499,8 +538,13 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
         return;
     }
 
+    /**
+     * Node receives a message from target peer which does not have more bandwidth.
+     * @param node Node which receive the message.
+     * @param pid protocol identifer.
+     * @param im message received.
+     */
     public void exNoDownloadBandwidtPush(Node node, int pid, P4SMessage im) {
-
         sender = receiver = null;
         sender = ((Alternate) (node.getProtocol(pid)));
         if (sender.getDebug() >= 3) {
@@ -519,7 +563,6 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exSwitchPull(Node node, int pid, P4SMessage im) {
-
         sender = receiver = null;
         receiver = ((Alternate) (node.getProtocol(pid)));
         if (receiver.getDebug() >= 2) {
@@ -686,7 +729,6 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exPull(Node node, int pid, P4SMessage im) {
-
         sender = receiver = null;
         sender = (Alternate) (node.getProtocol(pid));
         sender.addPassivePullPropose();
@@ -744,7 +786,6 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exOkPull(Node node, int pid, P4SMessage im) {
-
         sender = receiver = null;
         sender = ((Alternate) (im.getSender().getProtocol(pid)));
         receiver = ((Alternate) (node.getProtocol(pid)));
@@ -765,12 +806,10 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
         }
         if (result == BandwidthMessage.NO_UP || result == BandwidthMessage.NO_DOWN) {
             if (result == BandwidthMessage.NO_UP) {
-//                        sender.addPassivePullFailed();
                 if (receiver.getDebug() >= 3) {
                     System.out.print(CommonState.getTime() + "\tNode " + im.getSender().getID() + " no upload: " + sender.getUpload(im.getSender()));
                 }
             } else if (result == BandwidthMessage.NO_DOWN) {
-//                        receiver.addActivePullFailed();
                 if (receiver.getDebug() >= 3) {
                     System.out.print(CommonState.getTime() + "\tNode " + node.getID() + " no download: " + receiver.getDownload(node));//finire il
                 }
@@ -824,7 +863,6 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exStartPull(Node node, int pid, P4SMessage im) {
-
         sender = receiver = null;
         receiver = ((Alternate) (node.getProtocol(pid)));
         if (receiver.getDebug() >= 2) {
@@ -835,7 +873,6 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exFinishPull(Node node, int pid, P4SMessage im) {
-
         sender = receiver = null;
         sender = ((Alternate) (im.getSender().getProtocol(pid)));
         receiver = ((Alternate) (node.getProtocol(pid)));
@@ -852,20 +889,16 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
         receiver.addActivePullSuccess();
         int chunkpulled = (int) im.getChunks()[0];
         receiver.addChunk(chunkpulled, Message.PULL_CYCLE);//add success pull in add chunk
-//                if (receiver.getDebug() >= 2) {
-//                    System.out.println("("+receiver.getSuccessPull()+") vs " +"("+sender.getChunkInPull()+")");
-//                }
         sender = receiver = null;
         return;
     }
 
     public void exNoChunkUnavailable(Node node, int pid, P4SMessage im) {
-
         sender = receiver = null;
         receiver = ((Alternate) (node.getProtocol(pid)));
         receiver.addActivePullFailed();
         NeighborElement ne = receiver.getNeighbor(node, im.getSender(), pid);//the sender store the information of that peer which does not have the chunk
-//        ne.setChunks(im.getChunks(), Message.NOT_OWNED);
+        ne.setChunks(im.getChunks(), Message.NOT_OWNED);
         if (receiver.getDebug() >= 3) {
             System.out.print(CommonState.getTime() + "\tNode " + node.getID() + " pulled chunk " + im.getChunkids() + " from Node " + im.getSender().getID() +
                     " which does not own it ");
@@ -889,7 +922,6 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exInPulling(Node node, int pid, P4SMessage im) {
-
         sender = receiver = null;
         receiver = ((Alternate) (node.getProtocol(pid)));
         receiver.addActivePullFailed();
@@ -912,7 +944,6 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     public void exNoUploadBandwidthPull(Node node, int pid, P4SMessage im) {
-
         sender = receiver = null;
         receiver = (Alternate) (node.getProtocol(pid));
         receiver.addActivePullFailed();
@@ -937,11 +968,13 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
     }
 
     /**
-     *
-     * This is the main method that implements the asynchronous ALTERNATE.
+     * This is the main method that implements the asynchronous ALTERNATE protocol.
      * Each "case" corresponds to a state of the protocol where the node performs some operations.
-     *
+     * @param node Node which receive the event.
+     * @param pid Protocol identier
+     * @param event Event issued
      */
+    @Override
     public void processEvent(Node node, int pid, Object event) {
         P4SMessage im = (P4SMessage) event;
         if (im.getSender() == null) {
@@ -979,11 +1012,11 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                 break;
             }
             case Message.NO_DOWNLOAD_BANDWIDTH_PUSH: {
+                //************************************* N O D E   R I C E V E S   N O    B AD N D W I D T H   F O R   P U S H  ******************************************
                 this.exNoDownloadBandwidtPush(node, pid, im);
                 break;
             }
-
-            // ********************* CICLO DI PULL ***********************
+            //---------------------------- P U L L   P H A S E ---------------------------
             case Message.SWITCH_PULL: {
                 //************************************* N O D E   T R I E S    T O    P U L  L   A    N O D E ******************************************
                 this.exSwitchPull(node, pid, im);
@@ -1026,7 +1059,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
                 break;
             }
             default: {
-                System.err.println("ERRORE SWITCH CASE MESSAGES " + im.toString());
+                System.err.println("ERROR. Main switch does not recognize the message " + im.toString());
                 System.exit(-23);
             }
         }

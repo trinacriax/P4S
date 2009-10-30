@@ -1,20 +1,20 @@
 ### Simulation seed
-SEED 9381048245
+SEED 6919162786
 
 ### MAX Simulation time
 CYCLE NETSIZE*CHUNKS*Ts
 
 ### Verbosity level
-DEBUG 8
+DEBUG 0
 
 ### Number of nodes in the network
 NETSIZE 1000
 
 ### Number of chunks to transmit
-CHUNKS 4000
+CHUNKS 10000
 
 ### Nodes degree
-DEGREE 8
+DEGREE 16
 
 ### Message delay: min and max
 DELTAmin 10
@@ -30,8 +30,7 @@ Ts  1000
 BMs BMp
 
 ## Peers Bandwidth (Multiple of Bs)
-#BMb ((Ts*100)/((Ts-DELTAmax)))
-BMp 1.6
+BMp 1.60
 
 ## Playout Time in seconds
 PLAYT -1
@@ -76,8 +75,8 @@ PI_down 10
 ## Window size for either push or pull active message,
 ## the node either proposes OMEGA_push chunks in push
 ## or OMEGA_pull for pull
-OMEGA_push 1
-OMEGA_pull 1
+OMEGA_push 4
+OMEGA_pull 4
 
 ### Maximum number of push and pull attempts
 RHO_push 1
@@ -119,7 +118,7 @@ protocol.link p4s.core.DelayedNeighbor
 }
 
 ## Protocol used for chunks distribution
-protocol.int Alternate
+protocol.pps p4s.core.Alternate
 {
     linkable link
     transport urt
@@ -145,19 +144,14 @@ init.rndlink WireKOutUnd
 
 init.bwi bandwidth.core.BandwidthAwareInitializer
 {
+    ## Protocol to initialize
     protocol bwp
+    ## Verbosity level
     debug DEBUG
     ## Base uplink value, e.g., it could be 1Mbit/s
-    uplink Bs
-    downlink Bs*10
+    base_uplink Bs
     ## Source bandwidth, as uplink multiplicator. If absent is equato to maximum BMp.
     bms BMs
-    ## Peers' upload bandwidth, as uplink multiplicator.
-    ## e.g. "bmp 1.1 1.5 2.0" means that some peers will have 1.1Mb, other 1.5Mb and 2.0Mb of uplink"
-    bmp BMp
-    ## Set the bandwidth distribution over peers.
-    ## e.g. "bdist 0.3,0.7,1.0" means that 30% of peer will have 1.1Mb, 40% will ahve 1.5 while 30% will have 2.0Mb.
-    bdist 1
     ## Active connections are those started by node.
     ## Involving upload bandwidth
     active_upload ALPHA_up
@@ -170,11 +164,25 @@ init.bwi bandwidth.core.BandwidthAwareInitializer
     passive_download PI_down
 }
 
+init.bandUP bandwidth.core.CDFDistribution
+{
+    ## Protocol identifier (to set)
+    protocol bwp
+    ## Base value
+    base_value Bs
+    ## Base value multipliers, comma separated.
+    value_multiplier BMp
+    ## Multiplier distribution
+    cdf_distribution 1.0
+    ## Method invoked to set the value
+    setter initUpload
+}
+
 
 ## Chunk distribution protocol initializer
 init.ii AlternateInitializer
 {
-    protocol int
+    protocol pps
     bandwidth bwp
     chunks CHUNKS
     chunk_size Bs*Ts/1000
@@ -193,39 +201,25 @@ init.ii AlternateInitializer
 }
 
 ## Initializers order
-include.init bwi rndlink  ii
+include.init bwi bandUP rndlink ii
 
 
 #- - - - - - C O N T R O L S - - - - -  -#
 ## Streaming rate: Source side that produces a chunk every Ts
-control.StreaminServer SourceObserver
+control.StreamingPeer StreamingSource
 {
-    protocol int
+    protocol pps
     step Ts
 }
 
 ## Control collects statistics on the time in which peers receives chunks
 control.PeersController ChunksObserver
 {
-    protocol int
+    protocol pps
     step SAMPLE_STEP
     size NETSIZE
     chunks CHUNKS
     ## Write results at the end of each experiment
     FINAL
     debug DEBUG
-}
-
-control.UploadControl VectorObserver
-{
-  protocol bwp
-  getter getUpload
-  step BAND_STEP
-}
-
-control.DownloadControl VectorObserver
-{
-  protocol bwp
-  getter getDownload
-  step BAND_STEP
 }
