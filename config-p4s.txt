@@ -8,7 +8,7 @@ CYCLE NETSIZE*CHUNKS*Ts
 DEBUG 0
 
 ### Number of nodes in the network
-NETSIZE 1000
+NETSIZE 100
 
 ### Number of chunks to transmit
 CHUNKS 10000
@@ -98,10 +98,10 @@ random.seed SEED
 network.size NETSIZE
 
 simulation.endtime CYCLE
-simulation.experiments 30
+simulation.experiments 1
 simulation.timebits 16
 simulation.logtime OBSERVER-STEP
-#simulation.stdout p4s.util.PrintLogs
+simulation.stdout p4s.util.PrintLogs
 
 ## Overlay network used
 protocol.link p4s.core.DelayedNeighbor
@@ -142,7 +142,7 @@ init.rndlink WireKOutUnd
     protocol link
 }
 
-init.bwi bandwidth.core.BandwidthAwareInitializer
+init.bwi bandwidth.core.BandwidthAwareInitializer1
 {
     ## Protocol to initialize
     protocol bwp
@@ -154,6 +154,7 @@ init.bwi bandwidth.core.BandwidthAwareInitializer
     bms BMs
     ## Active connections are those started by node.
     ## Involving upload bandwidth
+    setter setActiveUpload,setActiveDownload,setPassiveUpload,setPassiveDownload
     active_upload ALPHA_up
     ## Involving download bandwidth
     active_download ALPHA_down
