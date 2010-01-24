@@ -231,6 +231,7 @@ public class AlternateDataStructure implements AlternateDataSkeleton, Protocol {
      *
      * */
     public void Initialize(int items) {
+        System.err.println("ID : "+CommonState.getNode().getID()+" Idx "+CommonState.getNode().getIndex() );
         this.resetAll();
         this.chunk_list = new long[items];
         for (int i = 0; i < items; i++) {

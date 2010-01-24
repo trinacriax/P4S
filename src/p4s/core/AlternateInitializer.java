@@ -87,6 +87,7 @@ public class AlternateInitializer implements Control {
         for (int i = 0; i < Network.size(); i++) {
             Node aNode = Network.get(i);
             AlternateDataSkeleton prot = (AlternateDataSkeleton) aNode.getProtocol(pid);
+            System.err.print("Node : "+aNode.getID());
             prot.resetAll();
             prot.Initialize(number_of_chunks);
             prot.setNumberOfChunks(number_of_chunks);

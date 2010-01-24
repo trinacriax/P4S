@@ -142,7 +142,7 @@ init.rndlink WireKOutUnd
     protocol link
 }
 
-init.bwi bandwidth.core.BandwidthAwareInitializer1
+init.bwi bandwidth.core.BandwidthAwareInitializer
 {
     ## Protocol to initialize
     protocol bwp
