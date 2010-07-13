@@ -485,7 +485,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
         sender = receiver = null;
         sender = ((Alternate) (im.getSender().getProtocol(pid)));
         receiver = ((Alternate) (node.getProtocol(pid)));
-        int chunktopush = (int) im.getChunks()[0];
+        int chunktopush = im.getChunks()[0];
         if (receiver.getDebug() >= 2) {
             System.out.println(CommonState.getTime() + "\tNode " + node.getID() + " recFINISH_PUSH " + im.getChunkids() + " from " + im.getSender().getID());
         }
@@ -887,7 +887,7 @@ public class Alternate extends AlternateDataStructure implements CDProtocol, EDP
         receiver.remActiveDw(node);
         receiver.addSuccessDownload();
         receiver.addActivePullSuccess();
-        int chunkpulled = (int) im.getChunks()[0];
+        int chunkpulled = im.getChunks()[0];
         receiver.addChunk(chunkpulled, Message.PULL_CYCLE);//add success pull in add chunk
         sender = receiver = null;
         return;

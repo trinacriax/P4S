@@ -5,7 +5,7 @@ SEED 6919162786
 CYCLE NETSIZE*CHUNKS*Ts
 
 ### Verbosity level
-DEBUG 0
+DEBUG 4
 
 ### Number of nodes in the network
 NETSIZE 100
